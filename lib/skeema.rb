@@ -25,18 +25,18 @@ module Skeema
 
     class CommandOptionDefinition
 
-      attr_accessor :short, :long, :arg, :name, :help, :arg_required
+      attr_accessor :short, :long, :arg, :name, :desc, :arg_required
 
       def initialize(defstr)
         case defstr
         when /\A--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
-          short, long, arg, name, help = nil, $1, ($2 || $3), $4, $5
+          short, long, arg, name, desc = nil, $1, ($2 || $3), $4, $5
           arg_required = $2 ? nil : $3 ? true : false
         when /\A-(\w),\s*--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
-          short, long, arg, name, help = $1, $2, ($3 || $4), $5, $6
+          short, long, arg, name, desc = $1, $2, ($3 || $4), $5, $6
           arg_required = $3 ? nil : $4 ? true : false
         when /\A-(\w)(?:\[(.+?)\]|\s+([^\#\s].*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
-          short, long, arg, name, help = $1, nil, ($2 || $3), $4, $5
+          short, long, arg, name, desc = $1, nil, ($2 || $3), $4, $5
           arg_required = $2 ? nil : $3 ? true : false
         else
           raise CommandOptionDefinitionError.new("'#{defstr}': invalid definition.")
@@ -47,7 +47,7 @@ module Skeema
         @long  = _strip(long)
         @arg   = _strip(arg)
         @name  = _strip(name)
-        @help  = _strip(help)
+        @desc  = _strip(desc)
         @arg_required = arg_required
       end
 

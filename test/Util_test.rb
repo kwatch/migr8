@@ -26,7 +26,7 @@ Oktest.scope do
           ok {x.long}  == 'help'
           ok {x.name}  == 'help'
           ok {x.arg}   == nil
-          ok {x.help}  == 'show help'
+          ok {x.desc}  == 'show help'
           ok {x.arg_required} == false
         end
       end
@@ -42,7 +42,7 @@ Oktest.scope do
           ok {x.long}  == 'action'
           ok {x.name}  == 'action'
           ok {x.arg}   == 'name'
-          ok {x.help}  == 'action name.'
+          ok {x.desc}  == 'action name.'
           ok {x.arg_required} == true
         end
       end
@@ -58,7 +58,7 @@ Oktest.scope do
           ok {x.long}  == 'indent'
           ok {x.name}  == 'indent'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent depth (default 2).'
+          ok {x.desc}  == 'indent depth (default 2).'
           ok {x.arg_required} == nil
         end
       end
@@ -73,7 +73,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'q'
           ok {x.arg}   == nil
-          ok {x.help}  == 'be quiet'
+          ok {x.desc}  == 'be quiet'
           ok {x.arg_required} == false
         end
       end
@@ -88,7 +88,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'a'
           ok {x.arg}   == 'name'
-          ok {x.help}  == 'action name.'
+          ok {x.desc}  == 'action name.'
           ok {x.arg_required} == true
         end
       end
@@ -103,7 +103,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'i'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent depth (default 2).'
+          ok {x.desc}  == 'indent depth (default 2).'
           ok {x.arg_required} == nil
         end
       end
@@ -118,7 +118,7 @@ Oktest.scope do
           ok {x.long}  == 'verbose'
           ok {x.name}  == 'verbose'
           ok {x.arg}   == nil
-          ok {x.help}  == 'be verbose'
+          ok {x.desc}  == 'be verbose'
           ok {x.arg_required} == false
         end
       end
@@ -133,7 +133,7 @@ Oktest.scope do
           ok {x.long}  == 'action'
           ok {x.name}  == 'action'
           ok {x.arg}   == 'name'
-          ok {x.help}  == 'action name.'
+          ok {x.desc}  == 'action name.'
           ok {x.arg_required} == true
         end
       end
@@ -148,7 +148,7 @@ Oktest.scope do
           ok {x.long}  == 'indent'
           ok {x.name}  == 'indent'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent depth (default 2).'
+          ok {x.desc}  == 'indent depth (default 2).'
           ok {x.arg_required} == nil
         end
       end
@@ -163,7 +163,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'usage'
           ok {x.arg}   == nil
-          ok {x.help}  == 'show usage.'
+          ok {x.desc}  == 'show usage.'
           ok {x.arg_required} == false
         end
         #
@@ -175,7 +175,7 @@ Oktest.scope do
           ok {x.long}  == 'help'
           ok {x.name}  == 'usage'
           ok {x.arg}   == nil
-          ok {x.help}  == 'show usage.'
+          ok {x.desc}  == 'show usage.'
           ok {x.arg_required} == false
         end
         #
@@ -187,7 +187,7 @@ Oktest.scope do
           ok {x.long}  == 'help'
           ok {x.name}  == 'usage'
           ok {x.arg}   == nil
-          ok {x.help}  == 'show usage.'
+          ok {x.desc}  == 'show usage.'
           ok {x.arg_required} == false
         end
         #
@@ -199,7 +199,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'command'
           ok {x.arg}   == 'name'
-          ok {x.help}  == 'action name.'
+          ok {x.desc}  == 'action name.'
           ok {x.arg_required} == true
         end
         #
@@ -211,7 +211,7 @@ Oktest.scope do
           ok {x.long}  == 'action'
           ok {x.name}  == 'command'
           ok {x.arg}   == 'name'
-          ok {x.help}  == 'action name.'
+          ok {x.desc}  == 'action name.'
           ok {x.arg_required} == true
         end
         #
@@ -223,7 +223,7 @@ Oktest.scope do
           ok {x.long}  == 'indent'
           ok {x.name}  == 'width'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent width (default 2).'
+          ok {x.desc}  == 'indent width (default 2).'
           ok {x.arg_required} == nil
         end
         #
@@ -235,7 +235,7 @@ Oktest.scope do
           ok {x.long}  == nil
           ok {x.name}  == 'width'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent width (default 2).'
+          ok {x.desc}  == 'indent width (default 2).'
           ok {x.arg_required} == nil
         end
         #
@@ -247,7 +247,7 @@ Oktest.scope do
           ok {x.long}  == 'indent'
           ok {x.name}  == 'width'
           ok {x.arg}   == 'N'
-          ok {x.help}  == 'indent width (default 2).'
+          ok {x.desc}  == 'indent width (default 2).'
           ok {x.arg_required} == nil
         end
       end
