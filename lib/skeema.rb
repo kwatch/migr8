@@ -51,6 +51,25 @@ module Skeema
         @arg_required = arg_required
       end
 
+      def usage(width=20)
+        argreq = @arg_required
+        if @short && @long
+          s = "-#{@short}, --#{@long}"           if argreq == false
+          s = "-#{@short}, --#{@long}=#{@arg}"   if argreq == true
+          s = "-#{@short}, --#{@long}[=#{@arg}]" if argreq == nil
+        elsif @long
+          s = "--#{@long}"           if argreq == false
+          s = "--#{@long}=#{@arg}"   if argreq == true
+          s = "--#{@long}[=#{@arg}]" if argreq == nil
+        elsif @short
+          s = "-#{@short}"           if argreq == false
+          s = "-#{@short} #{@arg}"   if argreq == true
+          s = "-#{@short}[#{@arg}]"  if argreq == nil
+        end
+        #; [!xd9do] returns option usage with specified width.
+        return "%-#{width}s: %s" % [s, @desc]
+      end
+
       private
 
       def _strip(str)
@@ -145,6 +164,18 @@ module Skeema
         #; [!35eof] returns parsed options.
         return options
       end#def
+
+      def usage(width=20, indent='')
+        width = 20 if width.nil?
+        #; [!w9v9c] returns usage string of all options.
+        s = ""
+        @optdefs.each do |optdef|
+          #; [!i0uvr] adds indent when specified.
+          #; [!lbjai] skips options when desc is empty.
+          s << "#{indent}#{optdef.usage(width)}\n" if optdef.desc
+        end
+        return s
+      end
 
     end#class
 

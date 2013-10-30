@@ -260,6 +260,36 @@ Oktest.scope do
     end
 
 
+    topic '#usage()' do
+
+      spec "[!xd9do] returns option usage with specified width." do
+        optdef = klass.new("-h, --help: show help")
+        ok {optdef.usage(15)} == "-h, --help     : show help"
+        ok {optdef.usage()}   == "-h, --help          : show help"
+        optdef = klass.new("-h: show help")
+        ok {optdef.usage()}   == "-h                  : show help"
+        optdef = klass.new("--help: show help")
+        ok {optdef.usage()}   == "--help              : show help"
+        #
+        optdef = klass.new("-a, --action=name: action name")
+        ok {optdef.usage(15)} == "-a, --action=name: action name"
+        ok {optdef.usage()}   == "-a, --action=name   : action name"
+        optdef = klass.new("-a name: action name")
+        ok {optdef.usage()}   == "-a name             : action name"
+        optdef = klass.new("--action=name: action name")
+        ok {optdef.usage()}   == "--action=name       : action name"
+        #
+        optdef = klass.new("-i, --indent[=N]: indent width")
+        ok {optdef.usage(15)} == "-i, --indent[=N]: indent width"
+        ok {optdef.usage()}   == "-i, --indent[=N]    : indent width"
+        optdef = klass.new("-i[N]: indent width")
+        ok {optdef.usage()}   == "-i[N]               : indent width"
+        optdef = klass.new("--indent[=N]: indent width")
+        ok {optdef.usage()}   == "--indent[=N]        : indent width"
+      end
+
+    end
+
   end
 
 
@@ -446,6 +476,61 @@ Oktest.scope do
           ok {args} == ["foo", "bar"]
         end
       end
+
+    end
+
+
+    topic '#usage()' do
+
+      spec "[!w9v9c] returns usage string of all options." do
+        parser = klass.new
+        parser.add("-h, --help        : show help")
+        parser.add("-V   #version     : show version")
+        parser.add("-a, --action=name : action name")
+        parser.add("-i, --indent[=N]  : indent width (default N=2)")
+        #
+        expected = <<'END'
+-h, --help          : show help
+-V                  : show version
+-a, --action=name   : action name
+-i, --indent[=N]    : indent width (default N=2)
+END
+        ok {parser.usage()} == expected
+        #
+        expected = <<'END'
+-h, --help      : show help
+-V              : show version
+-a, --action=name: action name
+-i, --indent[=N]: indent width (default N=2)
+END
+        ok {parser.usage(16)} == expected
+      end
+
+      spec "[!i0uvr] adds indent when specified." do
+        parser = klass.new
+        parser.add("-h, --help        : show help")
+        parser.add("--quiet           : be quiet")
+        #
+        expected = <<'END'
+  -h, --help          : show help
+  --quiet             : be quiet
+END
+        ok {parser.usage(nil, '  ')} == expected
+      end
+
+      spec "[!lbjai] skips options when desc is empty." do
+        parser = klass.new
+        parser.add("-h, --help        : show help")
+        parser.add("-D, --debug[=N]   : ")
+        parser.add("--quiet           : be quiet")
+        #
+        expected = <<'END'
+-h, --help          : show help
+--quiet             : be quiet
+END
+        ok {parser.usage()} == expected
+      end
+
 
     end
 
