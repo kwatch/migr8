@@ -11,6 +11,63 @@
 
 module Skeema
 
+  RELEASE = "$Release: 0.0.0 $".split(' ')[1]
+
+
+  class Application
+
+    def run(args)
+      parser = new_cmdopt_parser()
+      options = parser.parse(args)   # may raise CommandOptionError
+      #; [!ktlay] prints help message and exit when '-h' or '--help' specified.
+      if options['help']
+        $stdout << self.usage(parser)
+        return 0
+      end
+      #; [!n0ubh] prints version string and exit when '-v' or '--version' specified.
+      if options['version']
+        $stdout << RELEASE << "\n"
+        return 0
+      end
+      #; [!saisg] returns 0 as status code when succeeded.
+      return 0
+    end
+
+    def usage(parser)
+      script = File.basename($0)
+      s = "Usage: #{script} [common-options] action [options] [...]\n"
+      s << parser.usage(20, '  ')
+      return s
+    end
+
+    def self.main(args=nil)
+      #; [!cy0yo] uses ARGV when args is not passed.
+      args = ARGV if args.nil?
+      app = self.new
+      begin
+        status = app.run(args)
+      #; [!maomq] command-option error is cached and not raised.
+      rescue Util::CommandOptionError => ex
+        script = File.basename($0)
+        $stderr << "#{script}: #{ex.message}\n"
+        status = 1
+      end
+      #; [!t0udo] returns status code (0: ok, 1: error).
+      return status
+    end
+
+    private
+
+    def new_cmdopt_parser
+      parser = Util::CommandOptionParser.new
+      parser.add("-h, --help:      show help")
+      parser.add("-v, --version:   show version")
+      parser.add("-D, --debug:")
+      return parser
+    end
+
+  end
+
 
   module Util
 
