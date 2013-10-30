@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
 ###
@@ -239,4 +240,10 @@ module Skeema
   end
 
 
+end
+
+
+if __FILE__ == $0
+  status = Skeema::Application.main()
+  exit(status)
 end
