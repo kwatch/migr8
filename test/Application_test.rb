@@ -73,12 +73,23 @@ Oktest.scope do
             ok {args} == ["foo"]
           end
           expected = <<END
-Usage: #{File.basename($0)} [common-options] action [options] [...]
+Usage: #{File.basename($0)} [global-options] [action [options] [...]]
   -h, --help          : show help
   -v, --version       : show version
 
-Actions:
+Actions (default: status):
+  navi                : !!RUN THIS ACTION AT FIRST!!
   help [action]       : show help message of action, or list action names
+  init                : create necessary files and a table
+  hist                : list history of versions
+  new                 : create new migration file and open it by $SKEEMA_EDITOR
+  edit [version]      : open migration file by $SKEEMA_EDITOR
+  status              : show status
+  up                  : apply a next migration
+  down                : unapply current migration
+  redo                : do migration down, and up it again
+  apply version ...   : apply specified migrations
+  unapply version ... : unapply specified migrations
 END
           ok {sout} == expected
           ok {serr} == ""
