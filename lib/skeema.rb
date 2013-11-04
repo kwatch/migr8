@@ -46,8 +46,9 @@ module Skeema
     attr_accessor :applied_at
 
     def initialize(version=nil, author=nil, desc=nil)
-      @version = version || Repository.new_version()
-      @author  = author || Etc.getlogin()
+      #; [!y4dy3] takes version, author, and desc arguments.
+      @version = version
+      @author  = author
       @desc    = desc
       @vars    = {}
       @up      = ''
@@ -55,92 +56,48 @@ module Skeema
     end
 
     def applied?
+      #; [!ebzct] returns false when @applied_at is nil, else true.
       return ! @applied_at.nil?
     end
 
     def up_statement
+      #; [!cfp34] returns nil when 'up' is not set.
       return @up unless @up
-      return self.class.expand_str(@up, @vars)
+      #; [!6gaxb] returns 'up' string expanding vars in it.
+      return Util::Expander.expand_str(@up, @vars)
     end
 
     def down_statement
+      #; [!e45s1] returns nil when 'down' is not set.
       return @down unless @down
-      return self.class.expand_str(@down, @vars)
+      #; [!0q3nq] returns 'down' string expanding vars in it.
+      return Util::Expander.expand_str(@down, @vars)
     end
 
-    def applied_at_or(str)
-      return str unless @applied_at
+    def applied_at_or(default)
+      #; [!zazux] returns default arugment when not applied.
+      return default unless applied?
+      #; [!fxb4y] returns @applied_at with replacing separator by 'T'.
       return @applied_at.split(/\./)[0].sub(/ /, 'T')
     end
 
     def filepath
+      #; [!l9t5k] returns nil when version is not set.
+      return nil unless @version
+      #; [!p0d9q] returns filepath of migration file.
       return Repository.new(nil).migration_filepath(@version)
     end
 
     def self.load_from(filepath)
+      #; [!fbea5] loads data from file and returns migration object.
       data = File.open(filepath) {|f| YAML.load(f) }
       mig = self.new(data['version'], data['author'], data['desc'])
-      mig.vars = self.expand_vars(data['vars'])
+      #; [!sv21s] expands values of 'vars'.
+      mig.vars = Util::Expander.expand_vars(data['vars'])
+      #; [!32ns3] not expand both 'up' and 'down'.
       mig.up   = data['up']
       mig.down = data['down']
       return mig
-    end
-
-    def self.expand_vars(vars)
-      dict = {}
-      vars.each do |d|
-        d.each do |k, v|
-          dict[k] = self.expand_value(v, dict)
-        end
-      end
-      return dict
-    end
-
-    def self.expand_value(value, dict)
-      case value
-      when String
-        return self.expand_str(value, dict)
-      when Array
-        arr = value
-        i = 0
-        while i < arr.length
-          arr[i] = self.expand_value(arr[i], dict)
-        end
-        return arr
-      when Hash
-        hash = value
-        hash.keys.each do |k|
-          hash[k] = self.expand_value(hash[k], dict)
-        end
-        return hash
-      else
-        return value
-      end
-    end
-
-    def self.expand_str(str, dict)
-      raise unless dict.is_a?(Hash)
-      if str =~ /\A\$\{(.*?)\}\z/
-        var = $1
-        if var.empty?
-          return ''
-        elsif dict.key?(var)
-          return dict[var]
-        else
-          raise UnknownVariableError.new("${#{var}}: no such variable.")
-        end
-      else
-        return str.gsub(/\$\{(.*?)\}/) {
-          var = $1
-          if var.empty?
-            ''
-          elsif dict.key?(var)
-            dict[var].to_s
-          else
-            raise UnknownVariableError.new("${#{var}}: no such variable.")
-          end
-        }
-      end
     end
 
   end
@@ -1460,6 +1417,73 @@ _END_
       end
 
     end#class
+
+
+    module Expander
+
+      class UnknownVariableError < StandardError
+      end
+
+      module_function
+
+      def expand_vars(vars)
+        dict = {}
+        vars.each do |d|
+          d.each do |k, v|
+            dict[k] = expand_value(v, dict)
+          end
+        end
+        return dict
+      end
+
+      def expand_value(value, dict)
+        case value
+        when String
+          return expand_str(value, dict)
+        when Array
+          arr = value
+          i = 0
+          while i < arr.length
+            arr[i] = expand_value(arr[i], dict)
+          end
+          return arr
+        when Hash
+          hash = value
+          hash.keys.each do |k|
+            hash[k] = expand_value(hash[k], dict)
+          end
+          return hash
+        else
+          return value
+        end
+      end
+
+      def expand_str(str, dict)
+        raise unless dict.is_a?(Hash)
+        if str =~ /\A\$\{(.*?)\}\z/
+          var = $1
+          if var.empty?
+            return ''
+          elsif dict.key?(var)
+            return dict[var]
+          else
+            raise UnknownVariableError.new("${#{var}}: no such variable.")
+          end
+        else
+          return str.gsub(/\$\{(.*?)\}/) {
+            var = $1
+            if var.empty?
+              ''
+            elsif dict.key?(var)
+              dict[var].to_s
+            else
+              raise UnknownVariableError.new("${#{var}}: no such variable.")
+            end
+          }
+        end
+      end
+
+    end
 
 
   end
