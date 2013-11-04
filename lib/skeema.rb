@@ -528,7 +528,9 @@ _END_
       end
 
       def run_sql(sql, opts={})
-        super("SET client_min_messages TO WARNING;\n" + sql, opts)
+        preamble = "SET client_min_messages TO WARNING;\n"+
+                   "\\set ON_ERROR_STOP ON\n"
+        super(preamble+sql, opts)
       end
 
       def create_history_table()
