@@ -438,7 +438,8 @@ _END_
         puts "$ #{@command} -f #{tmpfile}"  if verbose
         ok = system("#{@command} -f #{tmpfile}")
         ok  or
-          raise SQLExecutionError.new
+          raise SQLExecutionError.new("Failed to run sql ('#{tmpfile}').")
+        File.unlink(tmpfile)
       end
 
       def create_history_table()
