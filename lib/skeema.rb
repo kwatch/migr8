@@ -1222,6 +1222,7 @@ _END_
         status = 1
       #;
       rescue SkeemaError => ex
+        script = File.basename($0)
         $stderr << "ERROR[#{script}] #{ex}\n"
         status = 1
       end
