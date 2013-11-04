@@ -76,6 +76,9 @@ Oktest.scope do
 Usage: #{File.basename($0)} [common-options] action [options] [...]
   -h, --help          : show help
   -v, --version       : show version
+
+Actions:
+  help [action]       : show help message of action, or list action names
 END
           ok {sout} == expected
           ok {serr} == ""
@@ -100,14 +103,15 @@ END
 
       spec "[!saisg] returns 0 as status code when succeeded." do |app|
         [
-          ["foo", "bar"]
+          #["foo", "bar"],
+          [],
         ].each do |args|
           sout, serr = Dummy.new.stdouterr do
             status = app.run(args)
             ok {status} == 0
-            ok {args} == ["foo", "bar"]
+            ok {args} == [] # ["foo", "bar"]
           end
-          ok {sout} == ""
+          ok {sout}.NOT == ""
           ok {serr} == ""
         end
       end

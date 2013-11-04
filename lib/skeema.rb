@@ -9,10 +9,1205 @@
 ### $Copyright: (c) kuwata-lab.com all rights reserverd $
 ###
 
+require 'yaml'
+require 'etc'
+
 
 module Skeema
 
   RELEASE = "$Release: 0.0.0 $".split(' ')[1]
+
+
+  class SkeemaError < StandardError
+  end
+
+  class CommandSetupError < SkeemaError
+  end
+
+  class SQLExecutionError < SkeemaError
+  end
+
+  class HistoryFileError < SkeemaError
+  end
+
+  class MigrationFileError < SkeemaError
+  end
+
+  class UpgradeFailedError < SkeemaError
+  end
+
+  class DowngradeFailedError < SkeemaError
+  end
+
+
+  class Migration
+
+    attr_accessor :version, :author, :desc, :vars, :up, :down
+    attr_accessor :applied_at
+
+    def initialize(version=nil, author=nil, desc=nil)
+      @version = version || Repository.new_version()
+      @author  = author || Etc.getlogin()
+      @desc    = desc
+      @vars    = {}
+      @up      = ''
+      @down    = ''
+    end
+
+    def applied?
+      return ! @applied_at.nil?
+    end
+
+    def up_statement
+      return @up unless @up
+      return self.class.expand_str(@up, @vars)
+    end
+
+    def down_statement
+      return @down unless @down
+      return self.class.expand_str(@down, @vars)
+    end
+
+    def applied_at_or(str)
+      return str unless @applied_at
+      return @applied_at.split(/\./)[0].sub(/ /, 'T')
+    end
+
+    def filepath
+      return Repository.new(nil).migration_filepath(@version)
+    end
+
+    def self.load_from(filepath)
+      data = File.open(filepath) {|f| YAML.load(f) }
+      mig = self.new(data['version'], data['author'], data['desc'])
+      mig.vars = self.expand_vars(data['vars'])
+      mig.up   = data['up']
+      mig.down = data['down']
+      return mig
+    end
+
+    def self.expand_vars(vars)
+      dict = {}
+      vars.each do |d|
+        d.each do |k, v|
+          dict[k] = self.expand_value(v, dict)
+        end
+      end
+      return dict
+    end
+
+    def self.expand_value(value, dict)
+      case value
+      when String
+        return self.expand_str(value, dict)
+      when Array
+        arr = value
+        i = 0
+        while i < arr.length
+          arr[i] = self.expand_value(arr[i], dict)
+        end
+        return arr
+      when Hash
+        hash = value
+        hash.keys.each do |k|
+          hash[k] = self.expand_value(hash[k], dict)
+        end
+        return hash
+      else
+        return value
+      end
+    end
+
+    def self.expand_str(str, dict)
+      raise unless dict.is_a?(Hash)
+      if str =~ /\A\$\{(.*?)\}\z/
+        var = $1
+        if var.empty?
+          return ''
+        elsif dict.key?(var)
+          return dict[var]
+        else
+          raise UnknownVariableError.new("${#{var}}: no such variable.")
+        end
+      else
+        return str.gsub(/\$\{(.*?)\}/) {
+          var = $1
+          if var.empty?
+            ''
+          elsif dict.key?(var)
+            dict[var].to_s
+          else
+            raise UnknownVariableError.new("${#{var}}: no such variable.")
+          end
+        }
+      end
+    end
+
+  end
+
+
+  class Repository
+
+    HISTORY_FILEPATH  = 'skeema/history.txt'
+    HISTORY_TABLE     = 'skeema_history'
+    MIGRATION_DIRPATH = 'skeema/migrations/'
+
+    attr_reader :dbms
+
+    def initialize(dbms=nil)
+      @dbms = dbms
+    end
+
+    def history_filepath()
+      return HISTORY_FILEPATH
+    end
+
+    def migration_filepath(version)
+      return "#{MIGRATION_DIRPATH}#{version}.yaml"
+    end
+
+    def parse_history_file()
+      fpath = history_filepath()
+      tuples = []
+      File.open(fpath) do |f|
+        i = 0
+        f.each do |line|
+          i += 1
+          line.strip!
+          next if line =~ /\A\#/
+          next if line.empty?
+          line =~ /\A([-\w]+)[ \t]*\# \[(.*)\][ \t]*(.*)\z/  or
+            raise HistoryFileError.new("File '#{fpath}', line #{i}: invalid format.\n    #{line}")
+          version, author, desc = $1, $2, $3
+          tuples << [version, author, desc]
+        end
+      end
+      return tuples
+    end
+
+    def migrations_in_history_file(applied_migrations_dict=nil)
+      dict = applied_migrations_dict  # {version=>applied_at}
+      applied = nil
+      tuples = parse_history_file()
+      migrations = tuples.collect {|version, author, desc|
+        mig = load_migration(version)
+        mig.version == version  or
+          $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}"
+        mig.author == author  or
+          $stderr << "# WARNING: #{version}: author in history file is not match to #{fpath}"
+        mig.desc == desc  or
+          $stderr << "# WARNING: #{version}: description in history file is not match to #{fpath}"
+        mig.applied_at = applied.applied_at if dict && (applied = dict.delete(mig.version))
+        mig
+      }
+      return migrations
+    end
+
+    def migrations_in_history_table()
+      return @dbms.get_migrations()
+    end
+
+    def get_migrations()
+      ## applied migrations
+      mig_applied = {}   # {version=>migration}
+      migrations_in_history_table().each {|mig| mig_applied[mig.version] = mig }
+      ## migrations in history file
+      mig_hist = migrations_in_history_file()
+      mig_hist.each do |migration|
+        mig = mig_applied.delete(migration.version)
+        migration.applied_at = mig.applied_at if mig
+      end
+      ##
+      return mig_hist, mig_applied
+    end
+
+    def load_migration(version)
+      fpath = migration_filepath(version)
+      return nil unless File.file?(fpath)
+      return Migration.load_from(fpath)
+    end
+
+    def apply_migrations(migs)
+      @dbms.apply_migrations(migs)
+    end
+
+    def unapply_migrations(migs)
+      @dbms.unapply_migrations(migs)
+    end
+
+    def upgrade(n)
+      ## applied migrations
+      migs_dict = {}  # {version=>migration}
+      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
+      ## migrations in history file
+      migs_hist = migrations_in_history_file()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
+      ## error when unapplied older version exists
+      if curr
+        j = migs_hist.index {|mig| ! migs_dict.key?(mig.version) }
+        raise UpgradeFailedError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
+      end
+      ## unapplied migrations
+      migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
+      ## apply n migrations
+      migs_to_apply = n.nil? ? migs_unapplied : migs_unapplied[0...n]
+      if migs_to_apply.empty?
+        puts "## (nothing to apply)"
+      else
+        #migs_to_apply.each do |mig|
+        #  puts "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  apply_migration(mig)
+        #end
+        apply_migrations(migs_to_apply)
+      end
+    end
+
+    def downgrade(n)
+      ## applied migrations
+      migs_dict = {}  # {version=>migration}
+      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
+      ## migrations in history file
+      migs_hist = migrations_in_history_file()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
+      ## error when unapplied older version exists in target migrations
+      migs_applied = curr ? migs_hist[0..curr] : []
+      migs_applied.all? {|mig| migs_dict.key?(mig.version) }  or
+        raise DowngradeFailedError.new("version '#{migs_hist[j].version}' is not applied yet.")
+      ## unapply n migrations
+      migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
+                                                     : migs_applied
+      if migs_to_unapply.empty?
+        puts "## (nothing to unapply)"
+      else
+        #migs_to_unapply.reverse_each do |mig|
+        #  puts "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  unapply_migration(mig)
+        #end
+        unapply_migrations(migs_to_unapply.reverse())
+      end
+    end
+
+    def new_version
+      while true
+        version = _new_version()
+        break unless File.file?(migration_filepath(version))
+      end
+      return version
+    end
+
+    def _new_version
+      version = ''
+      s = VERSION_CHARS
+      r = 0..(s.length-1)
+      version << s[rand(r)] << s[rand(r)] << s[rand(r)] << s[rand(r)]
+      d = VERSION_DIGITS
+      r = 0..(d.length-1)
+      version << d[rand(r)] << d[rand(r)] << d[rand(r)] << d[rand(r)]
+      return version
+    end
+
+    VERSION_CHARS  = ('a'..'z').to_a - ['l']
+    VERSION_DIGITS = ('0'..'9').to_a - ['1']
+
+    def init()
+      verbose = true
+      ## create directory
+      path = migration_filepath('_dummy_')
+      dirs = []
+      while ! (path = File.dirname(path)).empty? && path != '.' && path != '/'
+        dirs << path
+      end
+      dirs.reverse_each do |dir|
+        if ! File.directory?(dir)
+          puts "$ mkdir #{dir}" if verbose
+          Dir.mkdir(dir)
+        end
+      end
+      ## create history file
+      fpath = history_filepath()
+      if ! File.file?(fpath)
+        magic = '# -*- coding: utf-8 -*-'
+        puts "$ echo '#{magic}' > #{fpath}" if verbose
+        File.open(fpath, 'w') {|f| f.write(magic+"\n") }
+      end
+      ## create history table
+      @dbms.create_history_table()
+    end
+
+    def init?
+      return false unless File.file?(history_filepath())
+      return false unless File.directory?(File.dirname(migration_filepath('_')))
+      return false unless @dbms.history_table_exist?
+      return true
+    end
+
+    def history_file_empty?
+      fpath = history_filepath()
+      return true unless File.file?(fpath)
+      exist_p = File.open(fpath, 'rb') {|f|
+        f.any? {|line| line =~ /\A\s*\w+/ }
+      }
+      return ! exist_p
+    end
+
+    def history_table_empty?
+      return @dbms.history_table_empty?
+    end
+
+    def create_migration(desc, author=nil, opts={})
+      version = nil
+      mig = Migration.new(version, author, desc)
+      content = render_migration_file(opts)
+      File.open(mig.filepath, 'wb') {|f| f.write(content) }
+      File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)+"\n") }
+      return mig
+    end
+
+    protected
+
+    def to_line(mig)  # :nodoc:
+      return "%-10s # [%s] %s" % [mig.version, mig.author, mig.desc]
+    end
+
+    def render_migration_file(opts={})  # :nodoc:
+      plain_p = opts[:plain]
+      skeleton_for_up   = plain_p ? '' : @dbms.skeleton_for_up
+      skeleton_for_down = plain_p ? '' : @dbms.skeleton_for_down
+      s = <<_END_
+# -*- coding: utf-8 -*-
+
+version:     #{@version}
+desc:        #{@desc}
+author:      #{@author}
+vars:
+_END_
+      if dbms
+        s << <<_END_
+  - table:   table123
+  - column:  column123
+  - index:   ${table}_${column}_idx
+  - unique:  ${table}_${column}_unq
+_END_
+        s << <<_END_
+
+up: |
+#{skeleton_for_up}
+down: |
+#{skeleton_for_down}
+_END_
+      end
+      return s
+    end
+
+    public
+
+    def inspection(n=5)
+      mig_hist, mig_dict = get_migrations()
+      pos = mig_hist.length - n - 1
+      i = mig_hist.index {|mig| ! mig.applied? }  # index of oldest unapplied
+      j = mig_hist.rindex {|mig| mig.applied? }   # index of newest applied
+      start = i.nil? ? pos : [i - 1, pos].min
+      start = 0 if start < 0
+      if mig_hist.empty?
+        status = "no migrations"
+        recent = nil
+      elsif i.nil?
+        status = "all applied"
+        recent = mig_hist[start..-1]
+      elsif j.nil?
+        status = "nothing applied"
+        recent = mig_hist[0..-1]
+      elsif i < j
+        status = "YOU MUST APPLY #{mig_hist[i].version} AT FIRST!"
+        recent = mig_hist[start..-1]
+      else
+        count = mig_hist.length - i
+        status = "there are #{count} migrations to apply"
+        status = "there is #{count} migration to apply" if count == 1
+        recent = mig_hist[start..-1]
+      end
+      missing = mig_dict.empty? ? nil : mig_dict.values
+      return {:status=>status, :recent=>recent, :missing=>missing}
+    end
+
+  end
+
+
+  module DBMS
+
+    def self.detect_by_command(command)
+      return Base.detect_by_command(command)
+    end
+
+
+    class Base
+
+      attr_reader :command
+      attr_accessor :history_table
+      attr_accessor :sqltmpfile    # :nodoc:
+
+      def initialize(command=nil)
+        @command = command
+        @history_table = Repository::HISTORY_TABLE
+        @sqltmpfile = 'skeema/tmp.sql'
+      end
+
+      def execute_sql(sql, cmdopt=nil)
+        require 'open3' unless defined? Open3
+        output, error = Open3.popen3("#{@command} #{cmdopt}") do |sin, sout, serr|
+          sin.write(sql)
+          sin.close()   # important!
+          [sout.read(), serr.read()]
+        end
+        #if output && ! output.empty?
+        #  $stdout << output
+        #end
+        if error && ! error.empty?
+          $stderr << error
+          raise SQLExecutionError.new
+        end
+        return output
+      end
+
+      def run_sql(sql, opts={})
+        verbose = opts[:verbose]
+        tmpfile = sqltmpfile()
+        puts "$ cat <<_END_ > #{tmpfile}"   if verbose
+        puts sql                            if verbose
+        puts "_END_"                        if verbose
+        File.open(tmpfile, 'w') {|f| f.write(sql) }
+        puts "$ #{@command} -f #{tmpfile}"  if verbose
+        ok = system("#{@command} -f #{tmpfile}")
+        ok  or
+          raise SQLExecutionError.new
+      end
+
+      def create_history_table()
+        raise NotImplementedError.new("#{self.class.name}#create_history_table(): not implemented yet.")
+      end
+
+      def history_table_exist?
+        raise NotImplementedError.new("#{self.class.name}#history_table_exist?: not implemented yet.")
+      end
+
+      def history_table_empty?
+        return false if history_table_exist?
+        sql = "select exists( select * from #{table} );"  # 'f' when empty, else 't'
+        output = execute_sql(sql)
+        return output =~ /\bf(alse)?\b/
+      end
+
+      def get_migrations()
+        raise NotImplementedError.new("#{self.class.name}#get_migrations(): not implemented yet.")
+      end
+
+      def _get_migrations(cmdopt, separator)
+        sql = 'SELECT version, applied_at, author, description FROM skeema_history ORDER BY id'
+        output = execute_sql(sql, cmdopt)
+        migs = []
+        output.each_line do |line|
+          line.strip!
+          break if line.empty?
+          version, applied_at, author, desc = line.strip.split(separator, 4)
+          mig = Migration.new(version.strip, author.strip, desc.strip)
+          mig.applied_at = applied_at ? applied_at.split(/\./)[0] : nil
+          migs << mig
+        end
+        return migs
+      end
+
+      def applying_sql(mig)
+        raise NotImplementedError.new("#{self.class.name}#applying_sql(): not implemented yet.")
+      end
+
+      def unapplying_sql(mig)
+        raise NotImplementedError.new("#{self.class.name}#unapplying_sql(): not implemented yet.")
+      end
+
+      def apply_migrations(migs)
+        raise NotImplementedError.new("#{self.class.name}#apply_migrations(): not implemented yet.")
+      end
+
+      def unapply_migrations(migs)
+        raise NotImplementedError.new("#{self.class.name}#unapply_migrations(): not implemented yet.")
+      end
+
+      def q(str)
+        return str.gsub(/\'/, "''")
+      end
+
+      def skeleton_for_up()
+        raise NotImplementedError.new("#{self.class.name}#skeleton_for_up(): not implemented yet.")
+      end
+
+      def skeleton_for_down()
+        raise NotImplementedError.new("#{self.class.name}#skeleton_for_down(): not implemented yet.")
+      end
+
+      ##
+
+      @subclasses = []
+
+      def self.inherited(klass)
+        @subclasses << klass
+      end
+
+      def self.detect_by_command(command)
+        klass = @subclasses.find {|klass| command =~ klass.const_get(:PATTERN) }
+        return klass ? klass.new(command) : nil
+      end
+
+    end
+
+
+    class PostgreSQL < Base
+      SYMBOL  = 'postgres'
+      PATTERN = /\bpsql\b/
+
+      def execute_sql(sql, cmdopt=nil)
+        return super("SET client_min_messages TO WARNING;\n" + sql, cmdopt)
+      end
+
+      def run_sql(sql, opts={})
+        super("SET client_min_messages TO WARNING;\n" + sql, opts)
+      end
+
+      def create_history_table()
+        return false if history_table_exist?
+        sql = <<_END_
+CREATE TABLE #{table} (
+  id           SERIAL        PRIMARY KEY,
+  version      VARCHAR(40)   NOT NULL UNIQUE,
+  author       VARCHAR(40)   NOT NULL,
+  description  VARCHAR(255)  NOT NULL,
+  statement    TEXT          NOT NULL,
+  applied_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+_END_
+        run_sql(sql, :verbose=>true)
+        return true
+      end
+
+      def history_table_exist?
+        table = @history_table
+        output = execute_sql("\\dt #{table}")
+        return output.include?(table)
+      end
+
+      def get_migrations()
+        migrations = _get_migrations("-qt", / \| /)
+        return migrations
+      end
+
+      def applying_sql(mig)
+        stmt = mig.up_statement
+        sql = <<_END_
+---------------------------------------- applying #{mig.version} ----------
+\\echo '## applying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
+-----
+#{stmt};
+-----
+INSERT INTO #{@history_table} (version, author, description, statement)
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}');
+_END_
+        return sql
+      end
+
+      def unapplying_sql(mig)
+        stmt = mig.down_statement
+        sql = <<_END_
+---------------------------------------- unapplying #{mig.version} ----------
+\\echo '## unapplying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
+-----
+#{stmt};
+-----
+DELETE FROM #{@history_table} where version = '#{mig.version}';
+_END_
+        return sql
+      end
+
+      def apply_migrations(migs)
+        __apply(migs) {|mig| applying_sql(mig) }
+      end
+
+      def unapply_migrations(migs)
+        __apply(migs) {|mig| unapplying_sql(mig) }
+      end
+
+      def __apply(migs)  # :nodoc:
+        sql = ""
+        sql << "BEGIN; /** start transaction **/\n\n"
+        sql << migs.collect {|mig| yield mig }.join("\n")
+        sql << "\nEND; /** end transaction **/\n"
+        run_sql(sql, :verbose=>false)
+      end
+      private :__apply
+
+      def q(str)
+        return str.gsub(/\'/, "''")
+      end
+
+      def skeleton_for_up()
+        return <<_END_
+  ---
+  --- create table or index
+  ---
+  create table ${table} (
+    id          serial         primary key,
+    version     integer        not null default 0,
+    name        varchar(255)   not null unique,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${index} on ${table}(${column});
+  ---
+  --- add column or unique constraint
+  ---
+  alter table ${table} add column ${column} varchar(255) not null unique;
+  alter table ${table} add constraint ${unique} unique(${column});
+  ---
+  --- change column
+  ---
+  alter table ${table} rename column ${column} to ${new_column};
+  alter table ${table} alter column ${column} type varchar(255);
+  alter table ${table} alter column ${column} set not null;
+  alter table ${table} alter column ${column} set default current_date;
+_END_
+      end
+
+      def skeleton_for_down()
+        return <<_END_
+  ---
+  --- drop table or index
+  ---
+  drop table ${table};
+  drop index ${index};
+  ---
+  --- drop column or unique constraint
+  ---
+  alter table ${table} drop column ${column};
+  alter table ${table} drop constraint ${unique};
+  ---
+  --- revert column
+  ---
+  alter table ${table} rename column ${new_column} to ${column};
+  alter table ${table} alter column ${column} type varchar(255);
+  alter table ${table} alter column ${column} drop not null;
+  alter table ${table} alter column ${column} drop default;
+_END_
+      end
+
+    end
+
+
+  end
+
+
+  module Actions
+
+
+    class Action
+      NAME = nil
+      DESC = nil
+      OPTS = []
+      ARGS = nil
+
+      def parser
+        name = self.class.const_get(:NAME)
+        opts = self.class.const_get(:OPTS)
+        parser = Util::CommandOptionParser.new("#{name}:")
+        opts.each {|cmdopt| parser.add(cmdopt) }
+        return parser
+      end
+
+      def parse(args)
+        return parser().parse(args)
+      end
+
+      def usage
+        klass = self.class
+        name = klass.const_get(:NAME)
+        args = klass.const_get(:ARGS)
+        desc = klass.const_get(:DESC)
+        s = args ? "#{name} #{args}" : "#{name}"
+        head = "#{File.basename($0)} #{s}  : #{desc}\n"
+        return head+parser().usage(20, '  ')
+      end
+
+      def short_usage()
+        klass = self.class
+        name = klass.const_get(:NAME)
+        args = klass.const_get(:ARGS)
+        desc = klass.const_get(:DESC)
+        s = args ? "#{name} #{args}" : "#{name}"
+        return "  %-20s: %s\n" % [s, desc]
+      end
+
+      def run(options, args)
+        raise NotImplementedError.new("#{self.class.name}#run(): not implemented yet.")
+      end
+
+      def cmdopterr(*args)
+        return Util::CommandOptionError.new(*args)
+      end
+
+      def get_command
+        cmd = ENV['SKEEMA_COMMAND'] || ''
+        ! cmd.empty?  or
+          raise CommandSetupError.new("Please set $SKEEMA_COMMAND at first.\n" +
+                                      "  Example:\n" +
+                                      "      $ export SKEEMA_COMMAND='psql -q -U user dbname'    # on MacOSX, Unix\n" +
+                                      "      $ set SKEEMA_COMMAND='psql -q -U user dbname'       # on Windows\n")
+        return cmd
+      end
+
+      def repository(dbms=nil)
+        return @repository || begin
+                                cmd = get_command()
+                                dbms = DBMS.detect_by_command(cmd)
+                                Repository.new(dbms)
+                              end
+      end
+
+      @subclasses = []
+
+      def self.inherited(subclass)
+        @subclasses << subclass
+      end
+
+      def self.subclasses
+        @subclasses
+      end
+
+      def self.find_by_name(name)
+        return @subclasses.find {|cls| cls.const_get(:NAME) == name }
+      end
+
+      protected
+
+      def _recommend_to_set_SKEEMA_EDITOR(action)  # :nodoc:
+        msg = <<_END_
+## ERROR: Failed to #{action} migration file.
+## Plase set $SKEEMA_EDITOR in order to open migration file automatically.
+## Example:
+##   $ export SKEEMA_EDITOR='vi'                   # for vi
+##   $ export SKEEMA_EDITOR='emacsclient'          # for emacs
+##   $ export SKEEMA_EDITOR='open -a TextMate'     # for MacOSX
+_END_
+        $stderr << msg
+      end
+
+    end
+
+
+    class NaviAction < Action
+      NAME = "navi"
+      DESC = "!!RUN THIS ACTION AT FIRST!!"
+      OPTS = []
+      ARGS = nil
+
+      attr_accessor :forced
+
+      def run(options, args)
+        msg = navi_for_newbie(File.basename($0))
+        $stderr << msg
+      end
+
+      private
+
+      def navi_for_newbie(script)
+        msg = ""
+        repo = repository()
+        #
+        command = ENV['SKEEMA_COMMAND'].to_s.strip
+        command = nil if command.empty?
+        editor  = ENV['SKEEMA_EDITOR'].to_s.strip
+        editor  = nil if editor.empty?
+        if command.nil? || editor.nil?
+          msg << "##\n"
+          msg << "## Step 1/3: Set both $SKEEMA_COMMAND and $SKEEMA_EDITOR at first.\n"
+          if command.nil?
+            msg << "##\n"
+            msg << "## Example ($SKEEMA_COMMAND):\n"
+            msg << "##   $ export SKEEMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
+          end
+          if editor.nil?
+            msg << "##\n"
+            msg << "## Example ($SKEEMA_EDITOR):\n"
+            msg << "##   $ export SKEEMA_EDITOR='vi'                   # for vi\n"
+            msg << "##   $ export SKEEMA_EDITOR='emacsclient'          # for emacs\n"
+            msg << "##   $ export SKEEMA_EDITOR='open -a TextMate'     # for MacOSX\n"
+          end
+          msg << "##\n"
+          msg << "## (Run '#{script} navi' again after above settings.)\n"
+          msg << "##\n"
+        #
+        elsif ! repo.init?
+          msg << "##\n"
+          msg << "## Step 2/3: Run '#{script} init' to create files and a table.\n"
+          msg << "## (You can call it many times; it doesn't remove existing file nor table.)\n"
+          msg << "##\n"
+          msg << "## Example:\n"
+          msg << "##   $ #{script} init      # create directories and files (= '#{File.dirname(repo.history_filepath)}/*'),\n"
+          msg << "##                         # and create '#{Repository::HISTORY_TABLE}' table in DB.\n"
+          msg << "##\n"
+          msg << "## (Run '#{script} navi' again after above command.)\n"
+          msg << "##\n"
+        #
+        else
+          msg << "##\n"
+          msg << "## Step 3/3: Now you can create a new migration and apply it to DB.\n"
+          msg << "##\n"
+          msg << "## Example:\n"
+          msg << "##   $ #{script} help\n"
+          msg << "##   $ #{script} new -m \"create 'foobar' table\"   # create a migration\n"
+          msg << "##   $ #{script} hist      # not applied yet.\n"
+          msg << "##   $ #{script} up        # apply a migration (= change DB schema)\n"
+          msg << "##   $ #{script} hist      # applied successfully!\n"
+          msg << "##\n"
+          msg << "## Try '#{script} help [command]' for details of each command.\n"
+          msg << "##\n"
+          msg << "## Good luck!\n"
+          msg << "##\n"
+        end
+        #
+        return msg
+      end
+
+    end
+
+
+    class HelpAction < Action
+      NAME = "help"
+      DESC = "show help message of action, or list action names"
+      OPTS = []
+      ARGS = '[action]'
+
+      def run(options, args)
+        if args.length >= 2
+          raise cmdopterr("help: too much argument")
+        elsif args.length == 1
+          action_name = args[0]
+          action_class = Action.find_by_name(action_name)  or
+            raise cmdopterr("#{action_name}: unknown action.")
+          script = File.basename($0)
+          puts action_class.new.usage()
+        else
+          usage = Skeema::Application.new.usage()
+          puts usage
+        end
+        nil
+      end
+
+    end
+
+
+    class InitAction < Action
+      NAME = "init"
+      DESC = "create necessary files and a table"
+      OPTS = []
+      ARGS = nil
+
+      def run(options, args)
+        repository().init()
+      end
+
+    end
+
+
+    class HistAction < Action
+      NAME = "hist"
+      DESC = "list history of versions"
+      OPTS = []
+      ARGS = nil
+
+      def run(options, args)
+        mig_hist, mig_dict = repository().get_migrations()
+        str = '(not_applied_yet)  '
+        mig_hist.each do |mig|
+          puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
+        end
+        if ! mig_dict.empty?
+          puts "## Applied to DB but not exist in history file:"
+          mig_dict.each do |mig|
+            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
+          end
+        end
+      end
+
+    end
+
+
+    class NewAction < Action
+      NAME = "new"
+      DESC = "create new migration file and open it by $SKEEMA_EDITOR"
+      OPTS = [
+        "-m text  : description message (mandatory)",
+        "-u user  : author name (default: current user)",
+        "-p       : plain skeleton",
+        "-e editor: editr command (such as 'emacsclient', 'open', ...)",
+      ]
+      ARGS = nil
+
+      def run(options, args)
+        editor = options['e'] || ENV['SKEEMA_EDITOR']
+        if ! editor || editor.empty?
+          _recommend_to_set_SKEEMA_EDITOR('create')
+          raise cmdopterr("#{NAME}: failed to create migration file.")
+        end
+        desc = options['m']  or
+          raise cmdopterr("#{NAME}: '-m text' option required.")
+        author = options['u']
+        plain_p = !! options['p']
+        #
+        mig = repository().create_migration(desc, author, :plain=>plain_p)
+        puts "## New migration file:"
+        puts mig.filepath
+        puts "$ #{editor} #{mig.filepath}"
+        system("#{editor} #{mig.filepath}")
+      end
+
+    end
+
+
+    class EditAction < Action
+      NAME = "edit"
+      DESC = "open migration file by $SKEEMA_EDITOR"
+      OPTS = [
+        "-r        :  edit N-th file from latest version",
+        "-e editor : editr command (such as 'emacsclient', 'open', ...)",
+      ]
+      ARGS = "[version]"
+
+      def run(options, args)
+        editor = options['e'] || ENV['SKEEMA_EDITOR']
+        if ! editor || editor.empty?
+          _recommend_to_set_SKEEMA_EDITOR('edit')
+          raise cmdopterr("#{NAME}: failed to create migration file.")
+        end
+        version = num = nil
+        if options['r']
+          options['r'] =~ /\A\d+\z/  or
+            raise cmdopterr("#{NAME} -r #{options['r']}: integer expected.")
+          num = options['r'].to_i
+        else
+          if args.length == 0
+            #raise cmdopterr("#{NAME}: '-r N' option or version required.")
+            num = 1
+          elsif args.length > 1
+            raise cmdopterr("#{NAME}: too much arguments.")
+          elsif args.length == 1
+            version = args.first
+          else
+            raise "** unreachable"
+          end
+        end
+        #
+        repo = repository()
+        if num
+          migs = repo.migrations_in_history_file()
+          mig = migs[-num]  or
+            raise cmdopterr("#{NAME} -n #{num}: migration file not found.")
+        else
+          mig = repo.load_migration(version)  or
+            raise cmdopterr("#{NAME}: #{version}: version not found.")
+        end
+        puts "# #{editor} #{repo.migration_filepath(mig.version)}"
+        system("#{editor} #{repo.migration_filepath(mig.version)}")
+      end
+
+    end
+
+
+    class StatusAction < Action
+      NAME = "status"
+      DESC = "show status"
+      OPTS = ["-n N :  show N histories (default: 5)"]
+      ARGS = nil
+
+      def run(options, args)
+        if options['n']
+          options['n'] =~ /\A\d+\z/  or
+            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
+          n = options['n'].to_i
+        else
+          n = 5
+        end
+        #
+        ret = repository().inspection(n)
+        puts "## Status: #{ret[:status]}"
+        str = '(not_applied_yet)  '
+        if ret[:recent]
+          puts "## Recent history:"
+          ret[:recent].each do |mig|
+            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
+          end
+        end
+        if ret[:missing]
+          puts "## === Applied to DB, but migration file not found ==="
+          ret[:missing].each do |mig|
+            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
+          end
+        end
+      end
+
+    end
+
+
+    class UpAction < Action
+      NAME = "up"
+      DESC = "apply a next migration"
+      OPTS = [
+        "-n N : apply N migrations",
+        "-a   : apply all migrations",
+      ]
+      ARGS = nil
+
+      def run(options, args)
+        if options['n']
+          options['n'] =~ /\A\d+\z/  or
+            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
+          n = options['n'].to_i
+        elsif options['a']
+          n = nil
+        else
+          n = 1
+        end
+        #
+        repository().upgrade(n)
+      end
+
+    end
+
+
+    class DownAction < Action
+      NAME = "down"
+      DESC = "unapply current migration"
+      OPTS = [
+        "-n N  : unapply N migrations",
+        "--ALL : unapply all migrations",
+      ]
+      ARGS = nil
+
+      def run(options, args)
+        n = 1
+        if options['n']
+          options['n'] =~ /\A\d+\z/  or
+            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
+          n = options['n'].to_i
+        elsif options['ALL']
+          n = nil
+        end
+        #
+        repository().downgrade(n)
+      end
+
+    end
+
+
+    module VersionsHelper   # :nodoc:
+
+      private
+
+      def _versions2migrations(versions, repo, name, should_applied)
+        mig_hist, _ = repo.get_migrations()
+        mig_dict = {}
+        mig_hist.each {|mig| mig_dict[mig.version] = mig }
+        ver_chk = {}
+        versions.each do |ver|
+          repo.load_migration(ver)  or
+            raise cmdopterr("#{name}: #{ver}: migration file not found.")
+          mig = mig_dict[ver]  or
+            raise cmdopterr("#{name}: #{ver}: no such version in history file.")
+          if should_applied
+            mig.applied_at  or
+              raise cmdopterr("#{name}: #{ver}: not applied yet.")
+          else
+            mig.applied_at.nil?  or
+              raise cmdopterr("#{name}: #{ver}: already applied.")
+          end
+          ver_chk[ver].nil?  or
+            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
+          ver_chk[ver] = true
+        end
+        migrations = versions.collect {|ver| mig_dict[ver] }
+        return migrations
+      end
+
+    end
+
+
+    class RedoAction < Action
+      NAME = "redo"
+      DESC = "do migration down, and up it again"
+      OPTS = [
+        "-n N  : redo N migrations",
+        "--ALL : redo all migrations",
+      ]
+      ARGS = nil
+
+      def run(options, args)
+        n = 1
+        if options['n']
+          options['n'] =~ /\A\d+\z/  or
+            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
+          n = options['n'].to_i
+        elsif options['ALL']
+          n = nil
+        end
+        #
+        repo = repository()
+        repo.downgrade(n)
+        repo.upgrade(n)
+      end
+
+    end
+
+
+    class ApplyAction < Action
+      NAME = "apply"
+      DESC = "apply specified migrations"
+      OPTS = []
+      ARGS = "version ..."
+
+      include VersionsHelper
+
+      def run(options, args)
+        ! args.empty?  or
+          raise cmdopterr("#{NAME}: version required.")
+        #
+        repo = repository()
+        migrations = _versions2migrations(args, repo, NAME, false)
+        repo.apply_migrations(migrations)
+      end
+
+    end
+
+
+    class UnapplyAction < Action
+      NAME = "unapply"
+      DESC = "unapply specified migrations"
+      OPTS = []
+      ARGS = "version ..."
+
+      include VersionsHelper
+
+      def run(options, args)
+        ! args.empty?  or
+          raise cmdopterr("#{NAME}: version required.")
+        #
+        repo = repository()
+        migrations = _versions2migrations(args, repo, NAME, true)
+        repo.unapply_migrations(migrations)
+      end
+
+    end
+
+
+  end
 
 
   class Application
@@ -30,14 +1225,27 @@ module Skeema
         $stdout << RELEASE << "\n"
         return 0
       end
+      #;
+      action_name = args.shift || default_action_name()
+      action_class = Actions::Action.find_by_name(action_name)  or
+        raise Util::CommandOptionError.new("#{action_name}: unknown action.")
+      action_obj = action_class.new
+      action_opts = action_obj.parse(args)
+      action_obj.run(action_opts, args)
       #; [!saisg] returns 0 as status code when succeeded.
       return 0
     end
 
-    def usage(parser)
+    def usage(parser=nil)
+      parser ||= new_cmdopt_parser()
       script = File.basename($0)
-      s = "Usage: #{script} [common-options] action [options] [...]\n"
+      s = "Usage: #{script} [global-options] [action [options] [...]]\n"
       s << parser.usage(20, '  ')
+      s << "\n"
+      s << "Actions (default: #{default_action_name()}):\n"
+      Skeema::Actions::Action.subclasses.each do |action_class|
+        s << action_class.new.short_usage()
+      end
       return s
     end
 
@@ -50,7 +1258,11 @@ module Skeema
       #; [!maomq] command-option error is cached and not raised.
       rescue Util::CommandOptionError => ex
         script = File.basename($0)
-        $stderr << "#{script}: #{ex.message}\n"
+        $stderr << "ERROR[#{script}] #{ex.message}\n"
+        status = 1
+      #;
+      rescue SkeemaError => ex
+        $stderr << "ERROR[#{script}] #{ex}\n"
         status = 1
       end
       #; [!t0udo] returns status code (0: ok, 1: error).
@@ -65,6 +1277,10 @@ module Skeema
       parser.add("-v, --version:   show version")
       parser.add("-D, --debug:")
       return parser
+    end
+
+    def default_action_name
+      return Repository.new.history_file_empty? ? 'navi' : 'status'
     end
 
   end
@@ -87,13 +1303,13 @@ module Skeema
 
       def initialize(defstr)
         case defstr
-        when /\A--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
+        when /\A *--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
           short, long, arg, name, desc = nil, $1, ($2 || $3), $4, $5
           arg_required = $2 ? nil : $3 ? true : false
-        when /\A-(\w),\s*--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
+        when /\A *-(\w),\s*--(\w[-\w]*)(?:\[=(.+?)\]|=(\S.*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
           short, long, arg, name, desc = $1, $2, ($3 || $4), $5, $6
           arg_required = $3 ? nil : $4 ? true : false
-        when /\A-(\w)(?:\[(.+?)\]|\s+([^\#\s].*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
+        when /\A *-(\w)(?:\[(.+?)\]|\s+([^\#\s].*?))?(?:\s+\#(\w+))?\s*:(?:\s+(.*)?)?\z/
           short, long, arg, name, desc = $1, nil, ($2 || $3), $4, $5
           arg_required = $2 ? nil : $3 ? true : false
         else
@@ -143,7 +1359,8 @@ module Skeema
 
       attr_reader :optdefs
 
-      def initialize
+      def initialize(prefix=nil)
+        @prefix = prefix
         @optdefs = []
       end
 
@@ -164,17 +1381,17 @@ module Skeema
             break if optstr == '--'
             #; [!7pa2x] raises error when invalid long option.
             optstr =~ /\A--(\w[-\w]+)(?:=(.*))?\z/  or
-              raise CommandOptionError.new("#{optstr}: invalid option format.")
+              raise cmdopterr("#{optstr}: invalid option format.")
             #; [!sj0cv] raises error when unknown long option.
             long, argval = $1, $2
             optdef = @optdefs.find {|x| x.long == long }  or
-              raise CommandOptionError.new("#{optstr}: unknown option.")
+              raise cmdopterr("#{optstr}: unknown option.")
             #; [!a7qxw] raises error when argument required but not provided.
             if optdef.arg_required == true && argval.nil?
-              raise CommandOptionError.new("#{optstr}: argument required.")
+              raise cmdopterr("#{optstr}: argument required.")
             #; [!8eu9s] raises error when option takes no argument but provided.
             elsif optdef.arg_required == false && argval
-              raise CommandOptionError.new("#{optstr}: unexpected argument.")
+              raise cmdopterr("#{optstr}: unexpected argument.")
             end
             #; [!dtbdd] uses option name instead of long name when option name specified.
             #; [!7mp75] sets true as value when argument is not provided.
@@ -185,7 +1402,7 @@ module Skeema
               ch = optstr[i]
               #; [!8aaj0] raises error when unknown short option provided.
               optdef = @optdefs.find {|x| x.short == ch }  or
-                raise CommandOptionError.new("-#{ch}: unknown option.")
+                raise cmdopterr("-#{ch}: unknown option.")
               #; [!mnwxw] when short option takes no argument...
               if optdef.arg_required == false      # no argument
                 #; [!8atm1] sets true as value.
@@ -198,7 +1415,7 @@ module Skeema
                 if argval.empty?
                   #; [!7t6l3] raises error when no argument provided.
                   ! args.empty?  or
-                    raise CommandOptionError.new("-#{ch}: argument required.")
+                    raise cmdopterr("-#{ch}: argument required.")
                   argval = args.shift
                 end
                 options[optdef.name] = argval
@@ -235,7 +1452,15 @@ module Skeema
         return s
       end
 
+      private
+
+      def cmdopterr(message)
+        message = "#{@prefix} #{message}" if @prefix
+        return CommandOptionError.new(message)
+      end
+
     end#class
+
 
   end
 

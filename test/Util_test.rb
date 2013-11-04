@@ -19,7 +19,7 @@ Oktest.scope do
         [
           "-h, --help: show help",
           "-h,--help: show help",
-          "-h, --help :   show help ",
+          "  -h, --help :   show help ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'h'
@@ -35,7 +35,7 @@ Oktest.scope do
         [
           "-a, --action=name: action name.",
           "-a,--action=name: action name.",
-          "-a,   --action=name  :  action name. ",
+          "  -a,   --action=name  :  action name. ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'a'
@@ -51,7 +51,7 @@ Oktest.scope do
         [
           "-i, --indent[=N]: indent depth (default 2).",
           "-i,--indent[=N]: indent depth (default 2).",
-          "-i,  --indent[=N]  :  indent depth (default 2). ",
+          "  -i,  --indent[=N]  :  indent depth (default 2). ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'i'
@@ -66,7 +66,7 @@ Oktest.scope do
       spec "parses definition string of short-only options without arg." do
         [
           "-q: be quiet",
-          "-q  :   be quiet ",
+          "  -q  :   be quiet ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'q'
@@ -81,7 +81,7 @@ Oktest.scope do
       spec "parses definition string of short-only options with required arg." do
         [
           "-a name: action name.",
-          "-a  name  :  action name. ",
+          "  -a  name  :  action name. ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'a'
@@ -96,7 +96,7 @@ Oktest.scope do
       spec "parses definition string of short-only options with optional arg." do
         [
           "-i[N]: indent depth (default 2).",
-          "-i[N]  :  indent depth (default 2). ",
+          "  -i[N]  :  indent depth (default 2). ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == 'i'
@@ -111,7 +111,7 @@ Oktest.scope do
       spec "parses definition string of long-only options without arg." do
         [
           "--verbose: be verbose",
-          "--verbose  :  be verbose ",
+          "  --verbose  :  be verbose ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == nil
@@ -126,7 +126,7 @@ Oktest.scope do
       spec "parses definition string of long-only options with required arg." do
         [
           "--action=name: action name.",
-          "--action=name  :  action name. ",
+          "  --action=name  :  action name. ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == nil
@@ -141,7 +141,7 @@ Oktest.scope do
       spec "parses definition string of long-only options with optional arg." do
         [
           "--indent[=N]: indent depth (default 2).",
-          "--indent[=N]  :  indent depth (default 2). ",
+          "  --indent[=N]  :  indent depth (default 2). ",
         ].each do |defstr|
           x = klass.new(defstr)
           ok {x.short} == nil
