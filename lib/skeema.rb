@@ -543,7 +543,7 @@ CREATE TABLE #{table} (
   author       VARCHAR(40)   NOT NULL,
   description  VARCHAR(255)  NOT NULL,
   statement    TEXT          NOT NULL,
-  applied_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+  applied_at   TIMESTAMP     NOT NULL DEFAULT TIMEOFDAY()::TIMESTAMP
 );
 END
         run_sql(sql, :verbose=>true)
