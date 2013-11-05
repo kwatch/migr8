@@ -39,6 +39,9 @@ module Skeema
   class DowngradeFailedError < SkeemaError
   end
 
+  class RepositoryError < SkeemaError
+  end
+
 
   class Migration
 
@@ -733,9 +736,34 @@ END
         return @repository || begin
                                 cmd = get_command()
                                 dbms = DBMS.detect_by_command(cmd)
-                                Repository.new(dbms)
+                                repo = Repository.new(dbms)
+                                _check(repo, dbms)
+                                repo
                               end
       end
+
+      def _check(repo, dbms)
+        script = File.basename($0)
+        unless dbms.history_table_exist?
+          $stderr << <<END
+##
+## ERROR: history table not created.
+## (Please run '#{script} navi' or '#{script} init' at first.)
+##
+END
+          raise RepositoryError.new("#{dbms.history_table}: table not found.")
+        end
+        unless repo.history_file_exist?
+          $stderr << <<END
+##
+## ERROR: history file not found.
+## (Please run '#{script} navi' or '#{script} init' at first.)
+##
+END
+          raise RepositoryError.new("#{repo.history_filepath}: not found.")
+        end
+      end
+      private :_check
 
       @subclasses = []
 
