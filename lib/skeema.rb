@@ -300,6 +300,11 @@ module Skeema
       return true
     end
 
+    def history_file_exist?
+      fpath = history_filepath()
+      return File.file?(fpath)
+    end
+
     def history_file_empty?
       fpath = history_filepath()
       return true unless File.file?(fpath)
