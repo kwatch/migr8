@@ -569,8 +569,8 @@ END
 -----
 #{stmt};
 -----
-INSERT INTO #{@history_table} (version, author, description, statement, applied_at)
-VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}', timeofday()::timestamp);
+INSERT INTO #{@history_table} (version, author, description, statement)
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}');
 END
         return sql
       end
