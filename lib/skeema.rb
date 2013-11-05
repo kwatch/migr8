@@ -332,29 +332,29 @@ module Skeema
       plain_p = opts[:plain]
       skeleton_for_up   = plain_p ? '' : @dbms.skeleton_for_up
       skeleton_for_down = plain_p ? '' : @dbms.skeleton_for_down
-      s = <<_END_
+      s = <<END
 # -*- coding: utf-8 -*-
 
 version:     #{@version}
 desc:        #{@desc}
 author:      #{@author}
 vars:
-_END_
+END
       if dbms
-        s << <<_END_
+        s << <<END
   - table:   table123
   - column:  column123
   - index:   ${table}_${column}_idx
   - unique:  ${table}_${column}_unq
-_END_
-        s << <<_END_
+END
+      end
+      s << <<END
 
 up: |
 #{skeleton_for_up}
 down: |
 #{skeleton_for_down}
-_END_
-      end
+END
       return s
     end
 
@@ -536,7 +536,7 @@ _END_
 
       def create_history_table()
         return false if history_table_exist?
-        sql = <<_END_
+        sql = <<END
 CREATE TABLE #{table} (
   id           SERIAL        PRIMARY KEY,
   version      VARCHAR(40)   NOT NULL UNIQUE,
@@ -545,7 +545,7 @@ CREATE TABLE #{table} (
   statement    TEXT          NOT NULL,
   applied_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-_END_
+END
         run_sql(sql, :verbose=>true)
         return true
       end
@@ -563,7 +563,7 @@ _END_
 
       def applying_sql(mig)
         stmt = mig.up_statement
-        sql = <<_END_
+        sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
 \\echo '## applying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
 -----
@@ -571,20 +571,20 @@ _END_
 -----
 INSERT INTO #{@history_table} (version, author, description, statement, applied_at)
 VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}', timeofday()::timestamp);
-_END_
+END
         return sql
       end
 
       def unapplying_sql(mig)
         stmt = mig.down_statement
-        sql = <<_END_
+        sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
 \\echo '## unapplying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
 -----
 #{stmt};
 -----
 DELETE FROM #{@history_table} where version = '#{mig.version}';
-_END_
+END
         return sql
       end
 
@@ -610,7 +610,7 @@ _END_
       end
 
       def skeleton_for_up()
-        return <<_END_
+        return <<END
   ---
   --- create table or index
   ---
@@ -635,11 +635,11 @@ _END_
   alter table ${table} alter column ${column} type varchar(255);
   alter table ${table} alter column ${column} set not null;
   alter table ${table} alter column ${column} set default current_date;
-_END_
+END
       end
 
       def skeleton_for_down()
-        return <<_END_
+        return <<END
   ---
   --- drop table or index
   ---
@@ -657,7 +657,7 @@ _END_
   alter table ${table} alter column ${column} type varchar(255);
   alter table ${table} alter column ${column} drop not null;
   alter table ${table} alter column ${column} drop default;
-_END_
+END
       end
 
     end
@@ -749,14 +749,14 @@ _END_
       protected
 
       def _recommend_to_set_SKEEMA_EDITOR(action)  # :nodoc:
-        msg = <<_END_
+        msg = <<END
 ## ERROR: Failed to #{action} migration file.
 ## Plase set $SKEEMA_EDITOR in order to open migration file automatically.
 ## Example:
 ##   $ export SKEEMA_EDITOR='vi'                   # for vi
 ##   $ export SKEEMA_EDITOR='emacsclient'          # for emacs
 ##   $ export SKEEMA_EDITOR='open -a TextMate'     # for MacOSX
-_END_
+END
         $stderr << msg
       end
 
