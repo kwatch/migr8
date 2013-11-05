@@ -565,7 +565,7 @@ END
         stmt = mig.up_statement
         sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
-\\echo '## applying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
+\\echo '## applying #{q(mig.version)}  \# [#{q(mig.author)}] #{q(mig.desc)}'
 -----
 #{stmt};
 -----
@@ -579,7 +579,7 @@ END
         stmt = mig.down_statement
         sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
-\\echo '## unapplying #{mig.version}  \# [#{mig.author}] #{q(mig.desc)}'
+\\echo '## unapplying #{q(mig.version)}  \# [#{q(mig.author)}] #{q(mig.desc)}'
 -----
 #{stmt};
 -----
