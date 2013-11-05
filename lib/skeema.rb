@@ -853,7 +853,6 @@ END
           action_name = args[0]
           action_class = Action.find_by_name(action_name)  or
             raise cmdopterr("#{action_name}: unknown action.")
-          script = File.basename($0)
           puts action_class.new.usage()
         else
           usage = Skeema::Application.new.usage()
