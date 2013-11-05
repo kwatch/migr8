@@ -725,10 +725,11 @@ END
       def get_command
         cmd = ENV['SKEEMA_COMMAND'] || ''
         ! cmd.empty?  or
-          raise CommandSetupError.new("Please set $SKEEMA_COMMAND at first.\n" +
-                                      "  Example:\n" +
-                                      "      $ export SKEEMA_COMMAND='psql -q -U user dbname'    # on MacOSX, Unix\n" +
-                                      "      $ set SKEEMA_COMMAND='psql -q -U user dbname'       # on Windows\n")
+          raise CommandSetupError.new("$SKEEMA_COMMAND is empty. Please set it at first.\n" +
+                                      "  Example: (MacOSX, Unix)\n" +
+                                      "      $ export SKEEMA_COMMAND='psql -q -U user dbname'\n" +
+                                      "  Example: (Windows)\n" +
+                                      "      C:\\> set SKEEMA_COMMAND='psql -q -U user dbname'\n")
         return cmd
       end
 
