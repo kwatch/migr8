@@ -513,8 +513,8 @@ END
       end
 
       def self.detect_by_command(command)
-        klass = @subclasses.find {|klass| command =~ klass.const_get(:PATTERN) }
-        return klass ? klass.new(command) : nil
+        klazz = @subclasses.find {|klass| command =~ klass.const_get(:PATTERN) }
+        return klazz ? klazz.new(command) : nil
       end
 
     end
