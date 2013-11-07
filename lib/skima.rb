@@ -545,7 +545,7 @@ END
       def create_history_table()
         return false if history_table_exist?
         sql = <<END
-CREATE TABLE #{table} (
+CREATE TABLE #{history_table()} (
   id           SERIAL        PRIMARY KEY,
   version      VARCHAR(40)   NOT NULL UNIQUE,
   author       VARCHAR(40)   NOT NULL,
@@ -559,7 +559,7 @@ END
       end
 
       def history_table_exist?
-        table = @history_table
+        table = history_table()
         output = execute_sql("\\dt #{table}")
         return output.include?(table)
       end
