@@ -149,14 +149,15 @@ module Skima
       dict = applied_migrations_dict  # {version=>applied_at}
       applied = nil
       tuples = parse_history_file()
+      fpath = history_filepath()
       migrations = tuples.collect {|version, author, desc|
         mig = load_migration(version)
         mig.version == version  or
-          $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}"
+          $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
         mig.author == author  or
-          $stderr << "# WARNING: #{version}: author in history file is not match to #{fpath}"
+          $stderr << "# WARNING: #{version}: author in history file is not match to #{fpath}\n"
         mig.desc == desc  or
-          $stderr << "# WARNING: #{version}: description in history file is not match to #{fpath}"
+          $stderr << "# WARNING: #{version}: description in history file is not match to #{fpath}\n"
         mig.applied_at = applied.applied_at if dict && (applied = dict.delete(mig.version))
         mig
       }
