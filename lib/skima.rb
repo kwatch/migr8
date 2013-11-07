@@ -336,16 +336,16 @@ module Skima
       return "%-10s # [%s] %s" % [mig.version, mig.author, mig.desc]
     end
 
-    def render_migration_file(opts={})  # :nodoc:
+    def render_migration_file(mig, opts={})  # :nodoc:
       plain_p = opts[:plain]
       skeleton_for_up   = plain_p ? '' : @dbms.skeleton_for_up
       skeleton_for_down = plain_p ? '' : @dbms.skeleton_for_down
       s = <<END
 # -*- coding: utf-8 -*-
 
-version:     #{@version}
-desc:        #{@desc}
-author:      #{@author}
+version:     #{mig.version}
+desc:        #{mig.desc}
+author:      #{mig.author}
 vars:
 END
       if dbms
