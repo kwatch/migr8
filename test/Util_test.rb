@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 require 'oktest'
-require 'skeema'
+require 'skima'
 
 
 Oktest.scope do
 
 
-  topic Skeema::Util::CommandOptionDefinition do
+  topic Skima::Util::CommandOptionDefinition do
 
-    klass = Skeema::Util::CommandOptionDefinition
-    errclass = Skeema::Util::CommandOptionDefinitionError
+    klass = Skima::Util::CommandOptionDefinition
+    errclass = Skima::Util::CommandOptionDefinitionError
 
 
     topic '.new()' do
@@ -293,10 +293,10 @@ Oktest.scope do
   end
 
 
-  topic Skeema::Util::CommandOptionParser do
+  topic Skima::Util::CommandOptionParser do
 
-    klass = Skeema::Util::CommandOptionParser
-    errclass = Skeema::Util::CommandOptionError
+    klass = Skima::Util::CommandOptionParser
+    errclass = Skima::Util::CommandOptionError
 
 
     topic '#add()' do

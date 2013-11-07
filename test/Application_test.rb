@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'oktest'
-require 'skeema'
+require 'skima'
 require 'stringio'
 require File.join(File.dirname(File.absolute_path(__FILE__)), 'helpers')
 
@@ -9,15 +9,15 @@ require File.join(File.dirname(File.absolute_path(__FILE__)), 'helpers')
 Oktest.scope do
 
 
-  topic Skeema::Application do
+  topic Skima::Application do
 
-    klass = Skeema::Application
+    klass = Skima::Application
 
 
     topic '.run()' do
 
       fixture :app do
-        Skeema::Application.new
+        Skima::Application.new
       end
 
       spec "[!ktlay] prints help message and exit when '-h' or '--help' specified." do |app|
@@ -40,8 +40,8 @@ Actions (default: status):
   help [action]       : show help message of action, or list action names
   init                : create necessary files and a table
   hist                : list history of versions
-  new                 : create new migration file and open it by $SKEEMA_EDITOR
-  edit [version]      : open migration file by $SKEEMA_EDITOR
+  new                 : create new migration file and open it by $SKIMA_EDITOR
+  edit [version]      : open migration file by $SKIMA_EDITOR
   status              : show status
   up                  : apply a next migration
   down                : unapply current migration
@@ -64,7 +64,7 @@ END
             ok {status} == 0
             ok {args} == ["foo", "bar"]
           end
-          expected = "#{Skeema::RELEASE}\n"
+          expected = "#{Skima::RELEASE}\n"
           ok {sout} == expected
           ok {serr} == ""
         end
@@ -112,7 +112,7 @@ END
       spec "[!maomq] command-option error is cached and not raised." do
         Dummy.new.stdouterr do
           pr = proc { klass.main(["-hx"]) }
-          ok {pr}.NOT.raise?(Skeema::Util::CommandOptionError)
+          ok {pr}.NOT.raise?(Skima::Util::CommandOptionError)
         end
       end
 

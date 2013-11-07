@@ -4,6 +4,6 @@ else
   export RUBYLIB=$PWD/lib
 fi
 
-export SKEEMA_EDITOR='open -a Emacs'
-#export SKEEMA_COMMAND='psql -q -U user1 example1'
-export SKEEMA_COMMAND='psql -U user1 example1'
+export SKIMA_EDITOR='open -a Emacs'
+#export SKIMA_COMMAND='psql -q -U user1 example1'
+export SKIMA_COMMAND='psql -U user1 example1'

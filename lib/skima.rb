@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ###
-### skeema.py -- DB schema version management tool
+### skima.py -- DB schema version management tool
 ###
 ### $Release: 0.0.0 $
 ### $License: MIT License $
@@ -13,33 +13,33 @@ require 'yaml'
 require 'etc'
 
 
-module Skeema
+module Skima
 
   RELEASE = "$Release: 0.0.0 $".split(' ')[1]
 
 
-  class SkeemaError < StandardError
+  class SkimaError < StandardError
   end
 
-  class CommandSetupError < SkeemaError
+  class CommandSetupError < SkimaError
   end
 
-  class SQLExecutionError < SkeemaError
+  class SQLExecutionError < SkimaError
   end
 
-  class HistoryFileError < SkeemaError
+  class HistoryFileError < SkimaError
   end
 
-  class MigrationFileError < SkeemaError
+  class MigrationFileError < SkimaError
   end
 
-  class UpgradeFailedError < SkeemaError
+  class UpgradeFailedError < SkimaError
   end
 
-  class DowngradeFailedError < SkeemaError
+  class DowngradeFailedError < SkimaError
   end
 
-  class RepositoryError < SkeemaError
+  class RepositoryError < SkimaError
   end
 
 
@@ -108,9 +108,9 @@ module Skeema
 
   class Repository
 
-    HISTORY_FILEPATH  = 'skeema/history.txt'
-    HISTORY_TABLE     = 'skeema_history'
-    MIGRATION_DIRPATH = 'skeema/migrations/'
+    HISTORY_FILEPATH  = 'skima/history.txt'
+    HISTORY_TABLE     = 'skima_history'
+    MIGRATION_DIRPATH = 'skima/migrations/'
 
     attr_reader :dbms
 
@@ -416,7 +416,7 @@ END
       def initialize(command=nil)
         @command = command
         @history_table = Repository::HISTORY_TABLE
-        @sqltmpfile = 'skeema/tmp.sql'
+        @sqltmpfile = 'skima/tmp.sql'
       end
 
       def execute_sql(sql, cmdopt=nil)
@@ -470,7 +470,7 @@ END
       end
 
       def _get_migrations(cmdopt, separator)
-        sql = 'SELECT version, applied_at, author, description FROM skeema_history ORDER BY id'
+        sql = 'SELECT version, applied_at, author, description FROM skima_history ORDER BY id'
         output = execute_sql(sql, cmdopt)
         migs = []
         output.each_line do |line|
@@ -723,13 +723,13 @@ END
       end
 
       def get_command
-        cmd = ENV['SKEEMA_COMMAND'] || ''
+        cmd = ENV['SKIMA_COMMAND'] || ''
         ! cmd.empty?  or
-          raise CommandSetupError.new("$SKEEMA_COMMAND is empty. Please set it at first.\n" +
+          raise CommandSetupError.new("$SKIMA_COMMAND is empty. Please set it at first.\n" +
                                       "  Example: (MacOSX, Unix)\n" +
-                                      "      $ export SKEEMA_COMMAND='psql -q -U user dbname'\n" +
+                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'\n" +
                                       "  Example: (Windows)\n" +
-                                      "      C:\\> set SKEEMA_COMMAND='psql -q -U user dbname'\n")
+                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'\n")
         return cmd
       end
 
@@ -782,14 +782,14 @@ END
 
       protected
 
-      def _recommend_to_set_SKEEMA_EDITOR(action)  # :nodoc:
+      def _recommend_to_set_SKIMA_EDITOR(action)  # :nodoc:
         msg = <<END
 ## ERROR: Failed to #{action} migration file.
-## Plase set $SKEEMA_EDITOR in order to open migration file automatically.
+## Plase set $SKIMA_EDITOR in order to open migration file automatically.
 ## Example:
-##   $ export SKEEMA_EDITOR='vi'                   # for vi
-##   $ export SKEEMA_EDITOR='emacsclient'          # for emacs
-##   $ export SKEEMA_EDITOR='open -a TextMate'     # for MacOSX
+##   $ export SKIMA_EDITOR='vi'                   # for vi
+##   $ export SKIMA_EDITOR='emacsclient'          # for emacs
+##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX
 END
         $stderr << msg
       end
@@ -816,24 +816,24 @@ END
         msg = ""
         repo = repository()
         #
-        command = ENV['SKEEMA_COMMAND'].to_s.strip
+        command = ENV['SKIMA_COMMAND'].to_s.strip
         command = nil if command.empty?
-        editor  = ENV['SKEEMA_EDITOR'].to_s.strip
+        editor  = ENV['SKIMA_EDITOR'].to_s.strip
         editor  = nil if editor.empty?
         if command.nil? || editor.nil?
           msg << "##\n"
-          msg << "## Step 1/3: Set both $SKEEMA_COMMAND and $SKEEMA_EDITOR at first.\n"
+          msg << "## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.\n"
           if command.nil?
             msg << "##\n"
-            msg << "## Example ($SKEEMA_COMMAND):\n"
-            msg << "##   $ export SKEEMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
+            msg << "## Example ($SKIMA_COMMAND):\n"
+            msg << "##   $ export SKIMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
           end
           if editor.nil?
             msg << "##\n"
-            msg << "## Example ($SKEEMA_EDITOR):\n"
-            msg << "##   $ export SKEEMA_EDITOR='vi'                   # for vi\n"
-            msg << "##   $ export SKEEMA_EDITOR='emacsclient'          # for emacs\n"
-            msg << "##   $ export SKEEMA_EDITOR='open -a TextMate'     # for MacOSX\n"
+            msg << "## Example ($SKIMA_EDITOR):\n"
+            msg << "##   $ export SKIMA_EDITOR='vi'                   # for vi\n"
+            msg << "##   $ export SKIMA_EDITOR='emacsclient'          # for emacs\n"
+            msg << "##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX\n"
           end
           msg << "##\n"
           msg << "## (Run '#{script} navi' again after above settings.)\n"
@@ -889,7 +889,7 @@ END
             raise cmdopterr("#{action_name}: unknown action.")
           puts action_class.new.usage()
         else
-          usage = Skeema::Application.new.usage()
+          usage = Skima::Application.new.usage()
           puts usage
         end
         nil
@@ -936,7 +936,7 @@ END
 
     class NewAction < Action
       NAME = "new"
-      DESC = "create new migration file and open it by $SKEEMA_EDITOR"
+      DESC = "create new migration file and open it by $SKIMA_EDITOR"
       OPTS = [
         "-m text  : description message (mandatory)",
         "-u user  : author name (default: current user)",
@@ -946,9 +946,9 @@ END
       ARGS = nil
 
       def run(options, args)
-        editor = options['e'] || ENV['SKEEMA_EDITOR']
+        editor = options['e'] || ENV['SKIMA_EDITOR']
         if ! editor || editor.empty?
-          _recommend_to_set_SKEEMA_EDITOR('create')
+          _recommend_to_set_SKIMA_EDITOR('create')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         desc = options['m']  or
@@ -968,7 +968,7 @@ END
 
     class EditAction < Action
       NAME = "edit"
-      DESC = "open migration file by $SKEEMA_EDITOR"
+      DESC = "open migration file by $SKIMA_EDITOR"
       OPTS = [
         "-r        :  edit N-th file from latest version",
         "-e editor : editr command (such as 'emacsclient', 'open', ...)",
@@ -976,9 +976,9 @@ END
       ARGS = "[version]"
 
       def run(options, args)
-        editor = options['e'] || ENV['SKEEMA_EDITOR']
+        editor = options['e'] || ENV['SKIMA_EDITOR']
         if ! editor || editor.empty?
-          _recommend_to_set_SKEEMA_EDITOR('edit')
+          _recommend_to_set_SKIMA_EDITOR('edit')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         version = num = nil
@@ -1236,7 +1236,7 @@ END
       s << parser.usage(20, '  ')
       s << "\n"
       s << "Actions (default: #{default_action_name()}):\n"
-      Skeema::Actions::Action.subclasses.each do |action_class|
+      Skima::Actions::Action.subclasses.each do |action_class|
         s << action_class.new.short_usage()
       end
       return s
@@ -1254,7 +1254,7 @@ END
         $stderr << "ERROR[#{script}] #{ex.message}\n"
         status = 1
       #;
-      rescue SkeemaError => ex
+      rescue SkimaError => ex
         script = File.basename($0)
         $stderr << "ERROR[#{script}] #{ex}\n"
         status = 1
@@ -1530,6 +1530,6 @@ end
 
 
 if __FILE__ == $0
-  status = Skeema::Application.main()
+  status = Skima::Application.main()
   exit(status)
 end
