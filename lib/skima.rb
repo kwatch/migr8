@@ -390,7 +390,7 @@ END
       else
         count = mig_hist.length - i
         status = "there are #{count} migrations to apply"
-        status = "there is #{count} migration to apply" if count == 1
+        status = "there is a migration to apply" if count == 1
         recent = mig_hist[start..-1]
       end
       missing = mig_dict.empty? ? nil : mig_dict.values
