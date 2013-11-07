@@ -1265,6 +1265,17 @@ END
       Skima::Actions::Action.subclasses.each do |action_class|
         s << action_class.new.short_usage()
       end
+      s << "\n"
+      s << "Setup:\n"
+      if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
+        s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
+        s << "  C:\\> ruby skima.rb init\n"
+      else
+        s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
+        s << "  $ skima.rb init\n"
+      end
       return s
     end
 

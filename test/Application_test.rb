@@ -50,6 +50,11 @@ Actions:  (default: status)
   redo                : do migration down, and up it again
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
+
+Setup:
+  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL
+  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc
+  $ skima.rb init
 END
           ok {sout} == expected
           ok {serr} == ""
