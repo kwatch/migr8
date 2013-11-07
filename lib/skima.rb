@@ -738,12 +738,18 @@ END
                                 cmd = get_command()
                                 dbms = DBMS.detect_by_command(cmd)
                                 repo = Repository.new(dbms)
-                                _check(repo, dbms)
+                                _check(repo, dbms) if _should_check?
                                 repo
                               end
       end
 
-      def _check(repo, dbms)
+      private
+
+      def _should_check?   # :nodoc:
+        true
+      end
+
+      def _check(repo, dbms)   # :nodoc:
         script = File.basename($0)
         unless dbms.history_table_exist?
           $stderr << <<END
@@ -764,7 +770,8 @@ END
           raise RepositoryError.new("#{repo.history_filepath}: not found.")
         end
       end
-      private :_check
+
+      public
 
       @subclasses = []
 
@@ -811,6 +818,10 @@ END
       end
 
       private
+
+      def _should_check?
+        false
+      end
 
       def navi_for_newbie(script)
         msg = ""
@@ -895,6 +906,12 @@ END
         nil
       end
 
+      private
+
+      def _should_check?
+        false
+      end
+
     end
 
 
@@ -906,6 +923,12 @@ END
 
       def run(options, args)
         repository().init()
+      end
+
+      private
+
+      def _should_check?
+        false
       end
 
     end
