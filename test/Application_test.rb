@@ -31,11 +31,13 @@ Oktest.scope do
             ok {args} == ["foo"]
           end
           expected = <<END
+#{File.basename($0)} -- database schema version management tool
+
 Usage: #{File.basename($0)} [global-options] [action [options] [...]]
   -h, --help          : show help
   -v, --version       : show version
 
-Actions (default: status):
+Actions:  (default: status)
   navi                : !!RUN THIS ACTION AT FIRST!!
   help [action]       : show help message of action, or list action names
   init                : create necessary files and a table

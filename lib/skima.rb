@@ -1255,10 +1255,13 @@ END
     def usage(parser=nil)
       parser ||= new_cmdopt_parser()
       script = File.basename($0)
-      s = "Usage: #{script} [global-options] [action [options] [...]]\n"
+      s = ""
+      s << "#{script} -- database schema version management tool\n"
+      s << "\n"
+      s << "Usage: #{script} [global-options] [action [options] [...]]\n"
       s << parser.usage(20, '  ')
       s << "\n"
-      s << "Actions (default: #{default_action_name()}):\n"
+      s << "Actions:  (default: #{default_action_name()})\n"
       Skima::Actions::Action.subclasses.each do |action_class|
         s << action_class.new.short_usage()
       end
