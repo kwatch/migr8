@@ -528,12 +528,21 @@ END
       end
 
       def apply_migrations(migs)
-        raise NotImplementedError.new("#{self.class.name}#apply_migrations(): not implemented yet.")
+        _do_migrations(migs) {|mig| applying_sql(mig) }
       end
 
       def unapply_migrations(migs)
-        raise NotImplementedError.new("#{self.class.name}#unapply_migrations(): not implemented yet.")
+        _do_migrations(migs) {|mig| unapplying_sql(mig) }
       end
+
+      def _do_migrations(migs)
+        sql = ""
+        sql << "BEGIN; /** start transaction **/\n\n"
+        sql << migs.collect {|mig| yield mig }.join("\n")
+        sql << "\nCOMMIT; /** end transaction **/\n"
+        run_sql(sql)
+      end
+      protected :_do_migrations
 
       def q(str)
         return str.gsub(/\'/, "''")
@@ -603,23 +612,6 @@ END
         migrations = _get_migrations("-qt", / \| /)
         return migrations
       end
-
-      def apply_migrations(migs)
-        __apply(migs) {|mig| applying_sql(mig) }
-      end
-
-      def unapply_migrations(migs)
-        __apply(migs) {|mig| unapplying_sql(mig) }
-      end
-
-      def __apply(migs)  # :nodoc:
-        sql = ""
-        sql << "BEGIN; /** start transaction **/\n\n"
-        sql << migs.collect {|mig| yield mig }.join("\n")
-        sql << "\nCOMMIT; /** end transaction **/\n"
-        run_sql(sql, :verbose=>false)
-      end
-      private :__apply
 
       def q(str)
         return str.gsub(/\'/, "''")
