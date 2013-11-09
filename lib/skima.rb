@@ -898,9 +898,11 @@ END
                                       "  Example: (MacOSX, Unix)\n" +
                                       "      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3\n" +
                                       "      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL\n" +
+                                      "      $ export SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL\n" +
                                       "  Example: (Windows)\n" +
                                       "      C:\\> set SKIMA_COMMAND='sqlite3 dbname'          # for SQLite3\n" +
-                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n")
+                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n" +
+                                      "      C:\\> set SKIMA_COMMAND='mysql -s -u user dbname' # for MySQL\n")
         return cmd
       end
 
@@ -1010,6 +1012,7 @@ END
             msg << "## Example ($SKIMA_COMMAND):\n"
             msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
             msg << "##   $ export SKIMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
+            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'        # for MySQL\n"
           end
           if editor.nil?
             msg << "##\n"
@@ -1442,11 +1445,13 @@ END
       if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
         s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  C:\\> set SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
         s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
         s << "  C:\\> ruby skima.rb init\n"
       else
         s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  $ export SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
         s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
         s << "  $ skima.rb init\n"
       end
