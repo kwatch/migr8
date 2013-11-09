@@ -493,12 +493,38 @@ END
       end
       protected :_get_migrations
 
+      def _echo_message(msg)
+        raise NotImplementedError.new("#{self.class.name}#_echo_message(): not implemented yet.")
+      end
+      protected :_echo_message
+
       def applying_sql(mig)
-        raise NotImplementedError.new("#{self.class.name}#applying_sql(): not implemented yet.")
+        msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        stmt = mig.up_statement
+        sql = <<END
+---------------------------------------- applying #{mig.version} ----------
+#{_echo_message(msg)}
+-----
+#{stmt};
+-----
+INSERT INTO #{@history_table} (version, author, description, statement)
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}');
+END
+        return sql
       end
 
       def unapplying_sql(mig)
-        raise NotImplementedError.new("#{self.class.name}#unapplying_sql(): not implemented yet.")
+        msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        stmt = mig.down_statement
+        sql = <<END
+---------------------------------------- unapplying #{mig.version} ----------
+#{_echo_message(msg)}
+-----
+#{stmt}
+-----
+DELETE FROM #{@history_table} where version = '#{mig.version}';
+END
+        return sql
       end
 
       def apply_migrations(migs)
