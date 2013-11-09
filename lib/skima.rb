@@ -18,6 +18,13 @@ module Skima
 
   RELEASE = "$Release: 0.0.0 $".split(' ')[1]
 
+  DEBUG = false
+
+  def self.DEBUG=(flag)
+    remove_const(:DEBUG)
+    return const_set(:DEBUG, flag)
+  end
+
 
   class SkimaError < StandardError
   end
