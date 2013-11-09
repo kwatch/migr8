@@ -587,6 +587,10 @@ END
         return sql
       end
 
+      def _echo_message(msg)
+        return "\\echo '#{q(msg)}'"
+      end
+
       public
 
       def history_table_exist?
@@ -598,33 +602,6 @@ END
       def get_migrations()
         migrations = _get_migrations("-qt", / \| /)
         return migrations
-      end
-
-      def applying_sql(mig)
-        stmt = mig.up_statement
-        sql = <<END
----------------------------------------- applying #{mig.version} ----------
-\\echo '## applying #{q(mig.version)}  \# [#{q(mig.author)}] #{q(mig.desc)}'
------
-#{stmt};
------
-INSERT INTO #{@history_table} (version, author, description, statement)
-VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}');
-END
-        return sql
-      end
-
-      def unapplying_sql(mig)
-        stmt = mig.down_statement
-        sql = <<END
----------------------------------------- unapplying #{mig.version} ----------
-\\echo '## unapplying #{q(mig.version)}  \# [#{q(mig.author)}] #{q(mig.desc)}'
------
-#{stmt};
------
-DELETE FROM #{@history_table} where version = '#{mig.version}';
-END
-        return sql
       end
 
       def apply_migrations(migs)
