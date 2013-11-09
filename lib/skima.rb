@@ -498,7 +498,7 @@ END
       end
       protected :_echo_message
 
-      def applying_sql(mig)
+      def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
         stmt = mig.up_statement
         sql = <<END
@@ -512,8 +512,9 @@ VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}')
 END
         return sql
       end
+      protected :_applying_sql
 
-      def unapplying_sql(mig)
+      def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
         stmt = mig.down_statement
         sql = <<END
@@ -526,13 +527,14 @@ DELETE FROM #{@history_table} where version = '#{mig.version}';
 END
         return sql
       end
+      protected :_unapplying_sql
 
       def apply_migrations(migs)
-        _do_migrations(migs) {|mig| applying_sql(mig) }
+        _do_migrations(migs) {|mig| _applying_sql(mig) }
       end
 
       def unapply_migrations(migs)
-        _do_migrations(migs) {|mig| unapplying_sql(mig) }
+        _do_migrations(migs) {|mig| _unapplying_sql(mig) }
       end
 
       def _do_migrations(migs)
