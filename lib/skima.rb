@@ -447,8 +447,25 @@ END
       end
 
       def create_history_table()
-        raise NotImplementedError.new("#{self.class.name}#create_history_table(): not implemented yet.")
+        return false if history_table_exist?
+        sql = _history_table_statement()
+        run_sql(sql, :verbose=>true)
+        return true
       end
+
+      def _history_table_statement()
+        return <<END
+CREATE TABLE #{history_table()} (
+  id           INTEGER       PRIMARY KEY,
+  version      VARCHAR(40)   NOT NULL UNIQUE,
+  author       VARCHAR(40)   NOT NULL,
+  description  VARCHAR(255)  NOT NULL,
+  statement    TEXT          NOT NULL,
+  applied_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+END
+      end
+      protected :_history_table_statement
 
       def history_table_exist?
         raise NotImplementedError.new("#{self.class.name}#history_table_exist?: not implemented yet.")
