@@ -552,21 +552,16 @@ END
         super(preamble+sql, opts)
       end
 
-      def create_history_table()
-        return false if history_table_exist?
-        sql = <<END
-CREATE TABLE #{history_table()} (
-  id           SERIAL        PRIMARY KEY,
-  version      VARCHAR(40)   NOT NULL UNIQUE,
-  author       VARCHAR(40)   NOT NULL,
-  description  VARCHAR(255)  NOT NULL,
-  statement    TEXT          NOT NULL,
-  applied_at   TIMESTAMP     NOT NULL DEFAULT TIMEOFDAY()::TIMESTAMP
-);
-END
-        run_sql(sql, :verbose=>true)
-        return true
+      protected
+
+      def _history_table_statement()
+        sql = super
+        sql = sql.sub(/INTEGER/, 'SERIAL ')
+        sql = sql.sub('CURRENT_TIMESTAMP', 'TIMEOFDAY()::TIMESTAMP')
+        return sql
       end
+
+      public
 
       def history_table_exist?
         table = history_table()
