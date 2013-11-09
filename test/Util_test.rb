@@ -338,7 +338,7 @@ Oktest.scope do
         |parser|
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
       end
 
@@ -347,7 +347,7 @@ Oktest.scope do
         # short options
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
         #
         args = "-hi foo bar".split(' ')
@@ -361,7 +361,7 @@ Oktest.scope do
         # long options
         args = "--help --action=print --indent=4 foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
         #
         args = "--indent foo bar".split(' ')
@@ -401,14 +401,17 @@ Oktest.scope do
 
       spec "[!cfjp3] raises error when argname is 'N' but argval is not an integer." do |parser|
         parser.add("-n, --num=N: number")
-        pr = proc { parser.parse(["--num=314"]) }
+        opts = nil
+        pr = proc { opts = parser.parse(["--num=314"]) }
         ok {pr}.NOT.raise?(Exception)
-        pr = proc { parser.parse(["--num=3.14"]) }
+        ok {opts['num']} == 314
+        pr = proc { opts = parser.parse(["--num=3.14"]) }
         ok {pr}.raise?(errclass, "--num=3.14: integer expected.")
         #
-        pr = proc { parser.parse(["--indent=4"]) }
+        pr = proc { opts = parser.parse(["--indent=4"]) }
         ok {pr}.NOT.raise?(Exception)
-        pr = proc { parser.parse(["--indent=4i"]) }
+        ok {opts['indent']} == 4
+        pr = proc { opts = parser.parse(["--indent=4i"]) }
         ok {pr}.raise?(errclass, "--indent=4i: integer expected.")
       end
 
@@ -462,10 +465,12 @@ Oktest.scope do
 
         spec "[!yzr2p] argument must be an integer if arg name is 'N'." do |parser|
           parser.add("-w, --weight=N: weight value.")
-          pr = proc { parser.parse(["-w", "314", "hoo"]) }
+          opts = nil
+          pr = proc { opts = parser.parse(["-w", "314", "hoo"]) }
           ok {pr}.NOT.raise?(Exception)
+          ok {opts['weight']} == 314
           #
-          pr = proc { parser.parse(["-w", "3.14", "hoo"]) }
+          pr = proc { opts = parser.parse(["-w", "3.14", "hoo"]) }
           ok {pr}.raise?(errclass, "-w 3.14: integer expected.")
         end
 
@@ -476,7 +481,7 @@ Oktest.scope do
         spec "[!4k3zy] uses following string as argument if provided." do |parser|
           args = ["-hi4", "foo", "bar"]
           options = parser.parse(args)
-          ok {options} == {'help'=>true, 'indent'=>'4'}
+          ok {options} == {'help'=>true, 'indent'=>4}
           ok {args} == ["foo", "bar"]
         end
 
@@ -489,10 +494,12 @@ Oktest.scope do
 
         spec "[!6oy04] argument must be an integer if arg name is 'N'." do |parser|
           parser.add("-w, --weight[=N]: weight value.")
-          pr = proc { parser.parse(["--weight=314", "hoo"]) }
+          opts = nil
+          pr = proc { opts = parser.parse(["--weight=314", "hoo"]) }
           ok {pr}.NOT.raise?(Exception)
+          ok {opts['weight']} == 314
           #
-          pr = proc { parser.parse(["-w3.14", "hoo"]) }
+          pr = proc { opts = parser.parse(["-w3.14", "hoo"]) }
           ok {pr}.raise?(errclass, "-w3.14: integer expected.")
         end
 
@@ -504,7 +511,7 @@ Oktest.scope do
           ["--indent=4", "-hVa", "print", "foo", "bar"],
         ].each do |args|
           options = parser.parse(args)
-          ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+          ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
           ok {args} == ["foo", "bar"]
         end
       end

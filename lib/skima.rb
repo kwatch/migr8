@@ -1620,6 +1620,7 @@ END
             if optdef.arg == 'N' && argval
               argval =~ /\A-?\d+\z/  or
                 raise cmdopterr("#{optstr}: integer expected.")
+              argval = argval.to_i
             end
             #; [!dtbdd] uses option name instead of long name when option name specified.
             #; [!7mp75] sets true as value when argument is not provided.
@@ -1650,6 +1651,7 @@ END
                 if optdef.arg == 'N'
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch} #{argval}: integer expected.")
+                  argval = argval.to_i
                 end
                 #
                 options[optdef.name] = argval
@@ -1666,6 +1668,7 @@ END
                 if optdef.arg == 'N' && argval.is_a?(String)
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch}#{argval}: integer expected.")
+                  argval = argval.to_i
                 end
                 #
                 options[optdef.name] = argval
