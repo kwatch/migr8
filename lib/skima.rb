@@ -549,6 +549,7 @@ END
       def q(str)
         return str.gsub(/\'/, "''")
       end
+      protected :q
 
       def skeleton_for_up()
         raise NotImplementedError.new("#{self.class.name}#skeleton_for_up(): not implemented yet.")
