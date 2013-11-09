@@ -484,6 +484,8 @@ END
         return _get_girations(cmdopt, separator)
       end
 
+      protected
+
       def _get_migrations(cmdopt, separator)
         sql = "SELECT version, applied_at, author, description FROM #{history_table()} ORDER BY id;"
         output = execute_sql(sql, cmdopt)
@@ -498,12 +500,10 @@ END
         end
         return migs
       end
-      protected :_get_migrations
 
       def _echo_message(msg)
         raise NotImplementedError.new("#{self.class.name}#_echo_message(): not implemented yet.")
       end
-      protected :_echo_message
 
       def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
@@ -519,7 +519,6 @@ VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}')
 END
         return sql
       end
-      protected :_applying_sql
 
       def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
@@ -534,7 +533,8 @@ DELETE FROM #{@history_table} where version = '#{mig.version}';
 END
         return sql
       end
-      protected :_unapplying_sql
+
+      public
 
       def apply_migrations(migs)
         _do_migrations(migs) {|mig| _applying_sql(mig) }
@@ -544,6 +544,8 @@ END
         _do_migrations(migs) {|mig| _unapplying_sql(mig) }
       end
 
+      protected
+
       def _do_migrations(migs)
         sql = ""
         sql << "BEGIN; /** start transaction **/\n\n"
@@ -551,12 +553,12 @@ END
         sql << "\nCOMMIT; /** end transaction **/\n"
         run_sql(sql)
       end
-      protected :_do_migrations
 
       def q(str)
         return str.gsub(/\'/, "''")
       end
-      protected :q
+
+      public
 
       def skeleton_for_up()
         raise NotImplementedError.new("#{self.class.name}#skeleton_for_up(): not implemented yet.")
