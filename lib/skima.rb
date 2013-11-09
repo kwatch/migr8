@@ -1496,7 +1496,7 @@ END
       parser = Util::CommandOptionParser.new
       parser.add("-h, --help:      show help")
       parser.add("-v, --version:   show version")
-      parser.add("-D, --debug:")
+      parser.add("-D, --debug:     not remove sql file ('skima/tmp.sql') for debug")
       return parser
     end
 

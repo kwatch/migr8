@@ -51,6 +51,7 @@ Oktest.scope do
 Usage: #{File.basename($0)} [global-options] [action [options] [...]]
   -h, --help          : show help
   -v, --version       : show version
+  -D, --debug         : not remove sql file ('skima/tmp.sql') for debug
 
 Actions:  (default: status)
   navi                : !!RUN THIS ACTION AT FIRST!!
