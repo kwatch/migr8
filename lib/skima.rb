@@ -18,6 +18,13 @@ module Skima
 
   RELEASE = "$Release: 0.0.0 $".split(' ')[1]
 
+  DEBUG = false
+
+  def self.DEBUG=(flag)
+    remove_const(:DEBUG)
+    return const_set(:DEBUG, flag)
+  end
+
 
   class SkimaError < StandardError
   end
@@ -443,7 +450,7 @@ END
         ok = system("#{@command} < #{tmpfile}")
         ok  or
           raise SQLExecutionError.new("Failed to run sql ('#{tmpfile}').")
-        File.unlink(tmpfile)
+        File.unlink(tmpfile) unless Skima::DEBUG
       end
 
       def create_history_table()
@@ -1406,6 +1413,10 @@ END
     def run(args)
       parser = new_cmdopt_parser()
       options = parser.parse(args)   # may raise CommandOptionError
+      #; [!dcggy] sets Skima::DEBUG=true when '-d' or '--debug' specified.
+      if options['debug']
+        ::Skima.DEBUG = true
+      end
       #; [!ktlay] prints help message and exit when '-h' or '--help' specified.
       if options['help']
         $stdout << self.usage(parser)
@@ -1485,7 +1496,7 @@ END
       parser = Util::CommandOptionParser.new
       parser.add("-h, --help:      show help")
       parser.add("-v, --version:   show version")
-      parser.add("-D, --debug:")
+      parser.add("-D, --debug:     not remove sql file ('skima/tmp.sql') for debug")
       return parser
     end
 
