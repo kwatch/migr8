@@ -399,6 +399,20 @@ Oktest.scope do
         ok {pr}.raise?(errclass, "--help=true: unexpected argument.")
       end
 
+      spec "[!cfjp3] raises error when argname is 'N' but argval is not an integer." do |parser|
+        parser.add("-n, --num=N: number")
+        pr = proc { parser.parse(["--num=314"]) }
+        ok {pr}.NOT.raise?(Exception)
+        pr = proc { parser.parse(["--num=3.14"]) }
+        ok {pr}.raise?(errclass, "--num=3.14: integer expected.")
+        #
+        pr = proc { parser.parse(["--indent=4"]) }
+        ok {pr}.NOT.raise?(Exception)
+        pr = proc { parser.parse(["--indent=4i"]) }
+        ok {pr}.raise?(errclass, "--indent=4i: integer expected.")
+      end
+
+
       spec "[!dtbdd] uses option name instead of long name when option name specified." do |parser|
         pr = proc { parser.parse(["--help=true", "foo", "bar"]) }
         ok {pr}.raise?(errclass, "--help=true: unexpected argument.")

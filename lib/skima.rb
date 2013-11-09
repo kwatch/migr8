@@ -1616,6 +1616,11 @@ END
             elsif optdef.arg_required == false && argval
               raise cmdopterr("#{optstr}: unexpected argument.")
             end
+            #; [!cfjp3] raises error when argname is 'N' but argval is not an integer.
+            if optdef.arg == 'N' && argval
+              argval =~ /\A-?\d+\z/  or
+                raise cmdopterr("#{optstr}: integer expected.")
+            end
             #; [!dtbdd] uses option name instead of long name when option name specified.
             #; [!7mp75] sets true as value when argument is not provided.
             options[optdef.name] = argval.nil? ? true : argval
