@@ -528,7 +528,7 @@ END
 ---------------------------------------- unapplying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{stmt}
+#{stmt};
 -----
 DELETE FROM #{@history_table} where version = '#{mig.version}';
 END
