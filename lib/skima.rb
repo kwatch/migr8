@@ -616,7 +616,7 @@ END
         sql = ""
         sql << "BEGIN; /** start transaction **/\n\n"
         sql << migs.collect {|mig| yield mig }.join("\n")
-        sql << "\nEND; /** end transaction **/\n"
+        sql << "\nCOMMIT; /** end transaction **/\n"
         run_sql(sql, :verbose=>false)
       end
       private :__apply
