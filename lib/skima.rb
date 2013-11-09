@@ -522,7 +522,8 @@ END
       PATTERN = /\bpsql\b/
 
       def execute_sql(sql, cmdopt=nil)
-        return super("SET client_min_messages TO WARNING;\n" + sql, cmdopt)
+        preamble = "SET client_min_messages TO WARNING;\n"
+        return super(preamble+sql, cmdopt)
       end
 
       def run_sql(sql, opts={})
