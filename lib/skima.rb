@@ -450,7 +450,7 @@ END
         ok = system("#{@command} < #{tmpfile}")
         ok  or
           raise SQLExecutionError.new("Failed to run sql ('#{tmpfile}').")
-        File.unlink(tmpfile)
+        File.unlink(tmpfile) unless Skima::DEBUG
       end
 
       def create_history_table()
