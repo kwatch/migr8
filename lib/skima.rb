@@ -473,7 +473,7 @@ END
 
       def get_migrations()
         cmdopt = ""
-        separaotr = "|"
+        separator = "|"
         return _get_girations(cmdopt, separator)
       end
 
