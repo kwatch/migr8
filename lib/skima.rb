@@ -110,7 +110,7 @@ module Skima
   class Repository
 
     HISTORY_FILEPATH  = 'skima/history.txt'
-    HISTORY_TABLE     = 'skima_history'
+    HISTORY_TABLE     = '_skima_history'
     MIGRATION_DIRPATH = 'skima/migrations/'
 
     attr_reader :dbms
