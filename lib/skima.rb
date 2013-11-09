@@ -744,6 +744,102 @@ END
     end
 
 
+    class MySQL < Base
+      SYMBOL  = 'mysql'
+      PATTERN = /\bmysql\b/
+
+      def execute_sql(sql, cmdopt=nil)
+        preamble = ""
+        sql = sql.gsub(/^-----/, '-- --')
+        return super(preamble+sql, cmdopt)
+      end
+
+      def run_sql(sql, opts={})
+        preamble = ""
+        sql = sql.gsub(/^-----/, '-- --')
+        return super(preamble+sql, opts)
+      end
+
+      protected
+
+      def _history_table_statement()
+        sql = super
+        sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTO_INCREMENT')
+        #sql = sql.sub(' TIMESTAMP ', ' DATETIME  ')   # not work
+        return sql
+      end
+
+      def _echo_message(msg)
+        return %Q`select "#{msg.to_s.gsub(/"/, '\\"')}" as '';`
+      end
+
+      def q(str)
+        return str.gsub(/([\\'])/, '\\\\\1')
+      end
+
+      public
+
+      def history_table_exist?
+        table = history_table()
+        output = execute_sql("show tables like '#{table}';")
+        return output.include?(table)
+      end
+
+      def get_migrations()
+        migrations = _get_migrations("-s", /\t/)
+        return migrations
+      end
+
+      def skeleton_for_up()
+        return <<END
+  --
+  -- create table or index
+  --
+  create table ${table} (
+    id          integer        primary key auto_increment,
+    version     integer        not null default 0,
+    name        varchar(255)   not null unique,
+    created_at  datetime       not null default current_timestamp,
+    updated_at  datetime,
+    deleted_at  datetime
+  );
+  create index ${index} on ${table}(${column});
+  --
+  -- add column or unique constraint
+  --
+  alter table ${table} add column ${column} varchar(255) not null unique;
+  alter table ${table} add constraint ${unique} unique(${column});
+  --
+  -- change column
+  --
+  alter table ${table} change column ${column} new_${column} integer not null;
+  alter table ${table} modify column ${column} varchar(255) not null;
+END
+      end
+
+      def skeleton_for_down()
+        return <<END
+  --
+  -- drop table or index
+  --
+  drop table ${table};
+  drop index ${index};
+  --
+  -- drop column or unique constraint
+  --
+  alter table ${table} drop column ${column};
+  alter table ${table} drop constraint ${unique};
+  --
+  -- revert column
+  --
+  alter table ${table} change column new_${column} ${column} varchar(255);
+  alter table ${table} modify column ${column} varchar(255) not null;
+END
+      end
+
+    end
+
+
   end
 
 
@@ -802,9 +898,11 @@ END
                                       "  Example: (MacOSX, Unix)\n" +
                                       "      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3\n" +
                                       "      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL\n" +
+                                      "      $ export SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL\n" +
                                       "  Example: (Windows)\n" +
                                       "      C:\\> set SKIMA_COMMAND='sqlite3 dbname'          # for SQLite3\n" +
-                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n")
+                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n" +
+                                      "      C:\\> set SKIMA_COMMAND='mysql -s -u user dbname' # for MySQL\n")
         return cmd
       end
 
@@ -914,6 +1012,7 @@ END
             msg << "## Example ($SKIMA_COMMAND):\n"
             msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
             msg << "##   $ export SKIMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
+            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'        # for MySQL\n"
           end
           if editor.nil?
             msg << "##\n"
@@ -1346,11 +1445,13 @@ END
       if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
         s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  C:\\> set SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
         s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
         s << "  C:\\> ruby skima.rb init\n"
       else
         s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
+        s << "  $ export SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
         s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
         s << "  $ skima.rb init\n"
       end
