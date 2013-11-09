@@ -800,9 +800,11 @@ END
         ! cmd.empty?  or
           raise CommandSetupError.new("$SKIMA_COMMAND is empty. Please set it at first.\n" +
                                       "  Example: (MacOSX, Unix)\n" +
-                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'\n" +
+                                      "      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3\n" +
+                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL\n" +
                                       "  Example: (Windows)\n" +
-                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'\n")
+                                      "      C:\\> set SKIMA_COMMAND='sqlite3 dbname'          # for SQLite3\n" +
+                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n")
         return cmd
       end
 
@@ -910,6 +912,7 @@ END
           if command.nil?
             msg << "##\n"
             msg << "## Example ($SKIMA_COMMAND):\n"
+            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
             msg << "##   $ export SKIMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
           end
           if editor.nil?
@@ -1341,10 +1344,12 @@ END
       s << "\n"
       s << "Setup:\n"
       if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
+        s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
         s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
         s << "  C:\\> ruby skima.rb init\n"
       else
+        s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
         s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
         s << "  $ skima.rb init\n"
