@@ -613,10 +613,6 @@ END
         return migrations
       end
 
-      def q(str)
-        return str.gsub(/\'/, "''")
-      end
-
       def skeleton_for_up()
         return <<END
   ---
