@@ -10,6 +10,7 @@
 ###
 
 require 'yaml'
+require 'open3'
 require 'etc'
 
 
@@ -416,7 +417,6 @@ END
       end
 
       def execute_sql(sql, cmdopt=nil)
-        require 'open3' unless defined? Open3
         output, error = Open3.popen3("#{@command} #{cmdopt}") do |sin, sout, serr|
           sin.write(sql)
           sin.close()   # important!
