@@ -20,6 +20,21 @@ Oktest.scope do
         Skima::Application.new
       end
 
+      spec "[!dcggy] sets Skima::DEBUG=true when '-d' or '--debug' specified." do |app|
+        [
+          ["-D"],
+          ["--debug"],
+        ].each do |args|
+          at_exit { Skima.DEBUG = false }
+          sout, serr = Dummy.new.stdouterr do
+            Skima::DEBUG = false
+            ok {Skima::DEBUG} == false
+            status = app.run(args)
+            ok {Skima::DEBUG} == true
+          end
+        end
+      end
+
       spec "[!ktlay] prints help message and exit when '-h' or '--help' specified." do |app|
         [
           ["-h", "foo"],

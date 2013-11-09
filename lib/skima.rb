@@ -1413,6 +1413,10 @@ END
     def run(args)
       parser = new_cmdopt_parser()
       options = parser.parse(args)   # may raise CommandOptionError
+      #; [!dcggy] sets Skima::DEBUG=true when '-d' or '--debug' specified.
+      if options['debug']
+        ::Skima.DEBUG = true
+      end
       #; [!ktlay] prints help message and exit when '-h' or '--help' specified.
       if options['help']
         $stdout << self.usage(parser)
