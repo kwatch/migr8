@@ -318,10 +318,6 @@ module Skima
       return ! exist_p
     end
 
-    def history_table_empty?
-      return @dbms.history_table_empty?
-    end
-
     def create_migration(desc, author=nil, opts={})
       mig = Migration.new(new_version(), author || Etc.getlogin(), desc)
       content = render_migration_file(opts)
@@ -456,13 +452,6 @@ END
 
       def history_table_exist?
         raise NotImplementedError.new("#{self.class.name}#history_table_exist?: not implemented yet.")
-      end
-
-      def history_table_empty?
-        return false if history_table_exist?
-        sql = "select exists( select * from #{table} );"  # 'f' when empty, else 't'
-        output = execute_sql(sql)
-        return output =~ /\bf(alse)?\b/
       end
 
       def get_migrations()
