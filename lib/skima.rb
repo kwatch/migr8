@@ -1230,8 +1230,6 @@ END
 
       def run(options, args)
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         else
           n = 5
@@ -1268,8 +1266,6 @@ END
 
       def run(options, args)
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['a']
           n = nil
@@ -1295,8 +1291,6 @@ END
       def run(options, args)
         n = 1
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['ALL']
           n = nil
@@ -1352,8 +1346,6 @@ END
       def run(options, args)
         n = 1
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['ALL']
           n = nil
