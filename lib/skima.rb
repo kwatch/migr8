@@ -575,6 +575,80 @@ END
     end
 
 
+    class SQLite3 < Base
+      SYMBOL  = 'sqlite3'
+      PATTERN = /\bsqlite3\b/
+
+      def execute_sql(sql, cmdopt=nil)
+        preamble = ".bail ON\n"
+        return super(preamble+sql, cmdopt)
+      end
+
+      def run_sql(sql, opts={})
+        preamble = ".bail ON\n"
+        super(preamble+sql, opts)
+      end
+
+      protected
+
+      def _histrory_table_statement()
+        sql = super
+        sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTOINCREMENT')
+        sql = sql.sub(/ TIMESTAMP /, ' DATETIME  ')
+        return sql
+      end
+
+      def _echo_message(msg)
+        return ".print '#{q(msg)}'"
+      end
+
+      public
+
+      def history_table_exist?
+        table = history_table()
+        output = execute_sql(".table #{table}")
+        return output.include?(table)
+      end
+
+      def get_migrations()
+        migrations = _get_migrations("-list", /\|/)
+        return migrations
+      end
+
+      def skeleton_for_up()
+        return <<END
+  ---
+  --- create table or index
+  ---
+  create table ${table} (
+    id          integer        primary key autoincrement,
+    version     integer        not null default 0,
+    name        string         not null unique,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${index} on ${table}(${column});
+  ---
+  --- add column
+  ---
+  alter table ${table} add column ${column} string not null default '';
+END
+      end
+
+      def skeleton_for_down()
+        return <<END
+  ---
+  --- drop table or index
+  ---
+  drop table ${table};
+  drop index ${index};
+END
+      end
+
+    end
+
+
     class PostgreSQL < Base
       SYMBOL  = 'postgres'
       PATTERN = /\bpsql\b/
