@@ -478,7 +478,7 @@ END
       end
 
       def _get_migrations(cmdopt, separator)
-        sql = 'SELECT version, applied_at, author, description FROM skima_history ORDER BY id;'
+        sql = "SELECT version, applied_at, author, description FROM #{history_table()} ORDER BY id;"
         output = execute_sql(sql, cmdopt)
         migs = []
         output.each_line do |line|
