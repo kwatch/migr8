@@ -443,8 +443,8 @@ END
         puts sql                            if verbose
         puts "_END_"                        if verbose
         File.open(tmpfile, 'w') {|f| f.write(sql) }
-        puts "$ #{@command} -f #{tmpfile}"  if verbose
-        ok = system("#{@command} -f #{tmpfile}")
+        puts "$ #{@command} < #{tmpfile}"   if verbose
+        ok = system("#{@command} < #{tmpfile}")
         ok  or
           raise SQLExecutionError.new("Failed to run sql ('#{tmpfile}').")
         File.unlink(tmpfile)
