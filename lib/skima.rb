@@ -575,6 +575,80 @@ END
     end
 
 
+    class SQLite3 < Base
+      SYMBOL  = 'sqlite3'
+      PATTERN = /\bsqlite3\b/
+
+      def execute_sql(sql, cmdopt=nil)
+        preamble = ".bail ON\n"
+        return super(preamble+sql, cmdopt)
+      end
+
+      def run_sql(sql, opts={})
+        preamble = ".bail ON\n"
+        super(preamble+sql, opts)
+      end
+
+      protected
+
+      def _histrory_table_statement()
+        sql = super
+        sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTOINCREMENT')
+        sql = sql.sub(/ TIMESTAMP /, ' DATETIME  ')
+        return sql
+      end
+
+      def _echo_message(msg)
+        return ".print '#{q(msg)}'"
+      end
+
+      public
+
+      def history_table_exist?
+        table = history_table()
+        output = execute_sql(".table #{table}")
+        return output.include?(table)
+      end
+
+      def get_migrations()
+        migrations = _get_migrations("-list", /\|/)
+        return migrations
+      end
+
+      def skeleton_for_up()
+        return <<END
+  ---
+  --- create table or index
+  ---
+  create table ${table} (
+    id          integer        primary key autoincrement,
+    version     integer        not null default 0,
+    name        string         not null unique,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${index} on ${table}(${column});
+  ---
+  --- add column
+  ---
+  alter table ${table} add column ${column} string not null default '';
+END
+      end
+
+      def skeleton_for_down()
+        return <<END
+  ---
+  --- drop table or index
+  ---
+  drop table ${table};
+  drop index ${index};
+END
+      end
+
+    end
+
+
     class PostgreSQL < Base
       SYMBOL  = 'postgres'
       PATTERN = /\bpsql\b/
@@ -726,9 +800,11 @@ END
         ! cmd.empty?  or
           raise CommandSetupError.new("$SKIMA_COMMAND is empty. Please set it at first.\n" +
                                       "  Example: (MacOSX, Unix)\n" +
-                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'\n" +
+                                      "      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3\n" +
+                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL\n" +
                                       "  Example: (Windows)\n" +
-                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'\n")
+                                      "      C:\\> set SKIMA_COMMAND='sqlite3 dbname'          # for SQLite3\n" +
+                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n")
         return cmd
       end
 
@@ -836,6 +912,7 @@ END
           if command.nil?
             msg << "##\n"
             msg << "## Example ($SKIMA_COMMAND):\n"
+            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
             msg << "##   $ export SKIMA_COMMAND='psql -1 -q -U user1 dbname1'   # for PostgreSQL\n"
           end
           if editor.nil?
@@ -1267,10 +1344,12 @@ END
       s << "\n"
       s << "Setup:\n"
       if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
+        s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
         s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
         s << "  C:\\> ruby skima.rb init\n"
       else
+        s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
         s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
         s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
         s << "  $ skima.rb init\n"
