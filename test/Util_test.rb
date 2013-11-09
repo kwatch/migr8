@@ -446,6 +446,15 @@ Oktest.scope do
           ok {pr}.raise?(errclass, "-a: argument required.")
         end
 
+        spec "[!yzr2p] argument must be an integer if arg name is 'N'." do |parser|
+          parser.add("-w, --weight=N: weight value.")
+          pr = proc { parser.parse(["-w", "314", "hoo"]) }
+          ok {pr}.NOT.raise?(Exception)
+          #
+          pr = proc { parser.parse(["-w", "3.14", "hoo"]) }
+          ok {pr}.raise?(errclass, "-w 3.14: integer expected.")
+        end
+
       end
 
       case_when "[!pl97z] when short option takes optional argument..." do
@@ -462,6 +471,15 @@ Oktest.scope do
           options = parser.parse(args)
           ok {options} == {'help'=>true, 'indent'=>true}
           ok {args} == ["foo", "bar"]
+        end
+
+        spec "[!6oy04] argument must be an integer if arg name is 'N'." do |parser|
+          parser.add("-w, --weight[=N]: weight value.")
+          pr = proc { parser.parse(["--weight=314", "hoo"]) }
+          ok {pr}.NOT.raise?(Exception)
+          #
+          pr = proc { parser.parse(["-w3.14", "hoo"]) }
+          ok {pr}.raise?(errclass, "-w3.14: integer expected.")
         end
 
       end

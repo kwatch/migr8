@@ -1641,6 +1641,12 @@ END
                     raise cmdopterr("-#{ch}: argument required.")
                   argval = args.shift
                 end
+                #; [!yzr2p] argument must be an integer if arg name is 'N'.
+                if optdef.arg == 'N'
+                  argval =~ /\A-?\d+\z/  or
+                    raise cmdopterr("-#{ch} #{argval}: integer expected.")
+                end
+                #
                 options[optdef.name] = argval
                 break
               #; [!pl97z] when short option takes optional argument...
@@ -1651,6 +1657,12 @@ END
                   #; [!9k2ip] uses true as argument value if not provided.
                   argval = true
                 end
+                #; [!6oy04] argument must be an integer if arg name is 'N'.
+                if optdef.arg == 'N' && argval.is_a?(String)
+                  argval =~ /\A-?\d+\z/  or
+                    raise cmdopterr("-#{ch}#{argval}: integer expected.")
+                end
+                #
                 options[optdef.name] = argval
                 break
               else
