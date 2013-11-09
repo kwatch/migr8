@@ -472,11 +472,13 @@ END
       end
 
       def get_migrations()
-        raise NotImplementedError.new("#{self.class.name}#get_migrations(): not implemented yet.")
+        cmdopt = ""
+        separaotr = "|"
+        return _get_girations(cmdopt, separator)
       end
 
       def _get_migrations(cmdopt, separator)
-        sql = 'SELECT version, applied_at, author, description FROM skima_history ORDER BY id'
+        sql = 'SELECT version, applied_at, author, description FROM skima_history ORDER BY id;'
         output = execute_sql(sql, cmdopt)
         migs = []
         output.each_line do |line|
@@ -489,6 +491,7 @@ END
         end
         return migs
       end
+      protected :_get_migrations
 
       def applying_sql(mig)
         raise NotImplementedError.new("#{self.class.name}#applying_sql(): not implemented yet.")
