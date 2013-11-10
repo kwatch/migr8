@@ -1018,19 +1018,16 @@ END
 ##
 ## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
 ##
+##   Example:
 END
           msg << <<END if command.nil?
-##
-## Example ($SKIMA_COMMAND):
-##   $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
-##                   ## or  'psql -q -U user1 dbname1'  # for PostgreSQL
-##                   ## or  'mysql -u user1 dbname1'    # for MySQL
+##     $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
+##                     ## or  'psql -q -U user1 dbname1'  # for PostgreSQL
+##                     ## or  'mysql -u user1 dbname1'    # for MySQL
 END
           msg << <<END if editor.nil?
-##
-## Example ($SKIMA_EDITOR):
-##   $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
-##                   ## or 'emacsclient'          # for Emacs
+##     $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
+##                     ## or 'emacsclient'          # for Emacs
 END
           msg << <<END
 ##
