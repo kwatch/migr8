@@ -1257,7 +1257,7 @@ END
 
     class UpAction < Action
       NAME = "up"
-      DESC = "apply a next migration"
+      DESC = "apply next migration"
       OPTS = [
         "-n N : apply N migrations",
         "-a   : apply all migrations",
