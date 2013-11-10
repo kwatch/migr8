@@ -1185,7 +1185,7 @@ END
       NAME = "edit"
       DESC = "open migration file by $MIGR8_EDITOR"
       OPTS = [
-        "-r        :  edit N-th file from latest version",
+        "-r N      : edit N-th file from latest version",
         "-e editor : editr command (such as 'emacsclient', 'open', ...)",
       ]
       ARGS = "[version]"
@@ -1198,8 +1198,6 @@ END
         end
         version = num = nil
         if options['r']
-          options['r'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -r #{options['r']}: integer expected.")
           num = options['r'].to_i
         else
           if args.length == 0
