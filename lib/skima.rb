@@ -1018,16 +1018,15 @@ END
 ##
 ## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
 ##
-##   Example:
 END
           msg << <<END #if command.nil?
 ##     $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
-##                     ## or  'psql -q -U user1 dbname1'  # for PostgreSQL
-##                     ## or  'mysql -u user1 dbname1'    # for MySQL
+##                      # or  'psql -q -U user1 dbname1'  # for PostgreSQL
+##                      # or  'mysql -u user1 dbname1'    # for MySQL
 END
           msg << <<END #if editor.nil?
 ##     $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
-##                     ## or 'emacsclient'          # for Emacs
+##                      # or 'emacsclient'          # for Emacs
 END
         #
         #elsif ! repo.init?
@@ -1038,7 +1037,6 @@ END
 ## Step 2/3: Run '#{script} init' to create files and a table.
 ## (You can call it many times; it doesn't remove existing file nor table.)
 ##
-##   Example:
 ##     $ #{script} init     # create directories and files (= '#{basedir}/*'),
 ##                         # and create '#{histtbl}' table in DB.
 END
@@ -1048,12 +1046,11 @@ END
 ##
 ## Step 3/3: Now you can create a new migration and apply it to DB.
 ##
-##   Example:
 ##     $ #{script} help
 ##     $ #{script} new -m "create 'foobar' table"   # create a migration
-##     $ #{script} hist      # not applied yet.
-##     $ #{script} up        # apply a migration (= change DB schema)
-##     $ #{script} hist      # applied successfully!
+##     $ #{script} hist     # not applied yet.
+##     $ #{script} up       # apply a migration (= change DB schema)
+##     $ #{script} hist     # applied successfully!
 ##
 ## Try '#{script} help [command]' for details of each command.
 ##
