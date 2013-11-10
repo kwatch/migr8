@@ -996,7 +996,7 @@ END
 
       def run(options, args)
         msg = intro_for_newbie(File.basename($0))
-        $stderr << msg
+        puts msg
       end
 
       private
