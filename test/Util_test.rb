@@ -481,8 +481,8 @@ Oktest.scope do
             pr = proc { parser.parse(["-n", "314", "hoo"]) }
             ok {pr}.NOT.raise?(Exception)
             #
-            pr = proc { opts = parser.parse(["-w", "3.14", "hoo"]) }
-            ok {pr}.raise?(errclass, "-w 3.14: integer expected.")
+            pr = proc { opts = parser.parse(["-n", "3.14", "hoo"]) }
+            ok {pr}.raise?(errclass, "-n 3.14: integer expected.")
           end
 
           spec "[!mcwu7] argument must be positive value." do |parser|
