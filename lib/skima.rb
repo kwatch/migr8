@@ -1006,8 +1006,8 @@ END
       end
 
       def navi_for_newbie(script)
-        repo = repository()
-        basedir = File.dirname(repo.history_filepath)
+        dummy_repo = Repository.new(nil)
+        basedir = File.dirname(dummy_repo.history_filepath)
         histtbl = Repository::HISTORY_TABLE
         return <<END
 ##
