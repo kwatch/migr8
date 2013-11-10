@@ -1257,7 +1257,7 @@ END
 
     class UpAction < Action
       NAME = "up"
-      DESC = "apply a next migration"
+      DESC = "apply next migration"
       OPTS = [
         "-n N : apply N migrations",
         "-a   : apply all migrations",
@@ -1447,19 +1447,16 @@ END
       end
       s << "\n"
       s << "Setup:\n"
-      if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
-        s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
-        s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
-        s << "  C:\\> set SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
-        s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
-        s << "  C:\\> ruby skima.rb init\n"
-      else
-        s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
-        s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
-        s << "  $ export SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
-        s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
-        s << "  $ skima.rb init\n"
-      end
+      win = RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
+      exprt = win ? 'C:\\> set'  : '$ export'
+      ruby   = win ? 'C:\\> ruby' : '$'
+      s << "  #{exprt} SKIMA_COMMAND='sqlite3 dbfile1'            # for SQLite3\n"
+      s << "                  ##  or 'psql -q -U user1 dbname1'   # for PostgreSQL\n"
+      s << "                  ##  or 'mysql -s -u user1 dbname1'  # for MySQL\n"
+      s << "  #{exprt} SKIMA_EDITOR='notepad.exe'                 # editor command\n" if win
+      s << "  #{exprt} SKIMA_EDITOR='open -a TextMate'            # for TextMate (MacOSX)\n" unless win
+      s << "                  ##  or 'emacsclient'                # for emacs\n"  unless win
+      s << "  #{ruby} skima.rb init\n"
       return s
     end
 
