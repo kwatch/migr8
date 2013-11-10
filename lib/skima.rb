@@ -1612,7 +1612,10 @@ END
             if optdef.arg == 'N' && argval
               argval =~ /\A-?\d+\z/  or
                 raise cmdopterr("#{optstr}: integer expected.")
+              #; [!18p1g] raises error when argval <= 0.
               argval = argval.to_i
+              argval > 0  or
+                raise cmdopterr("#{optstr}: positive value expected.")
             end
             #; [!dtbdd] uses option name instead of long name when option name specified.
             #; [!7mp75] sets true as value when argument is not provided.
@@ -1643,7 +1646,10 @@ END
                 if optdef.arg == 'N'
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch} #{argval}: integer expected.")
+                  #; [!mcwu7] argument must be positive value.
                   argval = argval.to_i
+                  argval > 0  or
+                    raise cmdopterr("-#{ch} #{argval}: positive value expected.")
                 end
                 #
                 options[optdef.name] = argval
@@ -1660,7 +1666,10 @@ END
                 if optdef.arg == 'N' && argval.is_a?(String)
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch}#{argval}: integer expected.")
+                  #; [!nc3av] argument must be positive value.
                   argval = argval.to_i
+                  argval > 0  or
+                    raise cmdopterr("-#{ch}#{argval}: positive value expected.")
                 end
                 #
                 options[optdef.name] = argval

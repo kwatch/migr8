@@ -415,6 +415,16 @@ Oktest.scope do
         ok {pr}.raise?(errclass, "--indent=4i: integer expected.")
       end
 
+      spec "[!18p1g] raises error when argval <= 0." do |parser|
+        parser.add("-n, --num=N: number")
+        opts = parser.parse(["--num=9"])
+        ok {opts['num']} == 9
+        #
+        pr = proc { parser.parse(["--num=-9"]) }
+        ok {pr}.raise?(errclass, "--num=-9: positive value expected.")
+        pr = proc { parser.parse(["--num=0"]) }
+        ok {pr}.raise?(errclass, "--num=0: positive value expected.")
+      end
 
       spec "[!dtbdd] uses option name instead of long name when option name specified." do |parser|
         pr = proc { parser.parse(["--help=true", "foo", "bar"]) }
@@ -474,6 +484,17 @@ Oktest.scope do
           ok {pr}.raise?(errclass, "-w 3.14: integer expected.")
         end
 
+        spec "[!mcwu7] argument must be positive value." do |parser|
+          parser.add("-n, --num=N: number.")
+          opts = parser.parse(["-n", "9"])
+          ok {opts['num']} == 9
+          #
+          pr = proc { parser.parse(["-n", "-9"]) }
+          ok {pr}.raise?(errclass, "-n -9: positive value expected.")
+          pr = proc { parser.parse(["-n", "0"]) }
+          ok {pr}.raise?(errclass, "-n 0: positive value expected.")
+        end
+
       end
 
       case_when "[!pl97z] when short option takes optional argument..." do
@@ -501,6 +522,17 @@ Oktest.scope do
           #
           pr = proc { opts = parser.parse(["-w3.14", "hoo"]) }
           ok {pr}.raise?(errclass, "-w3.14: integer expected.")
+        end
+
+        spec "[!nc3av] argument must be positive value." do |parser|
+          parser.add("-n, --num[=N]: number")
+          opts = parser.parse(["-n9"])
+          ok {opts['num']} == 9
+          #
+          pr = proc { opts = parser.parse(["-n-9"]) }
+          ok {pr}.raise?(errclass, "-n-9: positive value expected.")
+          pr = proc { opts = parser.parse(["-n0"]) }
+          ok {pr}.raise?(errclass, "-n0: positive value expected.")
         end
 
       end
