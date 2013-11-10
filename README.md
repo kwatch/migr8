@@ -28,27 +28,28 @@ Quick Start
         $ export SKIMA_EDITOR="emacsclient"          # for Emacs
         $ export SKIMA_EDITOR="vim"                  # for Vim
 
-3. Create files and a table.
+3. Create managiment files and table.
 
         $ ./skima.rb init         # create files in current directory,
                                   # and create a table in DB.
 
 4. Now you can manage DB schema versions.
 
-        $ ./skima.rb                                  # show current status
-        $ ./skima.rb new -m "create 'users' table"    # create a migration
-        $ ./skima.rb                                  # show status again
-        $ ./skima.rb up                               # apply migration
-        $ ./skima.rb                                  # show status again
-        $ ./skima.rb hist                             # list history
+        $ ./skima.rb                                 # show current status
+        $ ./skima.rb new -m "create 'users' table"   # create a migration
+        $ ./skima.rb                                 # show status again
+        $ ./skima.rb up                              # apply migration
+        $ ./skima.rb                                 # show status again
+        $ ./skima.rb hist                            # list history
 
 5. You may got confliction error when `git rebase` or `git pull`.
    In this case, you must resolve it by hand.
    (This is intended design.)
 
-        $ git rebase master     # confliction!
-        $ ./skima.rb hist -o    # open 'skima/history.txt' and resolve confliction
-        $ ./skima.rb hist       # check whether history file is valid
+        $ git rebase master         # confliction!
+        $ ./skima.rb hist -o        # open 'skima/history.txt', and
+                                    # resolve confliction manually
+        $ ./skima.rb hist           # check whether history file is valid
         $ git add skima/history.txt
         $ git rebase --continue
 
@@ -56,7 +57,10 @@ Quick Start
 Tips
 ----
 
-* `skima.rb up` applys only a migration, and `skima.rb up -a` applys all migrations.
+* `skima.rb up` applys only a migration,
+  and `skima.rb up -a` applys all migrations.
+
+* `skima.rb -D up` saves SQL executed into `skima/history.txt` file.
 
 * `skima.rb redo` is equivarent to `skima.rb down; skima.rb up`.
 
