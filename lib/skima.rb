@@ -328,7 +328,7 @@ module Skima
 
     def create_migration(desc, author=nil, opts={})
       mig = Migration.new(new_version(), author || Etc.getlogin(), desc)
-      content = render_migration_file(opts)
+      content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
       File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)+"\n") }
       return mig
