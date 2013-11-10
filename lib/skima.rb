@@ -1230,8 +1230,6 @@ END
 
       def run(options, args)
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         else
           n = 5
@@ -1268,8 +1266,6 @@ END
 
       def run(options, args)
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['a']
           n = nil
@@ -1295,8 +1291,6 @@ END
       def run(options, args)
         n = 1
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['ALL']
           n = nil
@@ -1352,8 +1346,6 @@ END
       def run(options, args)
         n = 1
         if options['n']
-          options['n'] =~ /\A\d+\z/  or
-            raise cmdopterr("#{NAME} -n #{options['n']}: integer expected.")
           n = options['n'].to_i
         elsif options['ALL']
           n = nil
@@ -1616,6 +1608,16 @@ END
             elsif optdef.arg_required == false && argval
               raise cmdopterr("#{optstr}: unexpected argument.")
             end
+            #; [!1l2dn] when argname is 'N'...
+            if optdef.arg == 'N' && argval
+              #; [!cfjp3] raises error when argval is not an integer.
+              argval =~ /\A-?\d+\z/  or
+                raise cmdopterr("#{optstr}: integer expected.")
+              #; [!18p1g] raises error when argval <= 0.
+              argval = argval.to_i
+              argval > 0  or
+                raise cmdopterr("#{optstr}: positive value expected.")
+            end
             #; [!dtbdd] uses option name instead of long name when option name specified.
             #; [!7mp75] sets true as value when argument is not provided.
             options[optdef.name] = argval.nil? ? true : argval
@@ -1641,6 +1643,17 @@ END
                     raise cmdopterr("-#{ch}: argument required.")
                   argval = args.shift
                 end
+                #; [!h3gt8] when argname is 'N'...
+                if optdef.arg == 'N'
+                  #; [!yzr2p] argument must be an integer.
+                  argval =~ /\A-?\d+\z/  or
+                    raise cmdopterr("-#{ch} #{argval}: integer expected.")
+                  #; [!mcwu7] argument must be positive value.
+                  argval = argval.to_i
+                  argval > 0  or
+                    raise cmdopterr("-#{ch} #{argval}: positive value expected.")
+                end
+                #
                 options[optdef.name] = argval
                 break
               #; [!pl97z] when short option takes optional argument...
@@ -1651,6 +1664,17 @@ END
                   #; [!9k2ip] uses true as argument value if not provided.
                   argval = true
                 end
+                #; [!lk761] when argname is 'N'...
+                if optdef.arg == 'N' && argval.is_a?(String)
+                  #; [!6oy04] argument must be an integer.
+                  argval =~ /\A-?\d+\z/  or
+                    raise cmdopterr("-#{ch}#{argval}: integer expected.")
+                  #; [!nc3av] argument must be positive value.
+                  argval = argval.to_i
+                  argval > 0  or
+                    raise cmdopterr("-#{ch}#{argval}: positive value expected.")
+                end
+                #
                 options[optdef.name] = argval
                 break
               else

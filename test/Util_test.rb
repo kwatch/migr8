@@ -338,7 +338,7 @@ Oktest.scope do
         |parser|
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
       end
 
@@ -347,7 +347,7 @@ Oktest.scope do
         # short options
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
         #
         args = "-hi foo bar".split(' ')
@@ -361,7 +361,7 @@ Oktest.scope do
         # long options
         args = "--help --action=print --indent=4 foo bar".split(' ')
         options = parser.parse(args)
-        ok {options} == {'help'=>true, 'indent'=>'4', 'action'=>'print'}
+        ok {options} == {'help'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
         #
         args = "--indent foo bar".split(' ')
@@ -397,6 +397,34 @@ Oktest.scope do
       spec "[!8eu9s] raises error when option takes no argument but provided." do |parser|
         pr = proc { parser.parse(["--help=true", "foo", "bar"]) }
         ok {pr}.raise?(errclass, "--help=true: unexpected argument.")
+      end
+
+      case_when "[!1l2dn] when argname is 'N'..." do
+
+        spec "[!cfjp3] raises error when argval is not an integer." do |parser|
+          parser.add("-n, --num=N: number")
+          pr = proc { parser.parse(["--num=314"]) }
+          ok {pr}.NOT.raise?(Exception)
+          pr = proc { parser.parse(["--num=3.14"]) }
+          ok {pr}.raise?(errclass, "--num=3.14: integer expected.")
+          #
+          pr = proc { parser.parse(["--indent=4"]) }
+          ok {pr}.NOT.raise?(Exception)
+          pr = proc { parser.parse(["--indent=4i"]) }
+          ok {pr}.raise?(errclass, "--indent=4i: integer expected.")
+        end
+
+        spec "[!18p1g] raises error when argval <= 0." do |parser|
+          parser.add("-n, --num=N: number")
+          opts = parser.parse(["--num=9"])
+          ok {opts['num']} == 9
+          #
+          pr = proc { parser.parse(["--num=-9"]) }
+          ok {pr}.raise?(errclass, "--num=-9: positive value expected.")
+          pr = proc { parser.parse(["--num=0"]) }
+          ok {pr}.raise?(errclass, "--num=0: positive value expected.")
+        end
+
       end
 
       spec "[!dtbdd] uses option name instead of long name when option name specified." do |parser|
@@ -446,6 +474,30 @@ Oktest.scope do
           ok {pr}.raise?(errclass, "-a: argument required.")
         end
 
+        case_when "[!h3gt8] when argname is 'N'..." do
+
+          spec "[!yzr2p] argument must be an integer." do |parser|
+            parser.add("-n, --num=N: number.")
+            pr = proc { parser.parse(["-n", "314", "hoo"]) }
+            ok {pr}.NOT.raise?(Exception)
+            #
+            pr = proc { opts = parser.parse(["-w", "3.14", "hoo"]) }
+            ok {pr}.raise?(errclass, "-w 3.14: integer expected.")
+          end
+
+          spec "[!mcwu7] argument must be positive value." do |parser|
+            parser.add("-n, --num=N: number.")
+            opts = parser.parse(["-n", "9"])
+            ok {opts['num']} == 9
+            #
+            pr = proc { parser.parse(["-n", "-9"]) }
+            ok {pr}.raise?(errclass, "-n -9: positive value expected.")
+            pr = proc { parser.parse(["-n", "0"]) }
+            ok {pr}.raise?(errclass, "-n 0: positive value expected.")
+          end
+
+        end
+
       end
 
       case_when "[!pl97z] when short option takes optional argument..." do
@@ -453,7 +505,7 @@ Oktest.scope do
         spec "[!4k3zy] uses following string as argument if provided." do |parser|
           args = ["-hi4", "foo", "bar"]
           options = parser.parse(args)
-          ok {options} == {'help'=>true, 'indent'=>'4'}
+          ok {options} == {'help'=>true, 'indent'=>4}
           ok {args} == ["foo", "bar"]
         end
 
@@ -464,6 +516,30 @@ Oktest.scope do
           ok {args} == ["foo", "bar"]
         end
 
+        case_when "[!lk761] when argname is 'N'..." do
+
+          spec "[!6oy04] argument must be an integer." do |parser|
+            parser.add("-n, --num[=N]: number.")
+            pr = proc { parser.parse(["-n314", "hoo"]) }
+            ok {pr}.NOT.raise?(Exception)
+            #
+            pr = proc { parser.parse(["-n3.14", "hoo"]) }
+            ok {pr}.raise?(errclass, "-n3.14: integer expected.")
+          end
+
+          spec "[!nc3av] argument must be positive value." do |parser|
+            parser.add("-n, --num[=N]: number")
+            opts = parser.parse(["-n9"])
+            ok {opts['num']} == 9
+            #
+            pr = proc { opts = parser.parse(["-n-9"]) }
+            ok {pr}.raise?(errclass, "-n-9: positive value expected.")
+            pr = proc { opts = parser.parse(["-n0"]) }
+            ok {pr}.raise?(errclass, "-n0: positive value expected.")
+          end
+
+        end
+
       end
 
       spec "[!35eof] returns parsed options." do |parser|
@@ -472,7 +548,7 @@ Oktest.scope do
           ["--indent=4", "-hVa", "print", "foo", "bar"],
         ].each do |args|
           options = parser.parse(args)
-          ok {options} == {'help'=>true, 'version'=>true, 'indent'=>'4', 'action'=>'print'}
+          ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
           ok {args} == ["foo", "bar"]
         end
       end
