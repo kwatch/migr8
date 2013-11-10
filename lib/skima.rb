@@ -1714,7 +1714,7 @@ END
 
     module Expander
 
-      class UnknownVariableError < StandardError
+      class UnknownVariableError < SkimaError
       end
 
       module_function
