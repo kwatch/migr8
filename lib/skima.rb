@@ -1608,8 +1608,9 @@ END
             elsif optdef.arg_required == false && argval
               raise cmdopterr("#{optstr}: unexpected argument.")
             end
-            #; [!cfjp3] raises error when argname is 'N' but argval is not an integer.
+            #; [!1l2dn] when argname is 'N'...
             if optdef.arg == 'N' && argval
+              #; [!cfjp3] raises error when argval is not an integer.
               argval =~ /\A-?\d+\z/  or
                 raise cmdopterr("#{optstr}: integer expected.")
               #; [!18p1g] raises error when argval <= 0.
@@ -1642,8 +1643,9 @@ END
                     raise cmdopterr("-#{ch}: argument required.")
                   argval = args.shift
                 end
-                #; [!yzr2p] argument must be an integer if arg name is 'N'.
+                #; [!h3gt8] when argname is 'N'...
                 if optdef.arg == 'N'
+                  #; [!yzr2p] argument must be an integer.
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch} #{argval}: integer expected.")
                   #; [!mcwu7] argument must be positive value.
@@ -1662,8 +1664,9 @@ END
                   #; [!9k2ip] uses true as argument value if not provided.
                   argval = true
                 end
-                #; [!6oy04] argument must be an integer if arg name is 'N'.
+                #; [!lk761] when argname is 'N'...
                 if optdef.arg == 'N' && argval.is_a?(String)
+                  #; [!6oy04] argument must be an integer.
                   argval =~ /\A-?\d+\z/  or
                     raise cmdopterr("-#{ch}#{argval}: integer expected.")
                   #; [!nc3av] argument must be positive value.
