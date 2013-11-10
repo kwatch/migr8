@@ -1447,19 +1447,16 @@ END
       end
       s << "\n"
       s << "Setup:\n"
-      if RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
-        s << "  C:\\> set SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
-        s << "  C:\\> set SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
-        s << "  C:\\> set SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
-        s << "  C:\\> export SKIMA_EDITOR='notepad.exe'                # editor command\n"
-        s << "  C:\\> ruby skima.rb init\n"
-      else
-        s << "  $ export SKIMA_COMMAND='sqlite3 database1'            # for SQLite3\n"
-        s << "  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL\n"
-        s << "  $ export SKIMA_COMMAND='mysql -s -u user1 database1'  # for MySQL\n"
-        s << "  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc\n"
-        s << "  $ skima.rb init\n"
-      end
+      win = RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
+      setenv = win ? 'C:\\> set'  : '$ export'
+      ruby   = win ? 'C:\\> ruby' : '$'
+      s << "  #{setenv} SKIMA_COMMAND='sqlite3 dbname1'            # for SQLite3\n"
+      s << "  #{setenv} SKIMA_COMMAND='psql -q -U user1 dbname1'   # for PostgreSQL\n"
+      s << "  #{setenv} SKIMA_COMMAND='mysql -s -u user1 dbname1'  # for MySQL\n"
+      s << "  #{setenv} SKIMA_EDITOR='notepad.exe'            # editor command\n" if win
+      s << "  #{setenv} SKIMA_EDITOR='emacsclient'            # for emacs\n"  unless win
+      s << "  #{setenv} SKIMA_EDITOR='open -a TextMate'       # for MacOSX\n" unless win
+      s << "  #{ruby} skima.rb init\n"
       return s
     end
 
