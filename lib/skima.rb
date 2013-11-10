@@ -1014,53 +1014,63 @@ END
         editor  = ENV['SKIMA_EDITOR'].to_s.strip
         editor  = nil if editor.empty?
         if command.nil? || editor.nil?
-          msg << "##\n"
-          msg << "## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.\n"
-          if command.nil?
-            msg << "##\n"
-            msg << "## Example ($SKIMA_COMMAND):\n"
-            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3\n"
-            msg << "##   $ export SKIMA_COMMAND='psql -q -U user1 dbname1'  # for PostgreSQL\n"
-            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'    # for MySQL\n"
-          end
-          if editor.nil?
-            msg << "##\n"
-            msg << "## Example ($SKIMA_EDITOR):\n"
-            msg << "##   $ export SKIMA_EDITOR='vi'                   # for vi\n"
-            msg << "##   $ export SKIMA_EDITOR='emacsclient'          # for emacs\n"
-            msg << "##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX\n"
-          end
-          msg << "##\n"
-          msg << "## (Run '#{script} navi' again after above settings.)\n"
-          msg << "##\n"
+          msg << <<END
+##
+## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
+END
+          msg << <<END if command.nil?
+##
+## Example ($SKIMA_COMMAND):
+##   $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
+##   $ export SKIMA_COMMAND='psql -q -U user1 dbname1'  # for PostgreSQL
+##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'    # for MySQL
+END
+          msg << <<END if editor.nil?
+##
+## Example ($SKIMA_EDITOR):
+##   $ export SKIMA_EDITOR='vi'                   # for vi
+##   $ export SKIMA_EDITOR='emacsclient'          # for emacs
+##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX
+END
+          msg << <<END
+##
+## (Run '#{script} navi' again after above settings.)
+##
+END
         #
         elsif ! repo.init?
-          msg << "##\n"
-          msg << "## Step 2/3: Run '#{script} init' to create files and a table.\n"
-          msg << "## (You can call it many times; it doesn't remove existing file nor table.)\n"
-          msg << "##\n"
-          msg << "## Example:\n"
-          msg << "##   $ #{script} init      # create directories and files (= '#{File.dirname(repo.history_filepath)}/*'),\n"
-          msg << "##                         # and create '#{Repository::HISTORY_TABLE}' table in DB.\n"
-          msg << "##\n"
-          msg << "## (Run '#{script} navi' again after above command.)\n"
-          msg << "##\n"
+          basedir = File.dirname(repo.history_filepath)
+          histtbl = Repository::HISTORY_TABLE
+          msg << <<END
+##
+## Step 2/3: Run '#{script} init' to create files and a table.
+## (You can call it many times; it doesn't remove existing file nor table.)
+##
+## Example:
+##   $ #{script} init      # create directories and files (= '#{basedir}/*'),
+##                         # and create '#{histtbl}' table in DB.
+##
+## (Run '#{script} navi' again after above command.)
+##
+END
         #
         else
-          msg << "##\n"
-          msg << "## Step 3/3: Now you can create a new migration and apply it to DB.\n"
-          msg << "##\n"
-          msg << "## Example:\n"
-          msg << "##   $ #{script} help\n"
-          msg << "##   $ #{script} new -m \"create 'foobar' table\"   # create a migration\n"
-          msg << "##   $ #{script} hist      # not applied yet.\n"
-          msg << "##   $ #{script} up        # apply a migration (= change DB schema)\n"
-          msg << "##   $ #{script} hist      # applied successfully!\n"
-          msg << "##\n"
-          msg << "## Try '#{script} help [command]' for details of each command.\n"
-          msg << "##\n"
-          msg << "## Good luck!\n"
-          msg << "##\n"
+          msg << <<END
+##
+## Step 3/3: Now you can create a new migration and apply it to DB.
+##
+## Example:
+##   $ #{script} help
+##   $ #{script} new -m "create 'foobar' table"   # create a migration
+##   $ #{script} hist      # not applied yet.
+##   $ #{script} up        # apply a migration (= change DB schema)
+##   $ #{script} hist      # applied successfully!
+##
+## Try '#{script} help [command]' for details of each command.
+##
+## Good luck!
+##
+END
         end
         #
         return msg
