@@ -940,7 +940,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history table not created.
-## (Please run '#{script} intro' or '#{script} init' at first.)
+## (Please run '#{script} readme' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{dbms.history_table}: table not found.")
@@ -949,7 +949,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history file not found.
-## (Please run '#{script} intro' or '#{script} init' at first.)
+## (Please run '#{script} readme' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{repo.history_filepath}: not found.")
@@ -989,71 +989,16 @@ END
     end
 
 
-    class IntroAction < Action
-      NAME = "intro"
-      DESC = "!!RUN THIS ACTION AT FIRST!!"
+    class ReadMeAction < Action
+      NAME = "readme"
+      DESC = "!!READ ME AT FIRST!!"
       OPTS = []
       ARGS = nil
 
       attr_accessor :forced
 
       def run(options, args)
-        msg = intro_for_newbie(File.basename($0))
-        puts msg
-      end
-
-      private
-
-      def _should_check?
-        false
-      end
-
-      def intro_for_newbie(script)
-        dummy_repo = Repository.new(nil)
-        basedir = File.dirname(dummy_repo.history_filepath)
-        histtbl = Repository::HISTORY_TABLE
-        return <<END
-#
-#   Overview
-#  ----------
-#
-#  #{script} is a DB schema version management tool.
-#
-#  * Easy to install, easy to setup, and easy to use.
-#  * Only 1 file (no need to install a lot of libraries!)
-#  * Very fast
-#
-#
-#   Quick Start
-#  -------------
-#
-#  Step 1: Set both $MIGR8_COMMAND and $MIGR8_EDITOR at first.
-#
-#      $ export MIGR8_COMMAND='sqlite3 dbname1'           # for SQLite3
-#                       # or  'psql -q -U user1 dbname1'  # for PostgreSQL
-#                       # or  'mysql -u user1 dbname1'    # for MySQL
-#      $ export MIGR8_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
-#                       # or 'emacsclient'          # for Emacs
-#
-#  Step 2: Run '#{script} init' to create files and a table.
-#    (You can call it many times; it doesn't remove existing file nor table.)
-#
-#      $ #{script} init     # create directories and files (= '#{basedir}/*'),
-#                          # and create '#{histtbl}' table in DB.
-#
-#  Step 3: Now you can create a new migration and apply it to DB.
-#
-#      $ #{script} help
-#      $ #{script} new -m "create 'foobar' table"   # create a migration
-#      $ #{script} hist     # not applied yet.
-#      $ #{script} up       # apply a migration (= change DB schema)
-#      $ #{script} hist     # applied successfully!
-#
-#  Try '#{script} help [command]' for details of each command.
-#
-#  Good luck!
-#
-END
+        puts README
       end
 
     end
@@ -1456,7 +1401,7 @@ END
         s << action_class.new.short_usage()
       end
       s << "\n"
-      s << "(ATTENTION!! Run '#{script} intro' at first if you don't know #{script} well.)\n"
+      s << "(ATTENTION!! Run '#{script} readme' at first if you don't know #{script} well.)\n"
       s << "\n"
       return s
     end
@@ -1493,10 +1438,10 @@ END
     end
 
     def default_action_name
-      intro_p = false
-      intro_p = true if ENV['MIGR8_COMMAND'].to_s.strip.empty?
-      intro_p = true if ! Repository.new(nil).history_file_exist?
-      return intro_p ? 'intro' : 'status'
+      readme_p = false
+      readme_p = true if ENV['MIGR8_COMMAND'].to_s.strip.empty?
+      readme_p = true if ! Repository.new(nil).history_file_exist?
+      return readme_p ? 'readme' : 'status'
     end
 
   end
@@ -1778,6 +1723,153 @@ END
 
 
   end
+
+
+  README = <<'README_DOCUMENT'
+Migr8.rb
+========
+
+Migr8.rb is a database schema version management tool.
+
+* Easy to install, easy to setup, and easy to start
+* No configuration file; instead, only two environment variables
+* Designed carefully to suit Git or Mercurial
+* Supports SQLite3, PostgreSQL, and MySQL
+* Written in Ruby (>= 1.8)
+
+
+Quick Start
+-----------
+
+1. Donwload migr8.rb.
+
+        $ curl -Lo migr8.rb http://bit.ly/migr8_rb
+        $ chmod a+x migr8.rb
+
+2. Set environment variables: $MIGR8_COMMAND and $MIGR8_EDITOR.
+
+        $ export MIGR8_COMMAND="sqlite3 dbfile1"            # for SQLite3
+        $ export MIGR8_COMMAND="psql -q -U user1 dbname1"   # for PostgreSQL
+        $ export MIGR8_COMMAND="mysql -s -u user1 dbname1"  # for MySQL
+
+        $ export MIGR8_EDITOR="open -a TextMate"     # for TextMate (MacOSX)
+        $ export MIGR8_EDITOR="emacsclient"          # for Emacs
+        $ export MIGR8_EDITOR="vim"                  # for Vim
+
+3. Create managiment files and table.
+
+        $ ./migr8.rb init         # create files in current directory,
+                                  # and create a table in DB.
+
+4. Now you can manage DB schema versions.
+
+        $ ./migr8.rb                                 # show current status
+        $ ./migr8.rb new -m "create 'users' table"   # create a migration
+        $ ./migr8.rb                                 # show status again
+        $ ./migr8.rb up                              # apply migration
+        $ ./migr8.rb                                 # show status again
+        $ ./migr8.rb hist                            # list history
+
+5. You may got confliction error when `git rebase` or `git pull`.
+   In this case, you must resolve it by hand.
+   (This is intended design.)
+
+        $ git rebase master         # confliction!
+        $ ./migr8.rb hist -o        # open 'migr8/history.txt', and
+                                    # resolve confliction manually
+        $ ./migr8.rb hist           # check whether history file is valid
+        $ git add migr8/history.txt
+        $ git rebase --continue
+
+
+Tips
+----
+
+* `migr8.rb up` applys only a migration,
+  and `migr8.rb up -a` applys all migrations.
+
+* `migr8.rb -D up` saves SQL executed into `migr8/history.txt` file.
+
+* `migr8.rb redo` is equivarent to `migr8.rb down; migr8.rb up`.
+
+* `migr8.rb new -p` generates migration file with plain skeleton.
+
+* **MySQL doesn't support transactional DDL**.
+  It will cause troubles when you have errors in migration script
+  (See https://www.google.com/search?q=transactional+DDL for details).
+  On the other hand, SQLite3 and PostgreSQL support transactional DDL,
+  and DDL will be rollbacked when error occurred in migration script.
+  Very good.
+
+
+Usage and Actions
+-----------------
+
+    Usage: migr8.rb [global-options] [action [options] [...]]
+      -h, --help          : show help
+      -v, --version       : show version
+      -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
+
+    Actions:  (default: status)
+      readme              : !!READ ME AT FIRST!!
+      help [action]       : show help message of action, or list action names
+      init                : create necessary files and a table
+      hist                : list history of versions
+        -o                :   open history file with $MIGR8_EDITOR
+      new                 : create new migration file and open it by $MIGR8_EDITOR
+        -m text           :   description message (mandatory)
+        -u user           :   author name (default: current user)
+        -p                :   plain skeleton
+        -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+      edit [version]      : open migration file by $MIGR8_EDITOR
+        -r N              :   edit N-th file from latest version
+        -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+      status              : show status
+      up                  : apply next migration
+        -n N              :   apply N migrations
+        -a                :   apply all migrations
+      down                : unapply current migration
+        -n N              :   unapply N migrations
+        --ALL             :   unapply all migrations
+      redo                : do migration down, and up it again
+        -n N              :   redo N migrations
+        --ALL             :   redo all migrations
+      apply version ...   : apply specified migrations
+      unapply version ... : unapply specified migrations
+
+
+TODO
+----
+
+* [_] write more tests
+* [_] test on windows
+* [_] migr8.rb new --table=table
+* [_] migr8.rb new --column=tbl(col,col2,..)
+* [_] migr8.rb new --index=tbl(col,col2,..)
+* [_] migr8.rb new --unique=tbl(col,col2,..)
+* [_] implement in Python
+* [_] implement in JavaScript
+
+
+Changes
+-------
+
+### Release 0.1.0 (2013-11-11) ###
+
+* Public release
+
+
+License
+-------
+
+MIT-License
+
+
+Copyright
+---------
+
+Copyright(c) 2013 kuwata-lab.com all rights reserved.
+README_DOCUMENT
 
 
 end

@@ -83,7 +83,7 @@ Usage and Actions
       -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
 
     Actions:  (default: status)
-      intro               : !!RUN THIS ACTION AT FIRST!!
+      readme              : !!READ ME AT FIRST!!
       help [action]       : show help message of action, or list action names
       init                : create necessary files and a table
       hist                : list history of versions
