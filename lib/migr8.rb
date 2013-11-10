@@ -940,7 +940,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history table not created.
-## (Please run '#{script} intro' or '#{script} init' at first.)
+## (Please run '#{script} readme' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{dbms.history_table}: table not found.")
@@ -949,7 +949,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history file not found.
-## (Please run '#{script} intro' or '#{script} init' at first.)
+## (Please run '#{script} readme' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{repo.history_filepath}: not found.")
@@ -1401,7 +1401,7 @@ END
         s << action_class.new.short_usage()
       end
       s << "\n"
-      s << "(ATTENTION!! Run '#{script} intro' at first if you don't know #{script} well.)\n"
+      s << "(ATTENTION!! Run '#{script} readme' at first if you don't know #{script} well.)\n"
       s << "\n"
       return s
     end
@@ -1438,10 +1438,10 @@ END
     end
 
     def default_action_name
-      intro_p = false
-      intro_p = true if ENV['MIGR8_COMMAND'].to_s.strip.empty?
-      intro_p = true if ! Repository.new(nil).history_file_exist?
-      return intro_p ? 'intro' : 'status'
+      readme_p = false
+      readme_p = true if ENV['MIGR8_COMMAND'].to_s.strip.empty?
+      readme_p = true if ! Repository.new(nil).history_file_exist?
+      return readme_p ? 'readme' : 'status'
     end
 
   end
