@@ -1113,7 +1113,7 @@ END
 
       def run(options, args)
         mig_hist, mig_dict = repository().get_migrations()
-        str = '(not_applied_yet)  '
+        str = '(not applied)      '
         mig_hist.each do |mig|
           puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
         end
@@ -1228,7 +1228,7 @@ END
         #
         ret = repository().inspection(n)
         puts "## Status: #{ret[:status]}"
-        str = '(not_applied_yet)  '
+        str = '(not applied)      '
         if ret[:recent]
           puts "## Recent history:"
           ret[:recent].each do |mig|
