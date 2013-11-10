@@ -269,11 +269,11 @@ module Skima
     def _new_version
       version = ''
       s = VERSION_CHARS
-      r = 0..(s.length-1)
-      version << s[rand(r)] << s[rand(r)] << s[rand(r)] << s[rand(r)]
+      n = s.length - 1
+      version << s[rand(n)] << s[rand(n)] << s[rand(n)] << s[rand(n)]
       d = VERSION_DIGITS
-      r = 0..(d.length-1)
-      version << d[rand(r)] << d[rand(r)] << d[rand(r)] << d[rand(r)]
+      n = d.length - 1
+      version << d[rand(n)] << d[rand(n)] << d[rand(n)] << d[rand(n)]
       return version
     end
 
