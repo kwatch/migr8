@@ -54,23 +54,21 @@ Usage: #{File.basename($0)} [global-options] [action [options] [...]]
   -D, --debug         : not remove sql file ('skima/tmp.sql') for debug
 
 Actions:  (default: status)
-  navi                : !!RUN THIS ACTION AT FIRST!!
+  intro               : !!RUN THIS ACTION AT FIRST!!
   help [action]       : show help message of action, or list action names
   init                : create necessary files and a table
   hist                : list history of versions
   new                 : create new migration file and open it by $SKIMA_EDITOR
   edit [version]      : open migration file by $SKIMA_EDITOR
   status              : show status
-  up                  : apply a next migration
+  up                  : apply next migration
   down                : unapply current migration
   redo                : do migration down, and up it again
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
 
-Setup:
-  $ export SKIMA_COMMAND='psql -q -U user1 database1'   # for PostgreSQL
-  $ export SKIMA_EDITOR='emacsclient'                   # or 'vi', 'open', etc
-  $ skima.rb init
+(ATTENTION!! Run '#{File.basename($0)} intro' at first if you don't know Application_test.rb well.)
+
 END
           ok {sout} == expected
           ok {serr} == ""

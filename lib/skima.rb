@@ -986,8 +986,8 @@ END
     end
 
 
-    class NaviAction < Action
-      NAME = "navi"
+    class IntroAction < Action
+      NAME = "intro"
       DESC = "!!RUN THIS ACTION AT FIRST!!"
       OPTS = []
       ARGS = nil
@@ -995,8 +995,8 @@ END
       attr_accessor :forced
 
       def run(options, args)
-        msg = navi_for_newbie(File.basename($0))
-        $stderr << msg
+        msg = intro_for_newbie(File.basename($0))
+        puts msg
       end
 
       private
@@ -1005,65 +1005,52 @@ END
         false
       end
 
-      def navi_for_newbie(script)
-        msg = ""
-        repo = repository()
-        #
-        command = ENV['SKIMA_COMMAND'].to_s.strip
-        command = nil if command.empty?
-        editor  = ENV['SKIMA_EDITOR'].to_s.strip
-        editor  = nil if editor.empty?
-        if command.nil? || editor.nil?
-          msg << "##\n"
-          msg << "## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.\n"
-          if command.nil?
-            msg << "##\n"
-            msg << "## Example ($SKIMA_COMMAND):\n"
-            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
-            msg << "##   $ export SKIMA_COMMAND='psql -q -U user1 dbname1'   # for PostgreSQL\n"
-            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'        # for MySQL\n"
-          end
-          if editor.nil?
-            msg << "##\n"
-            msg << "## Example ($SKIMA_EDITOR):\n"
-            msg << "##   $ export SKIMA_EDITOR='vi'                   # for vi\n"
-            msg << "##   $ export SKIMA_EDITOR='emacsclient'          # for emacs\n"
-            msg << "##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX\n"
-          end
-          msg << "##\n"
-          msg << "## (Run '#{script} navi' again after above settings.)\n"
-          msg << "##\n"
-        #
-        elsif ! repo.init?
-          msg << "##\n"
-          msg << "## Step 2/3: Run '#{script} init' to create files and a table.\n"
-          msg << "## (You can call it many times; it doesn't remove existing file nor table.)\n"
-          msg << "##\n"
-          msg << "## Example:\n"
-          msg << "##   $ #{script} init      # create directories and files (= '#{File.dirname(repo.history_filepath)}/*'),\n"
-          msg << "##                         # and create '#{Repository::HISTORY_TABLE}' table in DB.\n"
-          msg << "##\n"
-          msg << "## (Run '#{script} navi' again after above command.)\n"
-          msg << "##\n"
-        #
-        else
-          msg << "##\n"
-          msg << "## Step 3/3: Now you can create a new migration and apply it to DB.\n"
-          msg << "##\n"
-          msg << "## Example:\n"
-          msg << "##   $ #{script} help\n"
-          msg << "##   $ #{script} new -m \"create 'foobar' table\"   # create a migration\n"
-          msg << "##   $ #{script} hist      # not applied yet.\n"
-          msg << "##   $ #{script} up        # apply a migration (= change DB schema)\n"
-          msg << "##   $ #{script} hist      # applied successfully!\n"
-          msg << "##\n"
-          msg << "## Try '#{script} help [command]' for details of each command.\n"
-          msg << "##\n"
-          msg << "## Good luck!\n"
-          msg << "##\n"
-        end
-        #
-        return msg
+      def intro_for_newbie(script)
+        dummy_repo = Repository.new(nil)
+        basedir = File.dirname(dummy_repo.history_filepath)
+        histtbl = Repository::HISTORY_TABLE
+        return <<END
+##
+## Overview
+## --------
+##
+## #{script} is a DB schema version management tool.
+##
+## * Easy to install, easy to setup, and easy to use.
+## * Only 1 file (no need to install a lot of libraries!)
+## * Very fast
+##
+##
+## Quick Start
+## ------------
+##
+## Step 1: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
+##
+##     $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
+##                      # or  'psql -q -U user1 dbname1'  # for PostgreSQL
+##                      # or  'mysql -u user1 dbname1'    # for MySQL
+##     $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
+##                      # or 'emacsclient'          # for Emacs
+##
+## Step 2: Run '#{script} init' to create files and a table.
+##   (You can call it many times; it doesn't remove existing file nor table.)
+##
+##     $ #{script} init     # create directories and files (= '#{basedir}/*'),
+##                         # and create '#{histtbl}' table in DB.
+##
+## Step 3: Now you can create a new migration and apply it to DB.
+##
+##     $ #{script} help
+##     $ #{script} new -m "create 'foobar' table"   # create a migration
+##     $ #{script} hist     # not applied yet.
+##     $ #{script} up       # apply a migration (= change DB schema)
+##     $ #{script} hist     # applied successfully!
+##
+## Try '#{script} help [command]' for details of each command.
+##
+## Good luck!
+##
+END
       end
 
     end
@@ -1446,17 +1433,8 @@ END
         s << action_class.new.short_usage()
       end
       s << "\n"
-      s << "Setup:\n"
-      win = RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
-      exprt = win ? 'C:\\> set'  : '$ export'
-      ruby   = win ? 'C:\\> ruby' : '$'
-      s << "  #{exprt} SKIMA_COMMAND='sqlite3 dbfile1'            # for SQLite3\n"
-      s << "                  ##  or 'psql -q -U user1 dbname1'   # for PostgreSQL\n"
-      s << "                  ##  or 'mysql -s -u user1 dbname1'  # for MySQL\n"
-      s << "  #{exprt} SKIMA_EDITOR='notepad.exe'                 # editor command\n" if win
-      s << "  #{exprt} SKIMA_EDITOR='open -a TextMate'            # for TextMate (MacOSX)\n" unless win
-      s << "                  ##  or 'emacsclient'                # for emacs\n"  unless win
-      s << "  #{ruby} skima.rb init\n"
+      s << "(ATTENTION!! Run '#{script} intro' at first if you don't know #{script} well.)\n"
+      s << "\n"
       return s
     end
 
@@ -1492,7 +1470,10 @@ END
     end
 
     def default_action_name
-      return Repository.new.history_file_empty? ? 'navi' : 'status'
+      intro_p = false
+      intro_p = true if ENV['SKIMA_COMMAND'].to_s.strip.empty?
+      intro_p = true if ! Repository.new(nil).history_file_exist?
+      return intro_p ? 'intro' : 'status'
     end
 
   end
