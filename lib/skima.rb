@@ -1136,6 +1136,10 @@ END
         "-u user  : author name (default: current user)",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
+        "--table=table         : (not implemented yet) create table",
+        "--column=tbl(col,..)  : (not implemented yet) add columns",
+        "--index=tbl(col,..)   : (not implemented yet) create indeces",
+        "--unique=tbl(col,..)  : (not implemented yet) create unique constraints",
       ]
       ARGS = nil
 
