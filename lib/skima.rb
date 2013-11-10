@@ -903,15 +903,17 @@ END
       def get_command
         cmd = ENV['SKIMA_COMMAND'] || ''
         ! cmd.empty?  or
-          raise CommandSetupError.new("$SKIMA_COMMAND is empty. Please set it at first.\n" +
-                                      "  Example: (MacOSX, Unix)\n" +
-                                      "      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3\n" +
-                                      "      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL\n" +
-                                      "      $ export SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL\n" +
-                                      "  Example: (Windows)\n" +
-                                      "      C:\\> set SKIMA_COMMAND='sqlite3 dbname'          # for SQLite3\n" +
-                                      "      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'  # for PostgreSQL\n" +
-                                      "      C:\\> set SKIMA_COMMAND='mysql -s -u user dbname' # for MySQL\n")
+          raise CommandSetupError.new(<<END)
+$SKIMA_COMMAND is empty. Please set it at first.
+  Example: (MacOSX, Unix)
+      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
+      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL
+      $ export SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL
+  Example: (Windows)
+      C:\\> set SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
+      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'   # for PostgreSQL
+      C:\\> set SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL
+END
         return cmd
       end
 
