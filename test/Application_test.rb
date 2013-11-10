@@ -3,7 +3,7 @@
 require 'oktest'
 require 'skima'
 require 'stringio'
-require File.join(File.dirname(File.absolute_path(__FILE__)), 'helpers')
+require File.join(File.dirname(File.expand_path(__FILE__)), 'helpers')
 
 
 Oktest.scope do

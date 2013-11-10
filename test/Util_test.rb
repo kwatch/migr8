@@ -334,16 +334,14 @@ Oktest.scope do
         parser
       end
 
-      spec "returns options parsed." do
-        |parser|
+      spec "returns options parsed." do |parser|
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
         ok {options} == {'help'=>true, 'version'=>true, 'indent'=>4, 'action'=>'print'}
         ok {args} == ["foo", "bar"]
       end
 
-      spec "parses short options." do
-        |parser|
+      spec "parses short options." do |parser|
         # short options
         args = "-hVi4 -a print foo bar".split(' ')
         options = parser.parse(args)
@@ -356,8 +354,7 @@ Oktest.scope do
         ok {args} == ["foo", "bar"]
       end
 
-      spec "parses long options." do
-        |parser|
+      spec "parses long options." do |parser|
         # long options
         args = "--help --action=print --indent=4 foo bar".split(' ')
         options = parser.parse(args)
