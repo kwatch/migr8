@@ -865,6 +865,7 @@ END
         name = self.class.const_get(:NAME)
         opts = self.class.const_get(:OPTS)
         parser = Util::CommandOptionParser.new("#{name}:")
+        parser.add("-h, --help:")
         opts.each {|cmdopt| parser.add(cmdopt) }
         return parser
       end
