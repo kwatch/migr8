@@ -1043,8 +1043,8 @@ END
 ## Step 2/3: Run '#{script} init' to create files and a table.
 ## (You can call it many times; it doesn't remove existing file nor table.)
 ##
-## Example:
-##   $ #{script} init      # create directories and files (= '#{basedir}/*'),
+##   Example:
+##     $ #{script} init     # create directories and files (= '#{basedir}/*'),
 ##                         # and create '#{histtbl}' table in DB.
 ##
 ## (Run '#{script} navi' again after above command.)
@@ -1056,12 +1056,12 @@ END
 ##
 ## Step 3/3: Now you can create a new migration and apply it to DB.
 ##
-## Example:
-##   $ #{script} help
-##   $ #{script} new -m "create 'foobar' table"   # create a migration
-##   $ #{script} hist      # not applied yet.
-##   $ #{script} up        # apply a migration (= change DB schema)
-##   $ #{script} hist      # applied successfully!
+##   Example:
+##     $ #{script} help
+##     $ #{script} new -m "create 'foobar' table"   # create a migration
+##     $ #{script} hist      # not applied yet.
+##     $ #{script} up        # apply a migration (= change DB schema)
+##     $ #{script} hist      # applied successfully!
 ##
 ## Try '#{script} help [command]' for details of each command.
 ##
