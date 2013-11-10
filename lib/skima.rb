@@ -937,7 +937,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history table not created.
-## (Please run '#{script} navi' or '#{script} init' at first.)
+## (Please run '#{script} intro' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{dbms.history_table}: table not found.")
@@ -946,7 +946,7 @@ END
           $stderr << <<END
 ##
 ## ERROR: history file not found.
-## (Please run '#{script} navi' or '#{script} init' at first.)
+## (Please run '#{script} intro' or '#{script} init' at first.)
 ##
 END
           raise RepositoryError.new("#{repo.history_filepath}: not found.")
