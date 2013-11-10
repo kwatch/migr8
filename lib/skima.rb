@@ -1470,7 +1470,10 @@ END
     end
 
     def default_action_name
-      return Repository.new.history_file_empty? ? 'intro' : 'status'
+      intro_p = false
+      intro_p = true if ENV['SKIMA_COMMAND'].to_s.strip.empty?
+      intro_p = true if ! Repository.new(nil).history_file_exist?
+      return intro_p ? 'intro' : 'status'
     end
 
   end
