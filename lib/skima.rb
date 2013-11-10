@@ -1433,17 +1433,8 @@ END
         s << action_class.new.short_usage()
       end
       s << "\n"
-      s << "Setup:\n"
-      win = RUBY_PLATFORM =~ /mswin(?!ce)|mingw|bccwin/
-      exprt = win ? 'C:\\> set'  : '$ export'
-      ruby   = win ? 'C:\\> ruby' : '$'
-      s << "  #{exprt} SKIMA_COMMAND='sqlite3 dbfile1'            # for SQLite3\n"
-      s << "                  ##  or 'psql -q -U user1 dbname1'   # for PostgreSQL\n"
-      s << "                  ##  or 'mysql -s -u user1 dbname1'  # for MySQL\n"
-      s << "  #{exprt} SKIMA_EDITOR='notepad.exe'                 # editor command\n" if win
-      s << "  #{exprt} SKIMA_EDITOR='open -a TextMate'            # for TextMate (MacOSX)\n" unless win
-      s << "                  ##  or 'emacsclient'                # for emacs\n"  unless win
-      s << "  #{ruby} skima.rb init\n"
+      s << "(ATTENTION!! Run '#{script} intro' at first if you don't know #{script} well.)\n"
+      s << "\n"
       return s
     end
 
