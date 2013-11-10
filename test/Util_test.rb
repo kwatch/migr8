@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 require 'oktest'
-require 'skima'
+require 'migr8'
 
 
 Oktest.scope do
 
 
-  topic Skima::Util::CommandOptionDefinition do
+  topic Migr8::Util::CommandOptionDefinition do
 
-    klass = Skima::Util::CommandOptionDefinition
-    errclass = Skima::Util::CommandOptionDefinitionError
+    klass = Migr8::Util::CommandOptionDefinition
+    errclass = Migr8::Util::CommandOptionDefinitionError
 
 
     topic '.new()' do
@@ -293,10 +293,10 @@ Oktest.scope do
   end
 
 
-  topic Skima::Util::CommandOptionParser do
+  topic Migr8::Util::CommandOptionParser do
 
-    klass = Skima::Util::CommandOptionParser
-    errclass = Skima::Util::CommandOptionError
+    klass = Migr8::Util::CommandOptionParser
+    errclass = Migr8::Util::CommandOptionError
 
 
     topic '#add()' do

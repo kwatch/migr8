@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'oktest'
-require 'skima'
+require 'migr8'
 require 'stringio'
 require File.join(File.dirname(File.expand_path(__FILE__)), 'helpers')
 
@@ -9,28 +9,28 @@ require File.join(File.dirname(File.expand_path(__FILE__)), 'helpers')
 Oktest.scope do
 
 
-  topic Skima::Application do
+  topic Migr8::Application do
 
-    klass = Skima::Application
+    klass = Migr8::Application
 
 
     topic '.run()' do
 
       fixture :app do
-        Skima::Application.new
+        Migr8::Application.new
       end
 
-      spec "[!dcggy] sets Skima::DEBUG=true when '-d' or '--debug' specified." do |app|
+      spec "[!dcggy] sets Migr8::DEBUG=true when '-d' or '--debug' specified." do |app|
         [
           ["-D"],
           ["--debug"],
         ].each do |args|
-          at_exit { Skima.DEBUG = false }
+          at_exit { Migr8.DEBUG = false }
           sout, serr = Dummy.new.stdouterr do
-            Skima::DEBUG = false
-            ok {Skima::DEBUG} == false
+            Migr8::DEBUG = false
+            ok {Migr8::DEBUG} == false
             status = app.run(args)
-            ok {Skima::DEBUG} == true
+            ok {Migr8::DEBUG} == true
           end
         end
       end
@@ -51,15 +51,15 @@ Oktest.scope do
 Usage: #{File.basename($0)} [global-options] [action [options] [...]]
   -h, --help          : show help
   -v, --version       : show version
-  -D, --debug         : not remove sql file ('skima/tmp.sql') for debug
+  -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
 
 Actions:  (default: status)
   intro               : !!RUN THIS ACTION AT FIRST!!
   help [action]       : show help message of action, or list action names
   init                : create necessary files and a table
   hist                : list history of versions
-  new                 : create new migration file and open it by $SKIMA_EDITOR
-  edit [version]      : open migration file by $SKIMA_EDITOR
+  new                 : create new migration file and open it by $MIGR8_EDITOR
+  edit [version]      : open migration file by $MIGR8_EDITOR
   status              : show status
   up                  : apply next migration
   down                : unapply current migration
@@ -85,7 +85,7 @@ END
             ok {status} == 0
             ok {args} == ["foo", "bar"]
           end
-          expected = "#{Skima::RELEASE}\n"
+          expected = "#{Migr8::RELEASE}\n"
           ok {sout} == expected
           ok {serr} == ""
         end
@@ -133,7 +133,7 @@ END
       spec "[!maomq] command-option error is cached and not raised." do
         Dummy.new.stdouterr do
           pr = proc { klass.main(["-hx"]) }
-          ok {pr}.NOT.raise?(Skima::Util::CommandOptionError)
+          ok {pr}.NOT.raise?(Migr8::Util::CommandOptionError)
         end
       end
 

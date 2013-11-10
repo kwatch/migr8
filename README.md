@@ -1,7 +1,7 @@
-Skima.rb
+Migr8.rb
 ========
 
-Skima.rb is a database schema version management tool.
+Migr8.rb is a database schema version management tool.
 
 * Easy to install, easy to setup, and easy to start
 * No configuration file; instead, only two environment variables
@@ -13,58 +13,58 @@ Skima.rb is a database schema version management tool.
 Quick Start
 -----------
 
-1. Donwload skima.rb.
+1. Donwload migr8.rb.
 
-        $ curl -Lo skima.rb http://bit.ly/skima_rb
-        $ chmod a+x skima.rb
+        $ curl -Lo migr8.rb http://bit.ly/migr8_rb
+        $ chmod a+x migr8.rb
 
-2. Set environment variables: $SKIMA_COMMAND and $SKIMA_EDITOR.
+2. Set environment variables: $MIGR8_COMMAND and $MIGR8_EDITOR.
 
-        $ export SKIMA_COMMAND="sqlite3 dbfile1"            # for SQLite3
-        $ export SKIMA_COMMAND="psql -q -U user1 dbname1"   # for PostgreSQL
-        $ export SKIMA_COMMAND="mysql -s -u user1 dbname1"  # for MySQL
+        $ export MIGR8_COMMAND="sqlite3 dbfile1"            # for SQLite3
+        $ export MIGR8_COMMAND="psql -q -U user1 dbname1"   # for PostgreSQL
+        $ export MIGR8_COMMAND="mysql -s -u user1 dbname1"  # for MySQL
 
-        $ export SKIMA_EDITOR="open -a TextMate"     # for TextMate (MacOSX)
-        $ export SKIMA_EDITOR="emacsclient"          # for Emacs
-        $ export SKIMA_EDITOR="vim"                  # for Vim
+        $ export MIGR8_EDITOR="open -a TextMate"     # for TextMate (MacOSX)
+        $ export MIGR8_EDITOR="emacsclient"          # for Emacs
+        $ export MIGR8_EDITOR="vim"                  # for Vim
 
 3. Create managiment files and table.
 
-        $ ./skima.rb init         # create files in current directory,
+        $ ./migr8.rb init         # create files in current directory,
                                   # and create a table in DB.
 
 4. Now you can manage DB schema versions.
 
-        $ ./skima.rb                                 # show current status
-        $ ./skima.rb new -m "create 'users' table"   # create a migration
-        $ ./skima.rb                                 # show status again
-        $ ./skima.rb up                              # apply migration
-        $ ./skima.rb                                 # show status again
-        $ ./skima.rb hist                            # list history
+        $ ./migr8.rb                                 # show current status
+        $ ./migr8.rb new -m "create 'users' table"   # create a migration
+        $ ./migr8.rb                                 # show status again
+        $ ./migr8.rb up                              # apply migration
+        $ ./migr8.rb                                 # show status again
+        $ ./migr8.rb hist                            # list history
 
 5. You may got confliction error when `git rebase` or `git pull`.
    In this case, you must resolve it by hand.
    (This is intended design.)
 
         $ git rebase master         # confliction!
-        $ ./skima.rb hist -o        # open 'skima/history.txt', and
+        $ ./migr8.rb hist -o        # open 'migr8/history.txt', and
                                     # resolve confliction manually
-        $ ./skima.rb hist           # check whether history file is valid
-        $ git add skima/history.txt
+        $ ./migr8.rb hist           # check whether history file is valid
+        $ git add migr8/history.txt
         $ git rebase --continue
 
 
 Tips
 ----
 
-* `skima.rb up` applys only a migration,
-  and `skima.rb up -a` applys all migrations.
+* `migr8.rb up` applys only a migration,
+  and `migr8.rb up -a` applys all migrations.
 
-* `skima.rb -D up` saves SQL executed into `skima/history.txt` file.
+* `migr8.rb -D up` saves SQL executed into `migr8/history.txt` file.
 
-* `skima.rb redo` is equivarent to `skima.rb down; skima.rb up`.
+* `migr8.rb redo` is equivarent to `migr8.rb down; migr8.rb up`.
 
-* `skima.rb new -p` generates migration file with plain skeleton.
+* `migr8.rb new -p` generates migration file with plain skeleton.
 
 * **MySQL doesn't support transactional DDL**.
   It will cause troubles when you have errors in migration script
@@ -77,23 +77,23 @@ Tips
 Usage and Actions
 -----------------
 
-    Usage: skima.rb [global-options] [action [options] [...]]
+    Usage: migr8.rb [global-options] [action [options] [...]]
       -h, --help          : show help
       -v, --version       : show version
-      -D, --debug         : not remove sql file ('skima/tmp.sql') for debug
+      -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
 
     Actions:  (default: status)
       intro               : !!RUN THIS ACTION AT FIRST!!
       help [action]       : show help message of action, or list action names
       init                : create necessary files and a table
       hist                : list history of versions
-        -o                :   open history file with $SKIMA_EDITOR
-      new                 : create new migration file and open it by $SKIMA_EDITOR
+        -o                :   open history file with $MIGR8_EDITOR
+      new                 : create new migration file and open it by $MIGR8_EDITOR
         -m text           :   description message (mandatory)
         -u user           :   author name (default: current user)
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
-      edit [version]      : open migration file by $SKIMA_EDITOR
+      edit [version]      : open migration file by $MIGR8_EDITOR
         -r                :   edit N-th file from latest version
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
       status              : show status
@@ -115,10 +115,10 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] skima.rb new --table=table
-* [_] skima.rb new --column=tbl(col,col2,..)
-* [_] skima.rb new --index=tbl(col,col2,..)
-* [_] skima.rb new --unique=tbl(col,col2,..)
+* [_] migr8.rb new --table=table
+* [_] migr8.rb new --column=tbl(col,col2,..)
+* [_] migr8.rb new --index=tbl(col,col2,..)
+* [_] migr8.rb new --unique=tbl(col,col2,..)
 * [_] implement in Python
 * [_] implement in JavaScript
 
