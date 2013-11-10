@@ -1013,29 +1013,24 @@ END
         command = nil if command.empty?
         editor  = ENV['SKIMA_EDITOR'].to_s.strip
         editor  = nil if editor.empty?
-        if command.nil? || editor.nil?
+        #if command.nil? || editor.nil?
           msg << <<END
 ##
 ## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
 ##
 ##   Example:
 END
-          msg << <<END if command.nil?
+          msg << <<END #if command.nil?
 ##     $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
 ##                     ## or  'psql -q -U user1 dbname1'  # for PostgreSQL
 ##                     ## or  'mysql -u user1 dbname1'    # for MySQL
 END
-          msg << <<END if editor.nil?
+          msg << <<END #if editor.nil?
 ##     $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
 ##                     ## or 'emacsclient'          # for Emacs
 END
-          msg << <<END
-##
-## (Run '#{script} navi' again after above settings.)
-##
-END
         #
-        elsif ! repo.init?
+        #elsif ! repo.init?
           basedir = File.dirname(repo.history_filepath)
           histtbl = Repository::HISTORY_TABLE
           msg << <<END
@@ -1046,12 +1041,9 @@ END
 ##   Example:
 ##     $ #{script} init     # create directories and files (= '#{basedir}/*'),
 ##                         # and create '#{histtbl}' table in DB.
-##
-## (Run '#{script} navi' again after above command.)
-##
 END
         #
-        else
+        #else
           msg << <<END
 ##
 ## Step 3/3: Now you can create a new migration and apply it to DB.
@@ -1068,7 +1060,7 @@ END
 ## Good luck!
 ##
 END
-        end
+        #end
         #
         return msg
       end
