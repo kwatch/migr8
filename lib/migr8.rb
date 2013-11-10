@@ -989,6 +989,21 @@ END
     end
 
 
+    class ReadMeAction < Action
+      NAME = "readme"
+      DESC = "READ ME AT FIRST!!"
+      OPTS = []
+      ARGS = nil
+
+      attr_accessor :forced
+
+      def run(options, args)
+        puts README
+      end
+
+    end
+
+
     class IntroAction < Action
       NAME = "intro"
       DESC = "!!RUN THIS ACTION AT FIRST!!"
