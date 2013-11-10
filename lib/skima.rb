@@ -1021,7 +1021,7 @@ END
 ## * Very fast
 ##
 ##
-## How to setup
+## Quick Start
 ## ------------
 ##
 ## Step 1: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
