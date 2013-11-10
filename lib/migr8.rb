@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ###
-### skima.py -- DB schema version management tool
+### migr8.py -- DB schema version management tool
 ###
 ### $Release: 0.0.0 $
 ### $License: MIT License $
@@ -14,7 +14,7 @@ require 'open3'
 require 'etc'
 
 
-module Skima
+module Migr8
 
   RELEASE = "$Release: 0.0.0 $".split(' ')[1]
 
@@ -26,28 +26,28 @@ module Skima
   end
 
 
-  class SkimaError < StandardError
+  class Migr8Error < StandardError
   end
 
-  class CommandSetupError < SkimaError
+  class CommandSetupError < Migr8Error
   end
 
-  class SQLExecutionError < SkimaError
+  class SQLExecutionError < Migr8Error
   end
 
-  class HistoryFileError < SkimaError
+  class HistoryFileError < Migr8Error
   end
 
-  class MigrationFileError < SkimaError
+  class MigrationFileError < Migr8Error
   end
 
-  class UpgradeFailedError < SkimaError
+  class UpgradeFailedError < Migr8Error
   end
 
-  class DowngradeFailedError < SkimaError
+  class DowngradeFailedError < Migr8Error
   end
 
-  class RepositoryError < SkimaError
+  class RepositoryError < Migr8Error
   end
 
 
@@ -116,9 +116,9 @@ module Skima
 
   class Repository
 
-    HISTORY_FILEPATH  = 'skima/history.txt'
-    HISTORY_TABLE     = '_skima_history'
-    MIGRATION_DIRPATH = 'skima/migrations/'
+    HISTORY_FILEPATH  = 'migr8/history.txt'
+    HISTORY_TABLE     = '_migr8_history'
+    MIGRATION_DIRPATH = 'migr8/migrations/'
 
     attr_reader :dbms
 
@@ -420,7 +420,7 @@ END
       def initialize(command=nil)
         @command = command
         @history_table = Repository::HISTORY_TABLE
-        @sqltmpfile = 'skima/tmp.sql'
+        @sqltmpfile = 'migr8/tmp.sql'
       end
 
       def execute_sql(sql, cmdopt=nil)
@@ -450,7 +450,7 @@ END
         ok = system("#{@command} < #{tmpfile}")
         ok  or
           raise SQLExecutionError.new("Failed to run sql ('#{tmpfile}').")
-        File.unlink(tmpfile) unless Skima::DEBUG
+        File.unlink(tmpfile) unless Migr8::DEBUG
       end
 
       def create_history_table()
@@ -902,16 +902,16 @@ END
       end
 
       def get_command
-        cmd = ENV['SKIMA_COMMAND'] || ''
+        cmd = ENV['MIGR8_COMMAND'] || ''
         ! cmd.empty?  or
           raise CommandSetupError.new(<<END)
-$SKIMA_COMMAND is empty. Please set it at first.
+$MIGR8_COMMAND is empty. Please set it at first.
   Example: (MacOSX, Unix)
-      $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
+      $ export MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
                         # or 'psql -q -U user dbname'   # for PosgreSQL
                         # or 'mysql -s -u user dbname'  # for MySQL
   Example: (Windows)
-      C:\\> set SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
+      C:\\> set MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
                         # or 'psql -q -U user dbname'   # for PostgreSQL
                         # or 'mysql -s -u user dbname'  # for MySQL
 END
@@ -974,14 +974,14 @@ END
 
       protected
 
-      def _recommend_to_set_SKIMA_EDITOR(action)  # :nodoc:
+      def _recommend_to_set_MIGR8_EDITOR(action)  # :nodoc:
         msg = <<END
 ## ERROR: Failed to #{action} migration file.
-## Plase set $SKIMA_EDITOR in order to open migration file automatically.
+## Plase set $MIGR8_EDITOR in order to open migration file automatically.
 ## Example:
-##   $ export SKIMA_EDITOR='emacsclient'          # for emacs
-##   $ export SKIMA_EDITOR='vim'                  # for vim
-##   $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
+##   $ export MIGR8_EDITOR='emacsclient'          # for emacs
+##   $ export MIGR8_EDITOR='vim'                  # for vim
+##   $ export MIGR8_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
 END
         $stderr << msg
       end
@@ -1027,12 +1027,12 @@ END
 #   Quick Start
 #  -------------
 #
-#  Step 1: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
+#  Step 1: Set both $MIGR8_COMMAND and $MIGR8_EDITOR at first.
 #
-#      $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3
+#      $ export MIGR8_COMMAND='sqlite3 dbname1'           # for SQLite3
 #                       # or  'psql -q -U user1 dbname1'  # for PostgreSQL
 #                       # or  'mysql -u user1 dbname1'    # for MySQL
-#      $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
+#      $ export MIGR8_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
 #                       # or 'emacsclient'          # for Emacs
 #
 #  Step 2: Run '#{script} init' to create files and a table.
@@ -1074,7 +1074,7 @@ END
             raise cmdopterr("#{action_name}: unknown action.")
           puts action_class.new.usage()
         else
-          usage = Skima::Application.new.usage()
+          usage = Migr8::Application.new.usage()
           puts usage
         end
         nil
@@ -1111,16 +1111,16 @@ END
     class HistAction < Action
       NAME = "hist"
       DESC = "list history of versions"
-      OPTS = ["-o: open history file with $SKIMA_EDITOR"]
+      OPTS = ["-o: open history file with $MIGR8_EDITOR"]
       ARGS = nil
 
       def run(options, args)
         open_p = options['o']
         #
         if open_p
-          editor = ENV['SKIMA_EDITOR']
+          editor = ENV['MIGR8_EDITOR']
           if ! editor || editor.empty?
-            $stderr << "ERROR: $SKIMA_EDITOR is not set.\n"
+            $stderr << "ERROR: $MIGR8_EDITOR is not set.\n"
             raise cmdopterr("#{NAME}: failed to open history file.")
           end
           histfile = repository().history_filepath()
@@ -1147,7 +1147,7 @@ END
 
     class NewAction < Action
       NAME = "new"
-      DESC = "create new migration file and open it by $SKIMA_EDITOR"
+      DESC = "create new migration file and open it by $MIGR8_EDITOR"
       OPTS = [
         "-m text  : description message (mandatory)",
         "-u user  : author name (default: current user)",
@@ -1161,9 +1161,9 @@ END
       ARGS = nil
 
       def run(options, args)
-        editor = options['e'] || ENV['SKIMA_EDITOR']
+        editor = options['e'] || ENV['MIGR8_EDITOR']
         if ! editor || editor.empty?
-          _recommend_to_set_SKIMA_EDITOR('create')
+          _recommend_to_set_MIGR8_EDITOR('create')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         desc = options['m']  or
@@ -1183,7 +1183,7 @@ END
 
     class EditAction < Action
       NAME = "edit"
-      DESC = "open migration file by $SKIMA_EDITOR"
+      DESC = "open migration file by $MIGR8_EDITOR"
       OPTS = [
         "-r        :  edit N-th file from latest version",
         "-e editor : editr command (such as 'emacsclient', 'open', ...)",
@@ -1191,9 +1191,9 @@ END
       ARGS = "[version]"
 
       def run(options, args)
-        editor = options['e'] || ENV['SKIMA_EDITOR']
+        editor = options['e'] || ENV['MIGR8_EDITOR']
         if ! editor || editor.empty?
-          _recommend_to_set_SKIMA_EDITOR('edit')
+          _recommend_to_set_MIGR8_EDITOR('edit')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         version = num = nil
@@ -1415,9 +1415,9 @@ END
     def run(args)
       parser = new_cmdopt_parser()
       options = parser.parse(args)   # may raise CommandOptionError
-      #; [!dcggy] sets Skima::DEBUG=true when '-d' or '--debug' specified.
+      #; [!dcggy] sets Migr8::DEBUG=true when '-d' or '--debug' specified.
       if options['debug']
-        ::Skima.DEBUG = true
+        ::Migr8.DEBUG = true
       end
       #; [!ktlay] prints help message and exit when '-h' or '--help' specified.
       if options['help']
@@ -1454,7 +1454,7 @@ END
       s << parser.usage(20, '  ')
       s << "\n"
       s << "Actions:  (default: #{default_action_name()})\n"
-      Skima::Actions::Action.subclasses.each do |action_class|
+      Migr8::Actions::Action.subclasses.each do |action_class|
         s << action_class.new.short_usage()
       end
       s << "\n"
@@ -1475,7 +1475,7 @@ END
         $stderr << "ERROR[#{script}] #{ex.message}\n"
         status = 1
       #;
-      rescue SkimaError => ex
+      rescue Migr8Error => ex
         script = File.basename($0)
         $stderr << "ERROR[#{script}] #{ex}\n"
         status = 1
@@ -1490,13 +1490,13 @@ END
       parser = Util::CommandOptionParser.new
       parser.add("-h, --help:      show help")
       parser.add("-v, --version:   show version")
-      parser.add("-D, --debug:     not remove sql file ('skima/tmp.sql') for debug")
+      parser.add("-D, --debug:     not remove sql file ('migr8/tmp.sql') for debug")
       return parser
     end
 
     def default_action_name
       intro_p = false
-      intro_p = true if ENV['SKIMA_COMMAND'].to_s.strip.empty?
+      intro_p = true if ENV['MIGR8_COMMAND'].to_s.strip.empty?
       intro_p = true if ! Repository.new(nil).history_file_exist?
       return intro_p ? 'intro' : 'status'
     end
@@ -1714,7 +1714,7 @@ END
 
     module Expander
 
-      class UnknownVariableError < SkimaError
+      class UnknownVariableError < Migr8Error
       end
 
       module_function
@@ -1786,6 +1786,6 @@ end
 
 
 if __FILE__ == $0
-  status = Skima::Application.main()
+  status = Migr8::Application.main()
   exit(status)
 end

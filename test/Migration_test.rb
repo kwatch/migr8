@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 require 'oktest'
-require 'skima'
+require 'migr8'
 require 'stringio'
 
 
 Oktest.scope do
 
 
-  topic Skima::Migration do
+  topic Migr8::Migration do
 
-    klass = Skima::Migration
+    klass = Migr8::Migration
 
 
     topic '#initalize()' do
@@ -124,7 +124,7 @@ END
       spec "[!p0d9q] returns filepath of migration file." do
         mig = klass.new
         mig.version = 'abcd1234'
-        ok {mig.filepath} == 'skima/migrations/abcd1234.yaml'
+        ok {mig.filepath} == 'migr8/migrations/abcd1234.yaml'
       end
 
     end
@@ -161,7 +161,7 @@ END
 
       spec "[!fbea5] loads data from file and returns migration object." do |mig_filepath|
         mig = klass.load_from(mig_filepath)
-        ok {mig}.is_a?(Skima::Migration)
+        ok {mig}.is_a?(Migr8::Migration)
         ok {mig.version} == 'wxyz7890'
         ok {mig.author}  == 'haruhi'
         ok {mig.desc}    == 'test migration \'#1\''
