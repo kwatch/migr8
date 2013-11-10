@@ -1019,9 +1019,9 @@ END
           if command.nil?
             msg << "##\n"
             msg << "## Example ($SKIMA_COMMAND):\n"
-            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'               # for SQLite3\n"
-            msg << "##   $ export SKIMA_COMMAND='psql -q -U user1 dbname1'   # for PostgreSQL\n"
-            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'        # for MySQL\n"
+            msg << "##   $ export SKIMA_COMMAND='sqlite3 dbname1'           # for SQLite3\n"
+            msg << "##   $ export SKIMA_COMMAND='psql -q -U user1 dbname1'  # for PostgreSQL\n"
+            msg << "##   $ export SKIMA_COMMAND='mysql -u user1 dbname1'    # for MySQL\n"
           end
           if editor.nil?
             msg << "##\n"
