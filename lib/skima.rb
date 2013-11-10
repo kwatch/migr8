@@ -1421,7 +1421,11 @@ END
         raise Util::CommandOptionError.new("#{action_name}: unknown action.")
       action_obj = action_class.new
       action_opts = action_obj.parse(args)
-      action_obj.run(action_opts, args)
+      if action_opts['help']
+        puts action_obj.usage
+      else
+        action_obj.run(action_opts, args)
+      end
       #; [!saisg] returns 0 as status code when succeeded.
       return 0
     end
