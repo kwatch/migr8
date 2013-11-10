@@ -1011,8 +1011,8 @@ END
         histtbl = Repository::HISTORY_TABLE
         return <<END
 ##
-## Overview
-## --------
+##  Overview
+## ----------
 ##
 ## #{script} is a DB schema version management tool.
 ##
@@ -1021,8 +1021,8 @@ END
 ## * Very fast
 ##
 ##
-## Quick Start
-## ------------
+##  Quick Start
+## -------------
 ##
 ## Step 1: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
 ##
