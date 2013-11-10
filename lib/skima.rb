@@ -1111,10 +1111,24 @@ END
     class HistAction < Action
       NAME = "hist"
       DESC = "list history of versions"
-      OPTS = []
+      OPTS = ["-o: open history file with $SKIMA_EDITOR"]
       ARGS = nil
 
       def run(options, args)
+        open_p = options['o']
+        #
+        if open_p
+          editor = ENV['SKIMA_EDITOR']
+          if ! editor || editor.empty?
+            $stderr << "ERROR: $SKIMA_EDITOR is not set.\n"
+            raise cmdopterr("#{NAME}: failed to open history file.")
+          end
+          histfile = repository().history_filepath()
+          puts "$ #{editor} #{histfile}"
+          system("#{editor} #{histfile}")
+          return
+        end
+        #
         mig_hist, mig_dict = repository().get_migrations()
         str = '(not applied)      '
         mig_hist.each do |mig|
