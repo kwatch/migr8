@@ -88,8 +88,8 @@ module Skima
     def applied_at_or(default)
       #; [!zazux] returns default arugment when not applied.
       return default unless applied?
-      #; [!fxb4y] returns @applied_at with replacing separator by 'T'.
-      return @applied_at.split(/\./)[0].sub(/ /, 'T')
+      #; [!fxb4y] returns @applied_at without msec.
+      return @applied_at.split(/\./)[0]   # '12:34:56.789' -> '12:34:56'
     end
 
     def filepath

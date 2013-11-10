@@ -103,11 +103,11 @@ END
         ok {mig.applied_at_or('(not applied)')} == '(not applied)'
       end
 
-      spec "[!fxb4y] returns @applied_at with replacing separator by 'T'." do
+      spec "[!fxb4y] returns @applied_at without msec." do
         mig = klass.new
         mig.applied_at = '2013-01-01 12:34:56.789'
         ok {mig.applied?} == true
-        ok {mig.applied_at_or('(not applied)')} == '2013-01-01T12:34:56'
+        ok {mig.applied_at_or('(not applied)')} == '2013-01-01 12:34:56'
       end
 
     end
