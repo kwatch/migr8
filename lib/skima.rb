@@ -1016,7 +1016,20 @@ END
         #if command.nil? || editor.nil?
           msg << <<END
 ##
-## Step 1/3: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
+## Overview
+## --------
+##
+## #{script} is a DB schema version management tool.
+##
+## * Easy to install, easy to setup, and easy to use.
+## * Only 1 file (no need to install a lot of libraries!)
+## * Very fast
+##
+##
+## How to setup
+## ------------
+##
+## Step 1: Set both $SKIMA_COMMAND and $SKIMA_EDITOR at first.
 ##
 END
           msg << <<END #if command.nil?
@@ -1034,8 +1047,8 @@ END
           histtbl = Repository::HISTORY_TABLE
           msg << <<END
 ##
-## Step 2/3: Run '#{script} init' to create files and a table.
-## (You can call it many times; it doesn't remove existing file nor table.)
+## Step 2: Run '#{script} init' to create files and a table.
+##   (You can call it many times; it doesn't remove existing file nor table.)
 ##
 ##     $ #{script} init     # create directories and files (= '#{basedir}/*'),
 ##                         # and create '#{histtbl}' table in DB.
@@ -1044,7 +1057,7 @@ END
         #else
           msg << <<END
 ##
-## Step 3/3: Now you can create a new migration and apply it to DB.
+## Step 3: Now you can create a new migration and apply it to DB.
 ##
 ##     $ #{script} help
 ##     $ #{script} new -m "create 'foobar' table"   # create a migration
