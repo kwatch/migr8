@@ -1608,7 +1608,7 @@ END
           elsif optstr =~ /\A-/
             i = 1
             while i < optstr.length
-              ch = optstr[i]
+              ch = optstr[i].chr
               #; [!8aaj0] raises error when unknown short option provided.
               optdef = @optdefs.find {|x| x.short == ch }  or
                 raise cmdopterr("-#{ch}: unknown option.")
