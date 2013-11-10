@@ -907,12 +907,12 @@ END
 $SKIMA_COMMAND is empty. Please set it at first.
   Example: (MacOSX, Unix)
       $ export SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
-      $ export SKIMA_COMMAND='psql -q -U user dbname'   # for PosgreSQL
-      $ export SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL
+                        # or 'psql -q -U user dbname'   # for PosgreSQL
+                        # or 'mysql -s -u user dbname'  # for MySQL
   Example: (Windows)
       C:\\> set SKIMA_COMMAND='sqlite3 dbname'           # for SQLite3
-      C:\\> set SKIMA_COMMAND='psql -q -U user dbname'   # for PostgreSQL
-      C:\\> set SKIMA_COMMAND='mysql -s -u user dbname'  # for MySQL
+                        # or 'psql -q -U user dbname'   # for PostgreSQL
+                        # or 'mysql -s -u user dbname'  # for MySQL
 END
         return cmd
       end
