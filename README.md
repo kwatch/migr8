@@ -94,7 +94,7 @@ Usage and Actions
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
       edit [version]      : open migration file by $MIGR8_EDITOR
-        -r                :   edit N-th file from latest version
+        -r N              :   edit N-th file from latest version
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
       status              : show status
       up                  : apply next migration
