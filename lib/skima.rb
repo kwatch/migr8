@@ -976,9 +976,9 @@ END
 ## ERROR: Failed to #{action} migration file.
 ## Plase set $SKIMA_EDITOR in order to open migration file automatically.
 ## Example:
-##   $ export SKIMA_EDITOR='vi'                   # for vi
 ##   $ export SKIMA_EDITOR='emacsclient'          # for emacs
-##   $ export SKIMA_EDITOR='open -a TextMate'     # for MacOSX
+##   $ export SKIMA_EDITOR='vim'                  # for vim
+##   $ export SKIMA_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
 END
         $stderr << msg
       end
