@@ -986,8 +986,8 @@ END
     end
 
 
-    class NaviAction < Action
-      NAME = "navi"
+    class IntroAction < Action
+      NAME = "intro"
       DESC = "!!RUN THIS ACTION AT FIRST!!"
       OPTS = []
       ARGS = nil
@@ -995,7 +995,7 @@ END
       attr_accessor :forced
 
       def run(options, args)
-        msg = navi_for_newbie(File.basename($0))
+        msg = intro_for_newbie(File.basename($0))
         $stderr << msg
       end
 
@@ -1005,7 +1005,7 @@ END
         false
       end
 
-      def navi_for_newbie(script)
+      def intro_for_newbie(script)
         dummy_repo = Repository.new(nil)
         basedir = File.dirname(dummy_repo.history_filepath)
         histtbl = Repository::HISTORY_TABLE
@@ -1479,7 +1479,7 @@ END
     end
 
     def default_action_name
-      return Repository.new.history_file_empty? ? 'navi' : 'status'
+      return Repository.new.history_file_empty? ? 'intro' : 'status'
     end
 
   end
