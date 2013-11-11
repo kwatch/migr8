@@ -657,37 +657,6 @@ END
         return migrations
       end
 
-      def skeleton_for_up()
-        return <<END
-  ---
-  --- create table or index
-  ---
-  create table ${table} (
-    id          integer        primary key autoincrement,
-    version     integer        not null default 0,
-    name        string         not null unique,
-    created_at  timestamp      not null default current_timestamp,
-    updated_at  timestamp,
-    deleted_at  timestamp
-  );
-  create index ${index} on ${table}(${column});
-  ---
-  --- add column
-  ---
-  alter table ${table} add column ${column} string not null default '';
-END
-      end
-
-      def skeleton_for_down()
-        return <<END
-  ---
-  --- drop table or index
-  ---
-  drop table ${table};
-  drop index ${index};
-END
-      end
-
       class Skeleton < BaseSkeleton
 
         protected
