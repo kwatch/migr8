@@ -352,33 +352,7 @@ module Migr8
     end
 
     def render_migration_file(mig, opts={})  # :nodoc:
-      plain_p = opts[:plain]
-      skeleton_for_up   = plain_p ? '' : @dbms.skeleton_for_up
-      skeleton_for_down = plain_p ? '' : @dbms.skeleton_for_down
-      s = <<END
-# -*- coding: utf-8 -*-
-
-version:     #{mig.version}
-desc:        #{mig.desc}
-author:      #{mig.author}
-vars:
-END
-      if dbms
-        s << <<END
-  - table:   table123
-  - column:  column123
-  - index:   ${table}_${column}_idx
-  - unique:  ${table}_${column}_unq
-END
-      end
-      s << <<END
-
-up: |
-#{skeleton_for_up}
-down: |
-#{skeleton_for_down}
-END
-      return s
+      return @dbms.new_skeleton().render(mig, opts)
     end
 
     public
