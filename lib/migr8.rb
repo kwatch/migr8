@@ -1837,6 +1837,7 @@ Usage and Actions
       init                : create necessary files and a table
       hist                : list history of versions
         -o                :   open history file with $MIGR8_EDITOR
+        -b                :   rebuild history file from migration files
       new                 : create new migration file and open it by $MIGR8_EDITOR
         -m text           :   description message (mandatory)
         -u user           :   author name (default: current user)
