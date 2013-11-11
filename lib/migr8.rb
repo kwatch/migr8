@@ -773,8 +773,16 @@ END
         return migrations
       end
 
-      def skeleton_for_up()
-        return <<END
+      class Skeleton < BaseSkeleton
+
+        protected
+
+        def section_vars(mig, opts)
+          super
+        end
+
+        def section_up(mig, opts)
+          return <<END
   ---
   --- create table or index
   ---
@@ -800,10 +808,10 @@ END
   alter table ${table} alter column ${column} set not null;
   alter table ${table} alter column ${column} set default current_date;
 END
-      end
+        end
 
-      def skeleton_for_down()
-        return <<END
+        def section_down(mig, opts)
+          return <<END
   ---
   --- drop table or index
   ---
@@ -822,6 +830,8 @@ END
   alter table ${table} alter column ${column} drop not null;
   alter table ${table} alter column ${column} drop default;
 END
+        end
+
       end
 
     end
