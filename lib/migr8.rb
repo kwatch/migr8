@@ -685,6 +685,27 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          integer        primary key autoincrement,
+    version     integer        not null default 0,
+    name        string         not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${table}_name_idx on ${table}(name);
+  create index ${table}_created_at_idx on ${table}(created_at);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  create unique index ${unique} on ${table}(${column});
+END
           return <<END
   ---
   --- create table or index
@@ -706,6 +727,18 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  drop index ${index};
+END
+          return <<END if opts[:unique]
+  drop index ${unique};
+END
           return <<END
   ---
   --- drop table or index
