@@ -803,6 +803,29 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          serial         primary key,
+    version     integer        not null default 0,
+    name        varchar(255)   not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${table}_name_idx on ${table}(name);
+  create index ${table}_created_at_idx on ${table}(created_at);
+  create unique index ${table}_col1_col2_col3_unq on ${table}(col1, col2, col3);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  create unique index ${unique} on ${table}(${column});
+  --alter table ${table} add constraint ${unique} unique (${column});
+END
           return <<END
   ---
   --- create table or index
@@ -832,6 +855,19 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  drop index ${index};
+END
+          return <<END if opts[:unique]
+  drop index ${unique};
+  --alter table ${table} drop constraint ${unique};
+END
           return <<END
   ---
   --- drop table or index
