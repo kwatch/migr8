@@ -1299,10 +1299,10 @@ END
         "-u user  : author name (default: current user)",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
-        "--table=table         : (not implemented yet) create table",
-        "--column=tbl(col,..)  : (not implemented yet) add columns",
-        "--index=tbl(col,..)   : (not implemented yet) create indeces",
-        "--unique=tbl(col,..)  : (not implemented yet) create unique constraints",
+        "--table=table         : create table",
+        "--column=tbl.column : add column",
+        "--index=tbl.column  : create index",
+        "--unique=tbl.column : add unique constraint",
       ]
       ARGS = nil
 
@@ -1312,12 +1312,39 @@ END
           _recommend_to_set_MIGR8_EDITOR('create')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
-        desc = options['m']  or
-          raise cmdopterr("#{NAME}: '-m text' option required.")
         author = options['u']
-        plain_p = !! options['p']
+        opts = {}
+        opts[:plain] = true if options['p']
+        desc = nil
+        if (val = options['table'])
+          val =~ /\A(\w+)\z/  or
+            raise cmdopterr("#{NAME} --table=#{val}: unexpected format.")
+          desc = "create '#{$1}' table"
+          opts[:table] = val
+        end
+        if (val = options['column'])
+          val =~ /\A(\w+)\.(\w+)\z/  or
+            raise cmdopterr("#{NAME} --column=#{val}: unexpected format.")
+          desc = "add '#{$2}' column on '#{$1}' table"
+          opts[:column] = val
+        end
+        if (val = options['index'])
+          val =~ /\A(\w+)\.(\w+)\z/  or
+            raise cmdopterr("#{NAME} --index=#{val}: unexpected format.")
+          desc = "create index on '#{$1}.#{$2}'"
+          opts[:index] = val
+        end
+        if (val = options['unique'])
+          val =~ /\A(\w+)\.(\w+)\z/  or
+            raise cmdopterr("#{NAME} --unique=#{val}: unexpected format.")
+          desc = "add unique constraint to '#{$1}.#{$2}'"
+          opts[:unique] = val
+        end
+        desc = options['m'] if options['m']
+        desc  or
+          raise cmdopterr("#{NAME}: '-m text' option required.")
         #
-        mig = repository().create_migration(desc, author, :plain=>plain_p)
+        mig = repository().create_migration(desc, author, opts)
         puts "## New migration file:"
         puts mig.filepath
         puts "$ #{editor} #{mig.filepath}"
