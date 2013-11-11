@@ -400,20 +400,20 @@ module Migr8
       buf << "desc:        #{mig.desc}\n"
       buf << "author:      #{mig.author}\n"
       buf << "vars:\n"
-      buf << section_vars(mig, opts)  unless plain
+      buf << _section_vars(mig, opts)  unless plain
       buf << "\n"
       buf << "up: |\n"
-      buf << section_up(mig, opts)    unless plain
+      buf << _section_up(mig, opts)    unless plain
       buf << "\n"
       buf << "down: |\n"
-      buf << section_down(mig, opts)  unless plain
+      buf << _section_down(mig, opts)  unless plain
       buf << "\n"
       return buf
     end
 
     protected
 
-    def section_vars(mig, opts)
+    def _section_vars(mig, opts)
       return <<END
   - table:   table123
   - column:  column123
@@ -422,11 +422,11 @@ module Migr8
 END
     end
 
-    def section_up(mig, opts)
+    def _section_up(mig, opts)
       return ""
     end
 
-    def section_down(mig, opts)
+    def _section_down(mig, opts)
       return ""
     end
 
@@ -692,11 +692,11 @@ END
 
         protected
 
-        def section_vars(mig, opts)
+        def _section_vars(mig, opts)
           super
         end
 
-        def section_up(mig, opts)
+        def _section_up(mig, opts)
           return <<END
   ---
   --- create table or index
@@ -717,7 +717,7 @@ END
 END
         end
 
-        def section_down(mig, opts)
+        def _section_down(mig, opts)
           return <<END
   ---
   --- drop table or index
@@ -777,11 +777,11 @@ END
 
         protected
 
-        def section_vars(mig, opts)
+        def _section_vars(mig, opts)
           super
         end
 
-        def section_up(mig, opts)
+        def _section_up(mig, opts)
           return <<END
   ---
   --- create table or index
@@ -810,7 +810,7 @@ END
 END
         end
 
-        def section_down(mig, opts)
+        def _section_down(mig, opts)
           return <<END
   ---
   --- drop table or index
@@ -887,11 +887,11 @@ END
 
         protected
 
-        def section_vars(mig, opts)
+        def _section_vars(mig, opts)
           super
         end
 
-        def section_up(mig, opts)
+        def _section_up(mig, opts)
           return <<END
   --
   -- create table or index
@@ -918,7 +918,7 @@ END
 END
         end
 
-        def section_down(mig, opts)
+        def _section_down(mig, opts)
           return <<END
   --
   -- drop table or index
