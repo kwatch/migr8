@@ -949,6 +949,32 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          integer        primary key auto_increment,
+    version     integer        not null default 0,
+    name        varchar(255)   not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  ) engine=InnoDB default charset=utf8;
+  -- alter table ${table} add index (name);
+  -- alter table ${table} add index (created_at);
+  -- alter table ${table} add index col1_col2_col3_idx(col1, col2, col3);
+  -- alter table ${table} add unique (name);
+  -- alter table ${table} add index col1_col2_col3_unq(col1, col2, col3);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  alter table ${table} add index (${column});
+  -- create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  alter table ${table} add unique (${column});
+  -- alter table ${table} add constraint ${unique} unique (${column});
+END
           return <<END
   --
   -- create table or index
@@ -976,6 +1002,20 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  alter table ${table} drop index ${column};
+  --alter table ${table} drop index ${index};
+END
+          return <<END if opts[:unique]
+  alter table ${table} drop index ${column};
+  --alter table ${table} drop index ${unique};
+END
           return <<END
   --
   -- drop table or index
