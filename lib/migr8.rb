@@ -153,6 +153,17 @@ module Migr8
       return tuples
     end
 
+    def rebuild_history_file()
+      tuples = parse_history_file()
+      s = "# -*- coding: utf-8 -*-\n"
+      tuples.each do |version, author, desc|
+        s << "#{version}  # [#{author}] #{desc}\n"
+      end
+      fpath = history_filepath()
+      File.open(fpath, 'w') {|f| f.write(s) }
+      return s
+    end
+
     def migrations_in_history_file(applied_migrations_dict=nil)
       dict = applied_migrations_dict  # {version=>applied_at}
       applied = nil
