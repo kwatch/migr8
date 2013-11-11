@@ -415,6 +415,50 @@ END
   end
 
 
+  class BaseSkeleton
+
+    def render(mig, opts={})
+      plain = opts[:plain]
+      buf = ""
+      buf << "# -*- coding: utf-8 -*-\n"
+      buf << "\n"
+      buf << "version:     #{mig.version}\n"
+      buf << "desc:        #{mig.desc}\n"
+      buf << "author:      #{mig.author}\n"
+      buf << "vars:\n"
+      buf << section_vars(mig, opts)  unless plain
+      buf << "\n"
+      buf << "up: |\n"
+      buf << section_up(mig, opts)    unless plain
+      buf << "\n"
+      buf << "down: |\n"
+      buf << section_down(mig, opts)  unless plain
+      buf << "\n"
+      return buf
+    end
+
+    protected
+
+    def section_vars(mig, opts)
+      return <<END
+  - table:   table123
+  - column:  column123
+  - index:   ${table}_${column}_idx
+  - unique:  ${table}_${column}_unq
+END
+    end
+
+    def section_up(mig, opts)
+      return ""
+    end
+
+    def section_down(mig, opts)
+      return ""
+    end
+
+  end
+
+
   module DBMS
 
     def self.detect_by_command(command)
