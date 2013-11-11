@@ -414,12 +414,31 @@ module Migr8
     protected
 
     def _section_vars(mig, opts)
-      return <<END
+      if (val = opts[:table])
+        val = ~ /\A(\w+)\z/;  table = $1
+        return "  - table:   #{table}\n"
+      elsif (val = opts[:column])
+        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n"
+      elsif (val = opts[:index])
+        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n" +
+               "  - index:   ${table}_${column}_idx\n"
+      elsif (val = opts[:unique])
+        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n" +
+               "  - unique:  ${table}_${column}_unq\n"
+      else
+        return <<END
   - table:   table123
   - column:  column123
   - index:   ${table}_${column}_idx
   - unique:  ${table}_${column}_unq
 END
+      end
     end
 
     def _section_up(mig, opts)
