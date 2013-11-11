@@ -615,6 +615,10 @@ END
 
       public
 
+      def new_skeleton()
+        return self.class.const_get(:Skeleton).new
+      end
+
       def skeleton_for_up()
         raise NotImplementedError.new("#{self.class.name}#skeleton_for_up(): not implemented yet.")
       end
