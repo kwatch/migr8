@@ -352,33 +352,7 @@ module Migr8
     end
 
     def render_migration_file(mig, opts={})  # :nodoc:
-      plain_p = opts[:plain]
-      skeleton_for_up   = plain_p ? '' : @dbms.skeleton_for_up
-      skeleton_for_down = plain_p ? '' : @dbms.skeleton_for_down
-      s = <<END
-# -*- coding: utf-8 -*-
-
-version:     #{mig.version}
-desc:        #{mig.desc}
-author:      #{mig.author}
-vars:
-END
-      if dbms
-        s << <<END
-  - table:   table123
-  - column:  column123
-  - index:   ${table}_${column}_idx
-  - unique:  ${table}_${column}_unq
-END
-      end
-      s << <<END
-
-up: |
-#{skeleton_for_up}
-down: |
-#{skeleton_for_down}
-END
-      return s
+      return @dbms.new_skeleton().render(mig, opts)
     end
 
     public
@@ -410,6 +384,50 @@ END
       end
       missing = mig_dict.empty? ? nil : mig_dict.values
       return {:status=>status, :recent=>recent, :missing=>missing}
+    end
+
+  end
+
+
+  class BaseSkeleton
+
+    def render(mig, opts={})
+      plain = opts[:plain]
+      buf = ""
+      buf << "# -*- coding: utf-8 -*-\n"
+      buf << "\n"
+      buf << "version:     #{mig.version}\n"
+      buf << "desc:        #{mig.desc}\n"
+      buf << "author:      #{mig.author}\n"
+      buf << "vars:\n"
+      buf << _section_vars(mig, opts)  unless plain
+      buf << "\n"
+      buf << "up: |\n"
+      buf << _section_up(mig, opts)    unless plain
+      buf << "\n"
+      buf << "down: |\n"
+      buf << _section_down(mig, opts)  unless plain
+      buf << "\n"
+      return buf
+    end
+
+    protected
+
+    def _section_vars(mig, opts)
+      return <<END
+  - table:   table123
+  - column:  column123
+  - index:   ${table}_${column}_idx
+  - unique:  ${table}_${column}_unq
+END
+    end
+
+    def _section_up(mig, opts)
+      return ""
+    end
+
+    def _section_down(mig, opts)
+      return ""
     end
 
   end
@@ -571,6 +589,10 @@ END
 
       public
 
+      def new_skeleton()
+        return self.class.const_get(:Skeleton).new
+      end
+
       def skeleton_for_up()
         raise NotImplementedError.new("#{self.class.name}#skeleton_for_up(): not implemented yet.")
       end
@@ -635,8 +657,16 @@ END
         return migrations
       end
 
-      def skeleton_for_up()
-        return <<END
+      class Skeleton < BaseSkeleton
+
+        protected
+
+        def _section_vars(mig, opts)
+          super
+        end
+
+        def _section_up(mig, opts)
+          return <<END
   ---
   --- create table or index
   ---
@@ -654,16 +684,18 @@ END
   ---
   alter table ${table} add column ${column} string not null default '';
 END
-      end
+        end
 
-      def skeleton_for_down()
-        return <<END
+        def _section_down(mig, opts)
+          return <<END
   ---
   --- drop table or index
   ---
   drop table ${table};
   drop index ${index};
 END
+        end
+
       end
 
     end
@@ -710,8 +742,16 @@ END
         return migrations
       end
 
-      def skeleton_for_up()
-        return <<END
+      class Skeleton < BaseSkeleton
+
+        protected
+
+        def _section_vars(mig, opts)
+          super
+        end
+
+        def _section_up(mig, opts)
+          return <<END
   ---
   --- create table or index
   ---
@@ -737,10 +777,10 @@ END
   alter table ${table} alter column ${column} set not null;
   alter table ${table} alter column ${column} set default current_date;
 END
-      end
+        end
 
-      def skeleton_for_down()
-        return <<END
+        def _section_down(mig, opts)
+          return <<END
   ---
   --- drop table or index
   ---
@@ -759,6 +799,8 @@ END
   alter table ${table} alter column ${column} drop not null;
   alter table ${table} alter column ${column} drop default;
 END
+        end
+
       end
 
     end
@@ -810,8 +852,16 @@ END
         return migrations
       end
 
-      def skeleton_for_up()
-        return <<END
+      class Skeleton < BaseSkeleton
+
+        protected
+
+        def _section_vars(mig, opts)
+          super
+        end
+
+        def _section_up(mig, opts)
+          return <<END
   --
   -- create table or index
   --
@@ -835,10 +885,10 @@ END
   alter table ${table} change column ${column} new_${column} integer not null;
   alter table ${table} modify column ${column} varchar(255) not null;
 END
-      end
+        end
 
-      def skeleton_for_down()
-        return <<END
+        def _section_down(mig, opts)
+          return <<END
   --
   -- drop table or index
   --
@@ -855,6 +905,8 @@ END
   alter table ${table} change column new_${column} ${column} varchar(255);
   alter table ${table} modify column ${column} varchar(255) not null;
 END
+        end
+
       end
 
     end
