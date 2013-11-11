@@ -4,7 +4,7 @@
 ###
 ### migr8.py -- DB schema version management tool
 ###
-### $Release: 0.0.0 $
+### $Release: 0.1.0 $
 ### $License: MIT License $
 ### $Copyright: (c) kuwata-lab.com all rights reserverd $
 ###
@@ -16,7 +16,7 @@ require 'etc'
 
 module Migr8
 
-  RELEASE = "$Release: 0.0.0 $".split(' ')[1]
+  RELEASE = "$Release: 0.1.0 $".split(' ')[1]
 
   DEBUG = false
 
