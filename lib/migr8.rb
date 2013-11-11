@@ -1067,11 +1067,13 @@ END
     class HistAction < Action
       NAME = "hist"
       DESC = "list history of versions"
-      OPTS = ["-o: open history file with $MIGR8_EDITOR"]
+      OPTS = ["-o: open history file with $MIGR8_EDITOR",
+              "-b: rebuild history file from migration files"]
       ARGS = nil
 
       def run(options, args)
-        open_p = options['o']
+        open_p  = options['o']
+        build_p = options['b']
         #
         if open_p
           editor = ENV['MIGR8_EDITOR']
@@ -1082,6 +1084,14 @@ END
           histfile = repository().history_filepath()
           puts "$ #{editor} #{histfile}"
           system("#{editor} #{histfile}")
+          return
+        end
+        #
+        if build_p
+          repo = repository()
+          puts "## rebulding '#{repo.history_filepath()}' ..."
+          repo.rebuild_history_file()
+          puts "## done."
           return
         end
         #
