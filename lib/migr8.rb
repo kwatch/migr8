@@ -414,12 +414,32 @@ module Migr8
     protected
 
     def _section_vars(mig, opts)
-      return <<END
+      tblcol_rexp = /\A(\w+)(?:\.(\w+)|\((\w+)\))\z/
+      if (val = opts[:table])
+        val = ~ /\A(\w+)\z/;  table = $1
+        return "  - table:   #{table}\n"
+      elsif (val = opts[:column])
+        val =~ tblcol_rexp; table = $1; column = $2||$3
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n"
+      elsif (val = opts[:index])
+        val =~ tblcol_rexp; table = $1; column = $2||$3
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n" +
+               "  - index:   ${table}_${column}_idx\n"
+      elsif (val = opts[:unique])
+        val =~ tblcol_rexp; table = $1; column = $2||$3
+        return "  - table:   #{table}\n" +
+               "  - column:  #{column}\n" +
+               "  - unique:  ${table}_${column}_unq\n"
+      else
+        return <<END
   - table:   table123
   - column:  column123
   - index:   ${table}_${column}_idx
   - unique:  ${table}_${column}_unq
 END
+      end
     end
 
     def _section_up(mig, opts)
@@ -666,6 +686,27 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          integer        primary key autoincrement,
+    version     integer        not null default 0,
+    name        string         not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${table}_name_idx on ${table}(name);
+  create index ${table}_created_at_idx on ${table}(created_at);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  create unique index ${unique} on ${table}(${column});
+END
           return <<END
   ---
   --- create table or index
@@ -687,6 +728,18 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  drop index ${index};
+END
+          return <<END if opts[:unique]
+  drop index ${unique};
+END
           return <<END
   ---
   --- drop table or index
@@ -751,6 +804,29 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          serial         primary key,
+    version     integer        not null default 0,
+    name        varchar(255)   not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  );
+  create index ${table}_name_idx on ${table}(name);
+  create index ${table}_created_at_idx on ${table}(created_at);
+  create unique index ${table}_col1_col2_col3_unq on ${table}(col1, col2, col3);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  create unique index ${unique} on ${table}(${column});
+  --alter table ${table} add constraint ${unique} unique (${column});
+END
           return <<END
   ---
   --- create table or index
@@ -780,6 +856,19 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  drop index ${index};
+END
+          return <<END if opts[:unique]
+  drop index ${unique};
+  --alter table ${table} drop constraint ${unique};
+END
           return <<END
   ---
   --- drop table or index
@@ -861,6 +950,32 @@ END
         end
 
         def _section_up(mig, opts)
+          return <<END if opts[:table]
+  create table ${table} (
+    id          integer        primary key auto_increment,
+    version     integer        not null default 0,
+    name        varchar(255)   not null,
+    created_at  timestamp      not null default current_timestamp,
+    updated_at  timestamp,
+    deleted_at  timestamp
+  ) engine=InnoDB default charset=utf8;
+  -- alter table ${table} add index (name);
+  -- alter table ${table} add index (created_at);
+  -- alter table ${table} add index col1_col2_col3_idx(col1, col2, col3);
+  -- alter table ${table} add unique (name);
+  -- alter table ${table} add index col1_col2_col3_unq(col1, col2, col3);
+END
+          return <<END if opts[:column]
+  alter table ${table} add column ${column} integer not null default 0;
+END
+          return <<END if opts[:index]
+  alter table ${table} add index (${column});
+  -- create index ${index} on ${table}(${column});
+END
+          return <<END if opts[:unique]
+  alter table ${table} add unique (${column});
+  -- alter table ${table} add constraint ${unique} unique (${column});
+END
           return <<END
   --
   -- create table or index
@@ -888,6 +1003,20 @@ END
         end
 
         def _section_down(mig, opts)
+          return <<END if opts[:table]
+  drop table ${table};
+END
+          return <<END if opts[:column]
+  alter table ${table} drop column ${column};
+END
+          return <<END if opts[:index]
+  alter table ${table} drop index ${column};
+  --alter table ${table} drop index ${index};
+END
+          return <<END if opts[:unique]
+  alter table ${table} drop index ${column};
+  --alter table ${table} drop index ${unique};
+END
           return <<END
   --
   -- drop table or index
@@ -1171,10 +1300,10 @@ END
         "-u user  : author name (default: current user)",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
-        "--table=table         : (not implemented yet) create table",
-        "--column=tbl(col,..)  : (not implemented yet) add columns",
-        "--index=tbl(col,..)   : (not implemented yet) create indeces",
-        "--unique=tbl(col,..)  : (not implemented yet) create unique constraints",
+        "--table=table         : create table",
+        "--column=tbl.column : add column",
+        "--index=tbl.column  : create index",
+        "--unique=tbl.column : add unique constraint",
       ]
       ARGS = nil
 
@@ -1184,12 +1313,41 @@ END
           _recommend_to_set_MIGR8_EDITOR('create')
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
-        desc = options['m']  or
-          raise cmdopterr("#{NAME}: '-m text' option required.")
         author = options['u']
-        plain_p = !! options['p']
+        opts = {}
+        opts[:plain] = true if options['p']
+        desc = nil
+        tblcol_rexp = /\A(\w+)(?:\.(\w+)|\((\w+)\))\z/
+        if (val = options['table'])
+          val =~ /\A(\w+)\z/  or
+            raise cmdopterr("#{NAME} --table=#{val}: unexpected format.")
+          desc = "create '#{$1}' table"
+          opts[:table] = val
+        end
+        if (val = options['column'])
+          val =~ tblcol_rexp  or
+            raise cmdopterr("#{NAME} --column=#{val}: unexpected format.")
+          desc = "add '#{$2||$3}' column on '#{$1}' table"
+          return
+          opts[:column] = val
+        end
+        if (val = options['index'])
+          val =~ tblcol_rexp  or
+            raise cmdopterr("#{NAME} --index=#{val}: unexpected format.")
+          desc = "create index on '#{$1}.#{$2||$3}'"
+          opts[:index] = val
+        end
+        if (val = options['unique'])
+          val =~ tblcol_rexp  or
+            raise cmdopterr("#{NAME} --unique=#{val}: unexpected format.")
+          desc = "add unique constraint to '#{$1}.#{$2||$3}'"
+          opts[:unique] = val
+        end
+        desc = options['m'] if options['m']
+        desc  or
+          raise cmdopterr("#{NAME}: '-m text' option required.")
         #
-        mig = repository().create_migration(desc, author, :plain=>plain_p)
+        mig = repository().create_migration(desc, author, opts)
         puts "## New migration file:"
         puts mig.filepath
         puts "$ #{editor} #{mig.filepath}"
