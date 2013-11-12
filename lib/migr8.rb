@@ -516,7 +516,8 @@ CREATE TABLE #{history_table()} (
   version      VARCHAR(40)   NOT NULL UNIQUE,
   author       VARCHAR(40)   NOT NULL,
   description  VARCHAR(255)  NOT NULL,
-  statement    TEXT          NOT NULL,
+  up_script    TEXT          NOT NULL,
+  down_script  TEXT          NOT NULL,
   applied_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 END
@@ -556,27 +557,28 @@ END
 
       def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        stmt = mig.up_statement
+        up_script   = mig.up_statement
+        down_script = mig.down_statement
         sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{stmt};
+#{up_script};
 -----
-INSERT INTO #{@history_table} (version, author, description, statement)
-VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(stmt)}');
+INSERT INTO #{@history_table} (version, author, description, up_script, down_script)
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(up_script)}', '#{q(down_script)}');
 END
         return sql
       end
 
       def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        stmt = mig.down_statement
+        down_script = mig.down_statement
         sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{stmt};
+#{down_script};
 -----
 DELETE FROM #{@history_table} where version = '#{mig.version}';
 END
