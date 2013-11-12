@@ -414,20 +414,21 @@ module Migr8
     protected
 
     def _section_vars(mig, opts)
+      tblcol_rexp = /\A(\w+)(?:\.(\w+)|\((\w+)\))\z/
       if (val = opts[:table])
         val = ~ /\A(\w+)\z/;  table = $1
         return "  - table:   #{table}\n"
       elsif (val = opts[:column])
-        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        val =~ tblcol_rexp; table = $1; column = $2||$3
         return "  - table:   #{table}\n" +
                "  - column:  #{column}\n"
       elsif (val = opts[:index])
-        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        val =~ tblcol_rexp; table = $1; column = $2||$3
         return "  - table:   #{table}\n" +
                "  - column:  #{column}\n" +
                "  - index:   ${table}_${column}_idx\n"
       elsif (val = opts[:unique])
-        val =~ /(\w+)\.(\w+)/; table = $1; column = $2
+        val =~ tblcol_rexp; table = $1; column = $2||$3
         return "  - table:   #{table}\n" +
                "  - column:  #{column}\n" +
                "  - unique:  ${table}_${column}_unq\n"
@@ -1316,6 +1317,7 @@ END
         opts = {}
         opts[:plain] = true if options['p']
         desc = nil
+        tblcol_rexp = /\A(\w+)(?:\.(\w+)|\((\w+)\))\z/
         if (val = options['table'])
           val =~ /\A(\w+)\z/  or
             raise cmdopterr("#{NAME} --table=#{val}: unexpected format.")
@@ -1323,21 +1325,22 @@ END
           opts[:table] = val
         end
         if (val = options['column'])
-          val =~ /\A(\w+)\.(\w+)\z/  or
+          val =~ tblcol_rexp  or
             raise cmdopterr("#{NAME} --column=#{val}: unexpected format.")
-          desc = "add '#{$2}' column on '#{$1}' table"
+          desc = "add '#{$2||$3}' column on '#{$1}' table"
+          return
           opts[:column] = val
         end
         if (val = options['index'])
-          val =~ /\A(\w+)\.(\w+)\z/  or
+          val =~ tblcol_rexp  or
             raise cmdopterr("#{NAME} --index=#{val}: unexpected format.")
-          desc = "create index on '#{$1}.#{$2}'"
+          desc = "create index on '#{$1}.#{$2||$3}'"
           opts[:index] = val
         end
         if (val = options['unique'])
-          val =~ /\A(\w+)\.(\w+)\z/  or
+          val =~ tblcol_rexp  or
             raise cmdopterr("#{NAME} --unique=#{val}: unexpected format.")
-          desc = "add unique constraint to '#{$1}.#{$2}'"
+          desc = "add unique constraint to '#{$1}.#{$2||$3}'"
           opts[:unique] = val
         end
         desc = options['m'] if options['m']
