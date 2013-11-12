@@ -126,6 +126,12 @@ TODO
 Changes
 -------
 
+### Release 0.1.1 (2013-11-12) ###
+
+* [IMPORTANT] Change history table: SORRY, YOU MUST RE-CREATE HISTORY TABLE.
+* [enhance] Fix 'up' action to save both up and down script into history table.
+
+
 ### Release 0.1.0 (2013-11-11) ###
 
 * Public release
