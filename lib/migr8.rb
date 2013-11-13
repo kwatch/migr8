@@ -1566,7 +1566,7 @@ END
     class UnapplyAction < Action
       NAME = "unapply"
       DESC = "unapply specified migrations"
-      OPTS = []
+      OPTS = ["-x:  (not implemented yet) unapply with down-script in DB, not in file"]
       ARGS = "version ..."
 
       include VersionsHelper
