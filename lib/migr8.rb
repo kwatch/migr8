@@ -560,6 +560,11 @@ END
         return migs
       end
 
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = ""
+        return execute_sql(sql, cmdopt)
+      end
+
       def _echo_message(msg)
         raise NotImplementedError.new("#{self.class.name}#_echo_message(): not implemented yet.")
       end
@@ -660,6 +665,11 @@ END
         sql = super
         sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTOINCREMENT')
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = "-list"
+        return execute_sql(sql, cmdopt)
       end
 
       def _echo_message(msg)
@@ -778,6 +788,11 @@ END
         sql = sql.sub(/INTEGER/, 'SERIAL ')
         sql = sql.sub('CURRENT_TIMESTAMP', 'TIMEOFDAY()::TIMESTAMP')
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = "-t -A"
+        return execute_sql(sql, cmdopt)
       end
 
       def _echo_message(msg)
@@ -920,6 +935,17 @@ END
         sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTO_INCREMENT')
         #sql = sql.sub(' TIMESTAMP ', ' DATETIME  ')   # not work
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        #cmdopt = "-s"
+        #s = execute_sql(sql, cmdopt)
+        #s.gsub!(/[^\\]\\n/, "\n")
+        cmdopt = "-s -E"
+        s = execute_sql(sql, cmdopt)
+        s.sub!(/\A\*+.*\n/, '')    # remove '**** 1. row ****' from output
+        s.sub!(/\A\w+: /, '')      # remove 'column-name: ' from output
+        return s
       end
 
       def _echo_message(msg)
