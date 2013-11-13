@@ -580,7 +580,7 @@ END
 -----
 #{down_script};
 -----
-DELETE FROM #{@history_table} where version = '#{mig.version}';
+DELETE FROM #{@history_table} WHERE VERSION = '#{mig.version}';
 END
         return sql
       end
