@@ -611,7 +611,12 @@ END
         _do_migrations(migs) {|mig| _applying_sql(mig) }
       end
 
-      def unapply_migrations(migs)
+      def unapply_migrations(migs, down_script_in_db=false)
+        if down_script_in_db
+          migs.each do |mig|
+            mig.down_script = _get_down_script_of(mig.version)
+          end
+        end
         _do_migrations(migs) {|mig| _unapplying_sql(mig) }
       end
 
