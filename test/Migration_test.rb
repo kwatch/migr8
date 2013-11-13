@@ -45,6 +45,12 @@ Oktest.scope do
         ok {mig.up_statement} == nil
       end
 
+      spec "[!200k7] returns @up_script if it is set." do
+        mig = klass.new()
+        mig.up_script = "xxx"
+        ok {mig.up_statement} == "xxx"
+      end
+
       spec "[!6gaxb] returns 'up' string expanding vars in it." do
         original = <<END
 create table ${table} (
@@ -75,6 +81,12 @@ END
         mig = klass.new
         mig.down = nil
         ok {mig.down_statement} == nil
+      end
+
+      spec "[!27n2l] returns @down_script if it is set." do
+        mig = klass.new
+        mig.down_script = "xxx"
+        ok {mig.down_statement} == "xxx"
       end
 
       spec "[!0q3nq] returns 'down' string expanding vars in it." do

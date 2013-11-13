@@ -74,6 +74,8 @@ module Migr8
     def up_statement
       #; [!cfp34] returns nil when 'up' is not set.
       return @up unless @up
+      #; [!200k7] returns @up_script if it is set.
+      return @up_script if @up_script
       #; [!6gaxb] returns 'up' string expanding vars in it.
       return Util::Expander.expand_str(@up, @vars)
     end
@@ -81,6 +83,8 @@ module Migr8
     def down_statement
       #; [!e45s1] returns nil when 'down' is not set.
       return @down unless @down
+      #; [!27n2l] returns @down_script if it is set.
+      return @down_script if @down_script
       #; [!0q3nq] returns 'down' string expanding vars in it.
       return Util::Expander.expand_str(@down, @vars)
     end
