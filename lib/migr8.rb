@@ -1327,7 +1327,6 @@ END
           val =~ tblcol_rexp  or
             raise cmdopterr("#{NAME} --column=#{val}: unexpected format.")
           desc = "add '#{$2||$3}' column on '#{$1}' table"
-          return
           opts[:column] = val
         end
         if (val = options['index'])
