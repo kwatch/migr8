@@ -560,6 +560,12 @@ END
         return migs
       end
 
+      def _get_down_script_of(version)
+        sql = "SELECT down_script FROM #{history_table()} WHERE version = '#{version}';"
+        down_script = _execute_sql_and_get_column_as_text(sql)
+        return down_script
+      end
+
       def _execute_sql_and_get_column_as_text(sql)
         cmdopt = ""
         return execute_sql(sql, cmdopt)
