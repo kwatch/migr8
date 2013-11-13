@@ -157,7 +157,7 @@ module Migr8
       tuples = parse_history_file()
       s = "# -*- coding: utf-8 -*-\n"
       tuples.each do |version, author, desc|
-        s << "#{version}  # [#{author}] #{desc}\n"
+        s << _to_line(version, author, desc)
       end
       fpath = history_filepath()
       File.open(fpath, 'w') {|f| f.write(s) }
@@ -341,14 +341,18 @@ module Migr8
       mig = Migration.new(new_version(), author || Etc.getlogin(), desc)
       content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
-      File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)+"\n") }
+      File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)) }
       return mig
     end
 
     protected
 
     def to_line(mig)  # :nodoc:
-      return "%-10s # [%s] %s" % [mig.version, mig.author, mig.desc]
+      return _to_line(mig.version, mig.author, mig.desc)
+    end
+
+    def _to_line(version, author, desc)
+      return "%-10s # [%s] %s\n" % [version, author, desc]
     end
 
     def render_migration_file(mig, opts={})  # :nodoc:
