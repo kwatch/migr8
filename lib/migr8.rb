@@ -1090,15 +1090,19 @@ END
         cmd = ENV['MIGR8_COMMAND'] || ''
         ! cmd.empty?  or
           raise CommandSetupError.new(<<END)
-$MIGR8_COMMAND is empty. Please set it at first.
-  Example: (MacOSX, Unix)
-      $ export MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
-                        # or 'psql -q -U user dbname'   # for PosgreSQL
-                        # or 'mysql -s -u user dbname'  # for MySQL
-  Example: (Windows)
-      C:\\> set MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
-                        # or 'psql -q -U user dbname'   # for PostgreSQL
-                        # or 'mysql -s -u user dbname'  # for MySQL
+##
+## ERROR: $MIGR8_COMMAND is empty. Please set it at first.
+## Example: (MacOSX, Unix)
+##     $ export MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
+##                       # or 'psql -q -U user dbname'   # for PosgreSQL
+##                       # or 'mysql -s -u user dbname'  # for MySQL
+## Example: (Windows)
+##     C:\\> set MIGR8_COMMAND='sqlite3 dbname'           # for SQLite3
+##                       # or 'psql -q -U user dbname'   # for PostgreSQL
+##                       # or 'mysql -s -u user dbname'  # for MySQL
+##
+## Run '#{File.basename($0)} readme' for details.
+##
 END
         return cmd
       end
@@ -1161,12 +1165,14 @@ END
 
       def _recommend_to_set_MIGR8_EDITOR(action)  # :nodoc:
         msg = <<END
+##
 ## ERROR: Failed to #{action} migration file.
 ## Plase set $MIGR8_EDITOR in order to open migration file automatically.
 ## Example:
 ##   $ export MIGR8_EDITOR='emacsclient'          # for emacs
 ##   $ export MIGR8_EDITOR='vim'                  # for vim
 ##   $ export MIGR8_EDITOR='open -a TextMate'     # for TextMate (MacOSX)
+##
 END
         $stderr << msg
       end
