@@ -1303,10 +1303,10 @@ END
         "-u user  : author name (default: current user)",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
-        "--table=table         : create table",
-        "--column=tbl.column : add column",
-        "--index=tbl.column  : create index",
-        "--unique=tbl.column : add unique constraint",
+        "--table=table       : skeleton to create table",
+        "--column=tbl.column : skeleton to add column",
+        "--index=tbl.column  : skeleton to create index",
+        "--unique=tbl.column : skeleton to add unique constraint",
       ]
       ARGS = nil
 
@@ -2055,6 +2055,10 @@ Usage and Actions
         -u user           :   author name (default: current user)
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+        --table=table     :   skeleton to create table
+        --column=tbl.col  :   skeleton to add column
+        --index=tbl.col   :   skeleton to create index
+        --unique=tbl.col  :   skeleton to add unique constraint
       edit [version]      : open migration file by $MIGR8_EDITOR
         -r N              :   edit N-th file from latest version
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)

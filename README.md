@@ -94,6 +94,10 @@ Usage and Actions
         -u user           :   author name (default: current user)
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+        --table=table     :   skeleton to create table
+        --column=tbl.col  :   skeleton to add column
+        --index=tbl.col   :   skeleton to create index
+        --unique=tbl.col  :   skeleton to add unique constraint
       edit [version]      : open migration file by $MIGR8_EDITOR
         -r N              :   edit N-th file from latest version
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
