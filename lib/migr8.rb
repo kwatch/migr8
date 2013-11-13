@@ -215,8 +215,8 @@ module Migr8
       @dbms.apply_migrations(migs)
     end
 
-    def unapply_migrations(migs)
-      @dbms.unapply_migrations(migs)
+    def unapply_migrations(migs, down_script_in_db=false)
+      @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
     def upgrade(n)
