@@ -692,7 +692,7 @@ END
   create table ${table} (
     id          integer        primary key autoincrement,
     version     integer        not null default 0,
-    name        string         not null,
+    name        text           not null,
     created_at  timestamp      not null default current_timestamp,
     updated_at  timestamp,
     deleted_at  timestamp
@@ -716,7 +716,7 @@ END
   create table ${table} (
     id          integer        primary key autoincrement,
     version     integer        not null default 0,
-    name        string         not null unique,
+    name        text           not null unique,
     created_at  timestamp      not null default current_timestamp,
     updated_at  timestamp,
     deleted_at  timestamp
