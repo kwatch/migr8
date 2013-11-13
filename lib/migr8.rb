@@ -54,7 +54,7 @@ module Migr8
   class Migration
 
     attr_accessor :version, :author, :desc, :vars, :up, :down
-    attr_accessor :applied_at
+    attr_accessor :applied_at, :id
 
     def initialize(version=nil, author=nil, desc=nil)
       #; [!y4dy3] takes version, author, and desc arguments.
