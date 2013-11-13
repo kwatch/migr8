@@ -1608,18 +1608,45 @@ END
     class UnapplyAction < Action
       NAME = "unapply"
       DESC = "unapply specified migrations"
-      OPTS = ["-x:  (not implemented yet) unapply with down-script in DB, not in file"]
+      OPTS = ["-x:  unapply versions with down-script in DB, not in file"]
       ARGS = "version ..."
 
       include VersionsHelper
 
       def run(options, args)
+        only_in_db = options['x']
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
         repo = repository()
-        migrations = _versions2migrations(args, repo, NAME, true)
-        repo.unapply_migrations(migrations)
+        if only_in_db
+          migrations = _versions2migrations_only_in_database(args, repo, NAME)
+          repo.unapply_migrations(migrations, true)
+        else
+          migrations = _versions2migrations(args, repo, NAME, true)
+          repo.unapply_migrations(migrations)
+        end
+      end
+
+      private
+
+      def _versions2migrations_only_in_database(versions, repo, name)
+        mig_hist, mig_applied_dict = repo.get_migrations()
+        mig_hist_dict = {}
+        mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
+        ver_cnt = {}
+        migs = versions.collect {|ver|
+          ver_cnt[ver].nil?  or
+            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
+          ver_cnt[ver] = 1
+          ! mig_hist_dict[ver]  or
+            raise cmdopterr("#{name}: #{ver}: version exists in history file (please specify versions only in database).")
+          mig = mig_applied_dict[ver]  or
+            raise cmdopterr("#{name}: #{ver}: no such version in database.")
+          mig
+        }
+        migs.sort_by! {|mig| - mig.id }  # sort by reverse order
+        return migs
       end
 
     end
