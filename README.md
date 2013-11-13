@@ -113,6 +113,7 @@ Usage and Actions
         --ALL             :   redo all migrations
       apply version ...   : apply specified migrations
       unapply version ... : unapply specified migrations
+        -x                : (not implemented yet) unapply with down-script in DB
 
 
 TODO
