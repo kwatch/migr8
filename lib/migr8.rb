@@ -2082,10 +2082,7 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] migr8.rb new --table=table
-* [_] migr8.rb new --column=tbl(col,col2,..)
-* [_] migr8.rb new --index=tbl(col,col2,..)
-* [_] migr8.rb new --unique=tbl(col,col2,..)
+* [_] implement `unapply -x` which unapply with down-script in DB, not in file
 * [_] implement in Python
 * [_] implement in JavaScript
 
@@ -2093,9 +2090,21 @@ TODO
 Changes
 -------
 
+### Release 0.2.0 (2013-11-14) ###
+
+* [enhance] Add new options to `new` action for some skeletons
+  * `new --table=table` : create table
+  * `new --column=tbl.col` : add column to table
+  * `new --index=tbl.col` : create index on column
+  * `new --unique=tbl.col` : add unique constraint on column
+* [enhance] Add new option `hist -b` action which re-generate history file.
+* [change] Change several error messages
+* [change] Tweak SQL generated on SQLite3
+
+
 ### Release 0.1.1 (2013-11-12) ###
 
-* [IMPORTANT] Change history table: SORRY, YOU MUST RE-CREATE HISTORY TABLE.
+* [IMPORTANT] Change history table schema: SORRY, YOU MUST RE-CREATE HISTORY TABLE.
 * [enhance] Fix 'up' action to save both up and down script into history table.
 
 
