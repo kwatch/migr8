@@ -658,7 +658,6 @@ END
       def _histrory_table_statement()
         sql = super
         sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTOINCREMENT')
-        sql = sql.sub(/ TIMESTAMP /, ' DATETIME  ')
         return sql
       end
 
