@@ -37,6 +37,7 @@ Quick Start
 
         $ ./migr8.rb                                 # show current status
         $ ./migr8.rb new -m "create 'users' table"   # create a migration
+               # or  ./migr8.rb new --table=users
         $ ./migr8.rb                                 # show status again
         $ ./migr8.rb up                              # apply migration
         $ ./migr8.rb                                 # show status again
@@ -113,7 +114,7 @@ Usage and Actions
         --ALL             :   redo all migrations
       apply version ...   : apply specified migrations
       unapply version ... : unapply specified migrations
-        -x                : (not implemented yet) unapply with down-script in DB
+        -x                :   unapply versions with down-script in DB, not in file
 
 
 TODO
@@ -121,7 +122,6 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] implement `unapply -x` which unapply with down-script in DB, not in file
 * [_] implement in Python
 * [_] implement in JavaScript
 
