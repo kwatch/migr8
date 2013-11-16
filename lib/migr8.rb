@@ -406,12 +406,42 @@ module Migr8
       @repo = repo
     end
 
+    def unapply_migrations(versions)
+      migs = _versions2migrations_in_history_file(versions, true)
+      @repo.unapply_migrations(migs)
+    end
+
     def unapply_migrations_only_in_database(versions)
       migs = _versions2migrations_only_in_database(versions)
       @repo.unapply_migrations(migs, true)
     end
 
     private
+
+    def _versions2migrations_in_history_file(versions, should_applied)
+      mig_hist, _ = @repo.get_migrations()
+      mig_dict = {}
+      mig_hist.each {|mig| mig_dict[mig.version] = mig }
+      ver_cnt = {}
+      migrations = versions.collect {|ver|
+        ver_cnt[ver].nil?  or
+          raise MigrationError.new("#{ver}: specified two or more times.")
+        ver_cnt[ver] = 1
+        @repo.load_migration(ver)  or
+          raise MigrationError.new("#{ver}: migration file not found.")
+        mig = mig_dict[ver]  or
+          raise MigrationError.new("#{ver}: no such version in history file.")
+        if should_applied
+          mig.applied_at  or
+            raise MigrationError.new("#{ver}: not applied yet.")
+        else
+          ! mig.applied_at  or
+            raise MigrationError.new("#{ver}: already applied.")
+        end
+        mig
+      }
+      return migrations
+    end
 
     def _versions2migrations_only_in_database(versions)
       mig_hist, mig_applied_dict = @repo.get_migrations()
