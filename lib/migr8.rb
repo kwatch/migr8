@@ -1664,15 +1664,18 @@ END
       OPTS = []
       ARGS = "version ..."
 
-      include VersionsHelper
-
       def run(options, args)
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
+        versions = args
         repo = repository()
-        migrations = _versions2migrations(args, repo, NAME, false)
-        repo.apply_migrations(migrations)
+        op = RepositoryOperation.new(repo)
+        begin
+          op.apply_migrations(versions)
+        rescue MigrationError => ex
+          raise cmdopterr("#{NAME}: #{ex.message}")
+        end
       end
 
     end
