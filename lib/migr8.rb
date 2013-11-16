@@ -54,7 +54,7 @@ module Migr8
   class Migration
 
     attr_accessor :version, :author, :desc, :vars, :up, :down
-    attr_accessor :applied_at
+    attr_accessor :applied_at, :id, :up_script, :down_script
 
     def initialize(version=nil, author=nil, desc=nil)
       #; [!y4dy3] takes version, author, and desc arguments.
@@ -74,6 +74,8 @@ module Migr8
     def up_statement
       #; [!cfp34] returns nil when 'up' is not set.
       return @up unless @up
+      #; [!200k7] returns @up_script if it is set.
+      return @up_script if @up_script
       #; [!6gaxb] returns 'up' string expanding vars in it.
       return Util::Expander.expand_str(@up, @vars)
     end
@@ -81,6 +83,8 @@ module Migr8
     def down_statement
       #; [!e45s1] returns nil when 'down' is not set.
       return @down unless @down
+      #; [!27n2l] returns @down_script if it is set.
+      return @down_script if @down_script
       #; [!0q3nq] returns 'down' string expanding vars in it.
       return Util::Expander.expand_str(@down, @vars)
     end
@@ -211,8 +215,8 @@ module Migr8
       @dbms.apply_migrations(migs)
     end
 
-    def unapply_migrations(migs)
-      @dbms.unapply_migrations(migs)
+    def unapply_migrations(migs, down_script_in_db=false)
+      @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
     def upgrade(n)
@@ -541,18 +545,30 @@ END
       protected
 
       def _get_migrations(cmdopt, separator)
-        sql = "SELECT version, applied_at, author, description FROM #{history_table()} ORDER BY id;"
+        sql = "SELECT id, version, applied_at, author, description FROM #{history_table()} ORDER BY id;"
         output = execute_sql(sql, cmdopt)
         migs = []
         output.each_line do |line|
           line.strip!
           break if line.empty?
-          version, applied_at, author, desc = line.strip.split(separator, 4)
+          id, version, applied_at, author, desc = line.strip.split(separator, 5)
           mig = Migration.new(version.strip, author.strip, desc.strip)
+          mig.id = Integer(id)
           mig.applied_at = applied_at ? applied_at.split(/\./)[0] : nil
           migs << mig
         end
         return migs
+      end
+
+      def _get_down_script_of(version)
+        sql = "SELECT down_script FROM #{history_table()} WHERE version = '#{version}';"
+        down_script = _execute_sql_and_get_column_as_text(sql)
+        return down_script
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = ""
+        return execute_sql(sql, cmdopt)
       end
 
       def _echo_message(msg)
@@ -595,7 +611,12 @@ END
         _do_migrations(migs) {|mig| _applying_sql(mig) }
       end
 
-      def unapply_migrations(migs)
+      def unapply_migrations(migs, down_script_in_db=false)
+        if down_script_in_db
+          migs.each do |mig|
+            mig.down_script = _get_down_script_of(mig.version)
+          end
+        end
         _do_migrations(migs) {|mig| _unapplying_sql(mig) }
       end
 
@@ -655,6 +676,11 @@ END
         sql = super
         sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTOINCREMENT')
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = "-list"
+        return execute_sql(sql, cmdopt)
       end
 
       def _echo_message(msg)
@@ -773,6 +799,11 @@ END
         sql = sql.sub(/INTEGER/, 'SERIAL ')
         sql = sql.sub('CURRENT_TIMESTAMP', 'TIMEOFDAY()::TIMESTAMP')
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        cmdopt = "-t -A"
+        return execute_sql(sql, cmdopt)
       end
 
       def _echo_message(msg)
@@ -915,6 +946,17 @@ END
         sql = sql.sub(/PRIMARY KEY/, 'PRIMARY KEY AUTO_INCREMENT')
         #sql = sql.sub(' TIMESTAMP ', ' DATETIME  ')   # not work
         return sql
+      end
+
+      def _execute_sql_and_get_column_as_text(sql)
+        #cmdopt = "-s"
+        #s = execute_sql(sql, cmdopt)
+        #s.gsub!(/[^\\]\\n/, "\n")
+        cmdopt = "-s -E"
+        s = execute_sql(sql, cmdopt)
+        s.sub!(/\A\*+.*\n/, '')    # remove '**** 1. row ****' from output
+        s.sub!(/\A\w+: /, '')      # remove 'column-name: ' from output
+        return s
       end
 
       def _echo_message(msg)
@@ -1566,18 +1608,45 @@ END
     class UnapplyAction < Action
       NAME = "unapply"
       DESC = "unapply specified migrations"
-      OPTS = ["-x:  (not implemented yet) unapply with down-script in DB, not in file"]
+      OPTS = ["-x:  unapply versions with down-script in DB, not in file"]
       ARGS = "version ..."
 
       include VersionsHelper
 
       def run(options, args)
+        only_in_db = options['x']
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
         repo = repository()
-        migrations = _versions2migrations(args, repo, NAME, true)
-        repo.unapply_migrations(migrations)
+        if only_in_db
+          migrations = _versions2migrations_only_in_database(args, repo, NAME)
+          repo.unapply_migrations(migrations, true)
+        else
+          migrations = _versions2migrations(args, repo, NAME, true)
+          repo.unapply_migrations(migrations)
+        end
+      end
+
+      private
+
+      def _versions2migrations_only_in_database(versions, repo, name)
+        mig_hist, mig_applied_dict = repo.get_migrations()
+        mig_hist_dict = {}
+        mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
+        ver_cnt = {}
+        migs = versions.collect {|ver|
+          ver_cnt[ver].nil?  or
+            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
+          ver_cnt[ver] = 1
+          ! mig_hist_dict[ver]  or
+            raise cmdopterr("#{name}: #{ver}: version exists in history file (please specify versions only in database).")
+          mig = mig_applied_dict[ver]  or
+            raise cmdopterr("#{name}: #{ver}: no such version in database.")
+          mig
+        }
+        migs.sort_by! {|mig| - mig.id }  # sort by reverse order
+        return migs
       end
 
     end
@@ -1998,6 +2067,7 @@ Quick Start
 
         $ ./migr8.rb                                 # show current status
         $ ./migr8.rb new -m "create 'users' table"   # create a migration
+               # or  ./migr8.rb new --table=users
         $ ./migr8.rb                                 # show status again
         $ ./migr8.rb up                              # apply migration
         $ ./migr8.rb                                 # show status again
@@ -2074,7 +2144,7 @@ Usage and Actions
         --ALL             :   redo all migrations
       apply version ...   : apply specified migrations
       unapply version ... : unapply specified migrations
-        -x                : (not implemented yet) unapply with down-script in DB
+        -x                :   unapply versions with down-script in DB, not in file
 
 
 TODO
@@ -2082,7 +2152,6 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] implement `unapply -x` which unapply with down-script in DB, not in file
 * [_] implement in Python
 * [_] implement in JavaScript
 
