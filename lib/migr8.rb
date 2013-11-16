@@ -406,6 +406,11 @@ module Migr8
       @repo = repo
     end
 
+    def apply_migrations(versions)
+      migs = _versions2migrations_in_history_file(versions, false)
+      @repo.apply_migrations(migs)
+    end
+
     def unapply_migrations(versions)
       migs = _versions2migrations_in_history_file(versions, true)
       @repo.unapply_migrations(migs)
