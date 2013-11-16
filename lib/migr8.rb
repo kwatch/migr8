@@ -406,6 +406,32 @@ module Migr8
       @repo = repo
     end
 
+    def unapply_migrations_only_in_database(versions)
+      migs = _versions2migrations_only_in_database(versions)
+      @repo.unapply_migrations(migs, true)
+    end
+
+    private
+
+    def _versions2migrations_only_in_database(versions)
+      mig_hist, mig_applied_dict = @repo.get_migrations()
+      mig_hist_dict = {}
+      mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
+      ver_cnt = {}
+      migrations = versions.collect {|ver|
+        ver_cnt[ver].nil?  or
+          raise MigrationError.new("#{ver}: specified two or more times.")
+        ver_cnt[ver] = 1
+        mig_hist_dict[ver].nil?  or
+          raise MigrationError.new("#{ver}: version exists in history file (please specify versions only in database).")
+        mig = mig_applied_dict[ver]  or
+          raise MigrationError.new("#{ver}: no such version in database.")
+        mig
+      }
+      migrations.sort_by! {|mig| - mig.id }  # sort by reverse order
+      return migrations
+    end
+
   end
 
 
