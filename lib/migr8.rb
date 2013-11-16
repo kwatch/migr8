@@ -2045,44 +2045,44 @@ Quick Start
 
 1. Donwload migr8.rb.
 
-        $ curl -Lo migr8.rb http://bit.ly/migr8_rb
-        $ chmod a+x migr8.rb
+    $ curl -Lo migr8.rb http://bit.ly/migr8_rb
+    $ chmod a+x migr8.rb
 
 2. Set environment variables: $MIGR8_COMMAND and $MIGR8_EDITOR.
 
-        $ export MIGR8_COMMAND="sqlite3 dbfile1"            # for SQLite3
-        $ export MIGR8_COMMAND="psql -q -U user1 dbname1"   # for PostgreSQL
-        $ export MIGR8_COMMAND="mysql -s -u user1 dbname1"  # for MySQL
+    $ export MIGR8_COMMAND="sqlite3 dbfile1"            # for SQLite3
+    $ export MIGR8_COMMAND="psql -q -U user1 dbname1"   # for PostgreSQL
+    $ export MIGR8_COMMAND="mysql -s -u user1 dbname1"  # for MySQL
 
-        $ export MIGR8_EDITOR="open -a TextMate"     # for TextMate (MacOSX)
-        $ export MIGR8_EDITOR="emacsclient"          # for Emacs
-        $ export MIGR8_EDITOR="vim"                  # for Vim
+    $ export MIGR8_EDITOR="open -a TextMate"     # for TextMate (MacOSX)
+    $ export MIGR8_EDITOR="emacsclient"          # for Emacs
+    $ export MIGR8_EDITOR="vim"                  # for Vim
 
 3. Create managiment files and table.
 
-        $ ./migr8.rb init         # create files in current directory,
-                                  # and create a table in DB.
+    $ ./migr8.rb init         # create files in current directory,
+                              # and create a table in DB.
 
 4. Now you can manage DB schema versions.
 
-        $ ./migr8.rb                                 # show current status
-        $ ./migr8.rb new -m "create 'users' table"   # create a migration
-               # or  ./migr8.rb new --table=users
-        $ ./migr8.rb                                 # show status again
-        $ ./migr8.rb up                              # apply migration
-        $ ./migr8.rb                                 # show status again
-        $ ./migr8.rb hist                            # list history
+    $ ./migr8.rb                                 # show current status
+    $ ./migr8.rb new -m "create 'users' table"   # create a migration
+           # or  ./migr8.rb new --table=users
+    $ ./migr8.rb                                 # show status again
+    $ ./migr8.rb up                              # apply migration
+    $ ./migr8.rb                                 # show status again
+    $ ./migr8.rb hist                            # list history
 
 5. You may got confliction error when `git rebase` or `git pull`.
    In this case, you must resolve it by hand.
    (This is intended design.)
 
-        $ git rebase master         # confliction!
-        $ ./migr8.rb hist -o        # open 'migr8/history.txt', and
-                                    # resolve confliction manually
-        $ ./migr8.rb hist           # check whether history file is valid
-        $ git add migr8/history.txt
-        $ git rebase --continue
+    $ git rebase master         # confliction!
+    $ ./migr8.rb hist -o        # open 'migr8/history.txt', and
+                                # resolve confliction manually
+    $ ./migr8.rb hist           # check whether history file is valid
+    $ git add migr8/history.txt
+    $ git rebase --continue
 
 
 Tips
@@ -2108,43 +2108,43 @@ Tips
 Usage and Actions
 -----------------
 
-    Usage: migr8.rb [global-options] [action [options] [...]]
-      -h, --help          : show help
-      -v, --version       : show version
-      -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
+Usage: migr8.rb [global-options] [action [options] [...]]
+  -h, --help          : show help
+  -v, --version       : show version
+  -D, --debug         : not remove sql file ('migr8/tmp.sql') for debug
 
-    Actions:  (default: status)
-      readme              : !!READ ME AT FIRST!!
-      help [action]       : show help message of action, or list action names
-      init                : create necessary files and a table
-      hist                : list history of versions
-        -o                :   open history file with $MIGR8_EDITOR
-        -b                :   rebuild history file from migration files
-      new                 : create new migration file and open it by $MIGR8_EDITOR
-        -m text           :   description message (mandatory)
-        -u user           :   author name (default: current user)
-        -p                :   plain skeleton
-        -e editor         :   editr command (such as 'emacsclient', 'open', ...)
-        --table=table     :   skeleton to create table
-        --column=tbl.col  :   skeleton to add column
-        --index=tbl.col   :   skeleton to create index
-        --unique=tbl.col  :   skeleton to add unique constraint
-      edit [version]      : open migration file by $MIGR8_EDITOR
-        -r N              :   edit N-th file from latest version
-        -e editor         :   editr command (such as 'emacsclient', 'open', ...)
-      status              : show status
-      up                  : apply next migration
-        -n N              :   apply N migrations
-        -a                :   apply all migrations
-      down                : unapply current migration
-        -n N              :   unapply N migrations
-        --ALL             :   unapply all migrations
-      redo                : do migration down, and up it again
-        -n N              :   redo N migrations
-        --ALL             :   redo all migrations
-      apply version ...   : apply specified migrations
-      unapply version ... : unapply specified migrations
-        -x                :   unapply versions with down-script in DB, not in file
+Actions:  (default: status)
+  readme              : !!READ ME AT FIRST!!
+  help [action]       : show help message of action, or list action names
+  init                : create necessary files and a table
+  hist                : list history of versions
+    -o                :   open history file with $MIGR8_EDITOR
+    -b                :   rebuild history file from migration files
+  new                 : create new migration file and open it by $MIGR8_EDITOR
+    -m text           :   description message (mandatory)
+    -u user           :   author name (default: current user)
+    -p                :   plain skeleton
+    -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+    --table=table     :   skeleton to create table
+    --column=tbl.col  :   skeleton to add column
+    --index=tbl.col   :   skeleton to create index
+    --unique=tbl.col  :   skeleton to add unique constraint
+  edit [version]      : open migration file by $MIGR8_EDITOR
+    -r N              :   edit N-th file from latest version
+    -e editor         :   editr command (such as 'emacsclient', 'open', ...)
+  status              : show status
+  up                  : apply next migration
+    -n N              :   apply N migrations
+    -a                :   apply all migrations
+  down                : unapply current migration
+    -n N              :   unapply N migrations
+    --ALL             :   unapply all migrations
+  redo                : do migration down, and up it again
+    -n N              :   redo N migrations
+    --ALL             :   redo all migrations
+  apply version ...   : apply specified migrations
+  unapply version ... : unapply specified migrations
+    -x                :   unapply versions with down-script in DB, not in file
 
 
 TODO
