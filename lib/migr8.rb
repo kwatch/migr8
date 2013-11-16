@@ -400,6 +400,15 @@ module Migr8
   end
 
 
+  class RepositoryOperation
+
+    def initialize(repo)
+      @repo = repo
+    end
+
+  end
+
+
   class BaseSkeleton
 
     def render(mig, opts={})
