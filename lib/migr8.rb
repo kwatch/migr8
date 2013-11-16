@@ -1601,38 +1601,6 @@ END
     end
 
 
-    module VersionsHelper   # :nodoc:
-
-      private
-
-      def _versions2migrations(versions, repo, name, should_applied)
-        mig_hist, _ = repo.get_migrations()
-        mig_dict = {}
-        mig_hist.each {|mig| mig_dict[mig.version] = mig }
-        ver_chk = {}
-        versions.each do |ver|
-          repo.load_migration(ver)  or
-            raise cmdopterr("#{name}: #{ver}: migration file not found.")
-          mig = mig_dict[ver]  or
-            raise cmdopterr("#{name}: #{ver}: no such version in history file.")
-          if should_applied
-            mig.applied_at  or
-              raise cmdopterr("#{name}: #{ver}: not applied yet.")
-          else
-            mig.applied_at.nil?  or
-              raise cmdopterr("#{name}: #{ver}: already applied.")
-          end
-          ver_chk[ver].nil?  or
-            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
-          ver_chk[ver] = true
-        end
-        migrations = versions.collect {|ver| mig_dict[ver] }
-        return migrations
-      end
-
-    end
-
-
     class RedoAction < Action
       NAME = "redo"
       DESC = "do migration down, and up it again"
