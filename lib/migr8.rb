@@ -50,6 +50,9 @@ module Migr8
   class RepositoryError < Migr8Error
   end
 
+  class MigrationError < Migr8Error
+  end
+
 
   class Migration
 
