@@ -1557,21 +1557,8 @@ END
           n = 5
         end
         #
-        ret = repository().inspection(n)
-        puts "## Status: #{ret[:status]}"
-        str = '(not applied)      '
-        if ret[:recent]
-          puts "## Recent history:"
-          ret[:recent].each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
-        if ret[:missing]
-          puts "## === Applied to DB, but migration file not found ==="
-          ret[:missing].each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
+        op = RepositoryOperation.new(repository())
+        puts op.status
       end
 
     end
