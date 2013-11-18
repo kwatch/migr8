@@ -406,17 +406,17 @@ module Migr8
       @repo = repo
     end
 
-    def apply_migrations(versions)
+    def apply(versions)
       migs = _get_migrations_in_history_file(versions, false)
       @repo.apply_migrations(migs)
     end
 
-    def unapply_migrations(versions)
+    def unapply(versions)
       migs = _get_migrations_in_history_file(versions, true)
       @repo.unapply_migrations(migs)
     end
 
-    def unapply_migrations_only_in_database(versions)
+    def unapply_only_in_database(versions)
       migs = _get_migrations_only_in_database(versions)
       @repo.unapply_migrations(migs, true)
     end
@@ -1640,7 +1640,7 @@ END
         repo = repository()
         op = RepositoryOperation.new(repo)
         begin
-          op.apply_migrations(versions)
+          op.apply(versions)
         rescue MigrationError => ex
           raise cmdopterr("#{NAME}: #{ex.message}")
         end
@@ -1665,9 +1665,9 @@ END
         op = RepositoryOperation.new(repo)
         begin
           if only_in_db
-            op.apply_migrations_only_in_database(versions)
+            op.unapply_only_in_database(versions)
           else
-            op.apply_migrations(versions)
+            op.unapply(versions)
           end
         rescue MigrationError => ex
           raise cmdopterr("#{NAME}: #{ex.message}")
