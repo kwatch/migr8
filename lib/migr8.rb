@@ -214,10 +214,10 @@ module Migr8
       version = ''
       s = VERSION_CHARS
       n = s.length - 1
-      version << s[rand(n)] << s[rand(n)] << s[rand(n)] << s[rand(n)]
+      4.times { version << s[rand(n)] }
       d = VERSION_DIGITS
       n = d.length - 1
-      version << d[rand(n)] << d[rand(n)] << d[rand(n)] << d[rand(n)]
+      4.times { version << d[rand(n)] }
       return version
     end
 
