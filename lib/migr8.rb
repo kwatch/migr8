@@ -346,6 +346,26 @@ module Migr8
       @repo = repo
     end
 
+    def status
+      ret = @repo.inspection(n)
+      s = ""
+      s << "## Status: #{ret[:status]}\n"
+      str = '(not applied)      '
+      if ret[:recent]
+        s << "## Recent history:\n"
+        ret[:recent].each do |mig|
+          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+        end
+      end
+      if ret[:missing]
+        s << "## === Applied to DB, but migration file not found ===\n"
+        ret[:missing].each do |mig|
+          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+        end
+      end
+      return s
+    end
+
     def upgrade(n)
       ## applied migrations
       migs_dict = {}  # {version=>migration}
