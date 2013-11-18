@@ -1433,17 +1433,8 @@ END
           return
         end
         #
-        mig_hist, mig_dict = repository().get_migrations()
-        str = '(not applied)      '
-        mig_hist.each do |mig|
-          puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-        end
-        if ! mig_dict.empty?
-          puts "## Applied to DB but not exist in history file:"
-          mig_dict.each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
+        op = RepositoryOperation(repository())
+        puts op.history
       end
 
     end
