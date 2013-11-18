@@ -407,23 +407,23 @@ module Migr8
     end
 
     def apply_migrations(versions)
-      migs = _versions2migrations_in_history_file(versions, false)
+      migs = _get_migrations_in_history_file(versions, false)
       @repo.apply_migrations(migs)
     end
 
     def unapply_migrations(versions)
-      migs = _versions2migrations_in_history_file(versions, true)
+      migs = _get_migrations_in_history_file(versions, true)
       @repo.unapply_migrations(migs)
     end
 
     def unapply_migrations_only_in_database(versions)
-      migs = _versions2migrations_only_in_database(versions)
+      migs = _get_migrations_only_in_database(versions)
       @repo.unapply_migrations(migs, true)
     end
 
     private
 
-    def _versions2migrations_in_history_file(versions, should_applied)
+    def _get_migrations_in_history_file(versions, should_applied)
       mig_hist, _ = @repo.get_migrations()
       mig_dict = {}
       mig_hist.each {|mig| mig_dict[mig.version] = mig }
@@ -448,7 +448,7 @@ module Migr8
       return migrations
     end
 
-    def _versions2migrations_only_in_database(versions)
+    def _get_migrations_only_in_database(versions)
       mig_hist, mig_applied_dict = @repo.get_migrations()
       mig_hist_dict = {}
       mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
