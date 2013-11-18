@@ -41,12 +41,6 @@ module Migr8
   class MigrationFileError < Migr8Error
   end
 
-  class UpgradeFailedError < Migr8Error
-  end
-
-  class DowngradeFailedError < Migr8Error
-  end
-
   class RepositoryError < Migr8Error
   end
 
@@ -363,7 +357,7 @@ module Migr8
       ## error when unapplied older version exists
       if curr
         j = migs_hist.index {|mig| ! migs_dict.key?(mig.version) }
-        raise UpgradeFailedError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
+        raise MigrationError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
       end
       ## unapplied migrations
       migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
@@ -391,7 +385,7 @@ module Migr8
       ## error when unapplied older version exists in target migrations
       migs_applied = curr ? migs_hist[0..curr] : []
       migs_applied.all? {|mig| migs_dict.key?(mig.version) }  or
-        raise DowngradeFailedError.new("version '#{migs_hist[j].version}' is not applied yet.")
+        raise MigrationError.new("version '#{migs_hist[j].version}' is not applied yet.")
       ## unapply n migrations
       migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
                                                      : migs_applied
