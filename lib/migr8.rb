@@ -1576,7 +1576,9 @@ END
         end
         #
         op = RepositoryOperation.new(repository())
-        op.upgrade(n)
+        _wrap do
+          op.upgrade(n)
+        end
       end
 
     end
@@ -1600,7 +1602,9 @@ END
         end
         #
         op = RepositoryOperation.new(repository())
-        op.downgrade(n)
+        _wrap do
+          op.downgrade(n)
+        end
       end
 
     end
@@ -1624,8 +1628,10 @@ END
         end
         #
         op = RepositoryOperation.new(repository())
-        op.upgrade(n)
-        op.downgrade(n)
+        _wrap do
+          op.upgrade(n)
+          op.downgrade(n)
+        end
       end
 
     end
@@ -1644,10 +1650,8 @@ END
         versions = args
         repo = repository()
         op = RepositoryOperation.new(repo)
-        begin
+        _wrap do
           op.apply(versions)
-        rescue MigrationError => ex
-          raise cmdopterr("#{NAME}: #{ex.message}")
         end
       end
 
@@ -1668,14 +1672,12 @@ END
         versions = args
         repo = repository()
         op = RepositoryOperation.new(repo)
-        begin
+        _wrap do
           if only_in_db
             op.unapply_only_in_database(versions)
           else
             op.unapply(versions)
           end
-        rescue MigrationError => ex
-          raise cmdopterr("#{NAME}: #{ex.message}")
         end
       end
 
