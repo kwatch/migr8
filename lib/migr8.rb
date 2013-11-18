@@ -188,20 +188,6 @@ module Migr8
       return @dbms.get_migrations()
     end
 
-    def get_migrations()
-      ## applied migrations
-      mig_applied = {}   # {version=>migration}
-      migrations_in_history_table().each {|mig| mig_applied[mig.version] = mig }
-      ## migrations in history file
-      mig_hist = migrations_in_history_file()
-      mig_hist.each do |migration|
-        mig = mig_applied.delete(migration.version)
-        migration.applied_at = mig.applied_at if mig
-      end
-      ##
-      return mig_hist, mig_applied
-    end
-
     def load_migration(version)
       fpath = migration_filepath(version)
       return nil unless File.file?(fpath)
@@ -316,7 +302,7 @@ module Migr8
     end
 
     def history
-      mig_hist, mig_dict = @repo.get_migrations()
+      mig_hist, mig_dict = _get_migrations_hist_and_applied()
       s = ""
       str = '(not applied)      '
       mig_hist.each do |mig|
@@ -332,7 +318,7 @@ module Migr8
     end
 
     def inspect(n=5)
-      mig_hist, mig_dict = @repo.get_migrations()
+      mig_hist, mig_dict = _get_migrations_hist_and_applied()
       pos = mig_hist.length - n - 1
       i = mig_hist.index {|mig| ! mig.applied? }  # index of oldest unapplied
       j = mig_hist.rindex {|mig| mig.applied? }   # index of newest applied
@@ -451,8 +437,22 @@ module Migr8
 
     private
 
+    def _get_migrations_hist_and_applied
+      ## applied migrations
+      mig_applied = {}   # {version=>migration}
+      @repo.migrations_in_history_table().each {|mig| mig_applied[mig.version] = mig }
+      ## migrations in history file
+      mig_hist = @repo.migrations_in_history_file()
+      mig_hist.each do |migration|
+        mig = mig_applied.delete(migration.version)
+        migration.applied_at = mig.applied_at if mig
+      end
+      ##
+      return mig_hist, mig_applied
+    end
+
     def _get_migrations_in_history_file(versions, should_applied)
-      mig_hist, _ = @repo.get_migrations()
+      mig_hist, _ = _get_migrations_hist_and_applied()
       mig_dict = {}
       mig_hist.each {|mig| mig_dict[mig.version] = mig }
       ver_cnt = {}
@@ -477,7 +477,7 @@ module Migr8
     end
 
     def _get_migrations_only_in_database(versions)
-      mig_hist, mig_applied_dict = @repo.get_migrations()
+      mig_hist, mig_applied_dict = _get_migrations_hist_and_applied()
       mig_hist_dict = {}
       mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
       ver_cnt = {}
