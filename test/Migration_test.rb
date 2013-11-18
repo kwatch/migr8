@@ -37,18 +37,18 @@ Oktest.scope do
     end
 
 
-    topic '#up_statement' do
+    topic '#up_script' do
 
       spec "[!cfp34] returns nil when 'up' is not set." do
         mig = klass.new()
         mig.up = nil
-        ok {mig.up_statement} == nil
+        ok {mig.up_script} == nil
       end
 
       spec "[!200k7] returns @up_script if it is set." do
         mig = klass.new()
         mig.up_script = "xxx"
-        ok {mig.up_statement} == "xxx"
+        ok {mig.up_script} == "xxx"
       end
 
       spec "[!6gaxb] returns 'up' string expanding vars in it." do
@@ -69,24 +69,24 @@ END
         mig = klass.new
         mig.up = original
         mig.vars = {'table'=>'sample1', 'column'=>'name'}
-        ok {mig.up_statement} == expanded
+        ok {mig.up_script} == expanded
       end
 
     end
 
 
-    topic '#down_statement' do
+    topic '#down_script' do
 
       spec "[!e45s1] returns nil when 'down' is not set." do
         mig = klass.new
         mig.down = nil
-        ok {mig.down_statement} == nil
+        ok {mig.down_script} == nil
       end
 
       spec "[!27n2l] returns @down_script if it is set." do
         mig = klass.new
         mig.down_script = "xxx"
-        ok {mig.down_statement} == "xxx"
+        ok {mig.down_script} == "xxx"
       end
 
       spec "[!0q3nq] returns 'down' string expanding vars in it." do
@@ -101,7 +101,7 @@ END
         mig = klass.new
         mig.down = original
         mig.vars = {'table'=>'sample1', 'column'=>'name'};
-        ok {mig.down_statement} == expanded
+        ok {mig.down_script} == expanded
       end
 
     end

@@ -68,7 +68,7 @@ module Migr8
       return ! @applied_at.nil?
     end
 
-    def up_statement
+    def up_script
       #; [!cfp34] returns nil when 'up' is not set.
       return @up unless @up
       #; [!200k7] returns @up_script if it is set.
@@ -77,7 +77,7 @@ module Migr8
       return Util::Expander.expand_str(@up, @vars)
     end
 
-    def down_statement
+    def down_script
       #; [!e45s1] returns nil when 'down' is not set.
       return @down unless @down
       #; [!27n2l] returns @down_script if it is set.
@@ -674,8 +674,8 @@ END
 
       def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        up_script   = mig.up_statement
-        down_script = mig.down_statement
+        up_script   = mig.up_script
+        down_script = mig.down_script
         sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
 #{_echo_message(msg)}
@@ -690,7 +690,7 @@ END
 
       def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        down_script = mig.down_statement
+        down_script = mig.down_script
         sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
 #{_echo_message(msg)}
