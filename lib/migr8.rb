@@ -346,6 +346,22 @@ module Migr8
       @repo = repo
     end
 
+    def history
+      mig_hist, mig_dict = @repo.get_migrations()
+      s = ""
+      str = '(not applied)      '
+      mig_hist.each do |mig|
+        s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+      end
+      if ! mig_dict.empty?
+        puts "## Applied to DB but not exist in history file:"
+        mig_dict.each do |mig|
+          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+        end
+      end
+      return s
+    end
+
     def status
       ret = @repo.inspection(n)
       s = ""
