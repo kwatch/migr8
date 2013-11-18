@@ -674,28 +674,25 @@ END
 
       def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        up_script   = mig.up_script
-        down_script = mig.down_script
         sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{up_script};
+#{mig.up_script};
 -----
 INSERT INTO #{@history_table} (version, author, description, up_script, down_script)
-VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(up_script)}', '#{q(down_script)}');
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(mig.up_script)}', '#{q(mig.down_script)}');
 END
         return sql
       end
 
       def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        down_script = mig.down_script
         sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{down_script};
+#{mig.down_script};
 -----
 DELETE FROM #{@history_table} WHERE VERSION = '#{mig.version}';
 END
