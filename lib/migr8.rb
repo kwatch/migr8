@@ -1276,6 +1276,15 @@ END
 
       protected
 
+      def _wrap   # :nodoc:
+        begin
+          yield
+        rescue MigrationError => ex
+          name = self.class.const_get(:NAME)
+          raise cmdopterr("#{name}: #{ex.message}")
+        end
+      end
+
       def _recommend_to_set_MIGR8_EDITOR(action)  # :nodoc:
         msg = <<END
 ##
