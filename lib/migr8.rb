@@ -304,15 +304,12 @@ module Migr8
     def history
       mig_hist, mig_dict = _get_migrations_hist_and_applied()
       s = ""
-      str = '(not applied)      '
       mig_hist.each do |mig|
         s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
       end
       if ! mig_dict.empty?
         puts "## Applied to DB but not exist in history file:"
-        mig_dict.each do |mig|
-          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
-        end
+        mig_dict.each {|mig| s << _to_line(mig) }
       end
       return s
     end
@@ -350,18 +347,13 @@ module Migr8
       ret = inspect()
       s = ""
       s << "## Status: #{ret[:status]}\n"
-      str = '(not applied)      '
       if ret[:recent]
         s << "## Recent history:\n"
-        ret[:recent].each do |mig|
-          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
-        end
+        ret[:recent].each {|mig| s << _to_line(mig) }
       end
       if ret[:missing]
         s << "## === Applied to DB, but migration file not found ===\n"
-        ret[:missing].each do |mig|
-          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
-        end
+        ret[:missing].each {|mig| s << _to_line(mig) }
       end
       return s
     end
@@ -436,6 +428,10 @@ module Migr8
     end
 
     private
+
+    def _to_line(mig, str='(not applied)      ')
+      return "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+    end
 
     def _get_migrations_hist_and_applied
       ## applied migrations
