@@ -222,60 +222,6 @@ module Migr8
       @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
-    def upgrade(n)
-      ## applied migrations
-      migs_dict = {}  # {version=>migration}
-      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
-      ## migrations in history file
-      migs_hist = migrations_in_history_file()
-      ## index of current version
-      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
-      ## error when unapplied older version exists
-      if curr
-        j = migs_hist.index {|mig| ! migs_dict.key?(mig.version) }
-        raise UpgradeFailedError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
-      end
-      ## unapplied migrations
-      migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
-      ## apply n migrations
-      migs_to_apply = n.nil? ? migs_unapplied : migs_unapplied[0...n]
-      if migs_to_apply.empty?
-        puts "## (nothing to apply)"
-      else
-        #migs_to_apply.each do |mig|
-        #  puts "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        #  apply_migration(mig)
-        #end
-        apply_migrations(migs_to_apply)
-      end
-    end
-
-    def downgrade(n)
-      ## applied migrations
-      migs_dict = {}  # {version=>migration}
-      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
-      ## migrations in history file
-      migs_hist = migrations_in_history_file()
-      ## index of current version
-      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
-      ## error when unapplied older version exists in target migrations
-      migs_applied = curr ? migs_hist[0..curr] : []
-      migs_applied.all? {|mig| migs_dict.key?(mig.version) }  or
-        raise DowngradeFailedError.new("version '#{migs_hist[j].version}' is not applied yet.")
-      ## unapply n migrations
-      migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
-                                                     : migs_applied
-      if migs_to_unapply.empty?
-        puts "## (nothing to unapply)"
-      else
-        #migs_to_unapply.reverse_each do |mig|
-        #  puts "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        #  unapply_migration(mig)
-        #end
-        unapply_migrations(migs_to_unapply.reverse())
-      end
-    end
-
     def new_version
       while true
         version = _new_version()
@@ -404,6 +350,60 @@ module Migr8
 
     def initialize(repo)
       @repo = repo
+    end
+
+    def upgrade(n)
+      ## applied migrations
+      migs_dict = {}  # {version=>migration}
+      @repo.migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
+      ## migrations in history file
+      migs_hist = @repo.migrations_in_history_file()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
+      ## error when unapplied older version exists
+      if curr
+        j = migs_hist.index {|mig| ! migs_dict.key?(mig.version) }
+        raise UpgradeFailedError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
+      end
+      ## unapplied migrations
+      migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
+      ## apply n migrations
+      migs_to_apply = n.nil? ? migs_unapplied : migs_unapplied[0...n]
+      if migs_to_apply.empty?
+        puts "## (nothing to apply)"
+      else
+        #migs_to_apply.each do |mig|
+        #  puts "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  @repo.apply_migration(mig)
+        #end
+        @repo.apply_migrations(migs_to_apply)
+      end
+    end
+
+    def downgrade(n)
+      ## applied migrations
+      migs_dict = {}  # {version=>migration}
+      @repo.migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
+      ## migrations in history file
+      migs_hist = @repo.migrations_in_history_file()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
+      ## error when unapplied older version exists in target migrations
+      migs_applied = curr ? migs_hist[0..curr] : []
+      migs_applied.all? {|mig| migs_dict.key?(mig.version) }  or
+        raise DowngradeFailedError.new("version '#{migs_hist[j].version}' is not applied yet.")
+      ## unapply n migrations
+      migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
+                                                     : migs_applied
+      if migs_to_unapply.empty?
+        puts "## (nothing to unapply)"
+      else
+        #migs_to_unapply.reverse_each do |mig|
+        #  puts "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  @repo.unapply_migration(mig)
+        #end
+        @repo.unapply_migrations(migs_to_unapply.reverse())
+      end
     end
 
     def apply(versions)
@@ -1572,7 +1572,8 @@ END
           n = 1
         end
         #
-        repository().upgrade(n)
+        op = RepositoryOperation.new(repository())
+        op.upgrade(n)
       end
 
     end
@@ -1595,7 +1596,8 @@ END
           n = nil
         end
         #
-        repository().downgrade(n)
+        op = RepositoryOperation.new(repository())
+        op.downgrade(n)
       end
 
     end
@@ -1618,9 +1620,9 @@ END
           n = nil
         end
         #
-        repo = repository()
-        repo.downgrade(n)
-        repo.upgrade(n)
+        op = RepositoryOperation.new(repository())
+        op.upgrade(n)
+        op.downgrade(n)
       end
 
     end
