@@ -306,10 +306,33 @@ module Migr8
       return @dbms.new_skeleton().render(mig, opts)
     end
 
-    public
+  end
 
-    def inspection(n=5)
-      mig_hist, mig_dict = get_migrations()
+
+  class RepositoryOperation
+
+    def initialize(repo)
+      @repo = repo
+    end
+
+    def history
+      mig_hist, mig_dict = @repo.get_migrations()
+      s = ""
+      str = '(not applied)      '
+      mig_hist.each do |mig|
+        s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+      end
+      if ! mig_dict.empty?
+        puts "## Applied to DB but not exist in history file:"
+        mig_dict.each do |mig|
+          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+        end
+      end
+      return s
+    end
+
+    def inspect(n=5)
+      mig_hist, mig_dict = @repo.get_migrations()
       pos = mig_hist.length - n - 1
       i = mig_hist.index {|mig| ! mig.applied? }  # index of oldest unapplied
       j = mig_hist.rindex {|mig| mig.applied? }   # index of newest applied
@@ -337,33 +360,8 @@ module Migr8
       return {:status=>status, :recent=>recent, :missing=>missing}
     end
 
-  end
-
-
-  class RepositoryOperation
-
-    def initialize(repo)
-      @repo = repo
-    end
-
-    def history
-      mig_hist, mig_dict = @repo.get_migrations()
-      s = ""
-      str = '(not applied)      '
-      mig_hist.each do |mig|
-        s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
-      end
-      if ! mig_dict.empty?
-        puts "## Applied to DB but not exist in history file:"
-        mig_dict.each do |mig|
-          s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
-        end
-      end
-      return s
-    end
-
     def status
-      ret = @repo.inspection(n)
+      ret = inspect()
       s = ""
       s << "## Status: #{ret[:status]}\n"
       str = '(not applied)      '
