@@ -388,8 +388,10 @@ module Migr8
       curr = migs_hist.rindex {|mig| mig.applied? }
       ## error when unapplied older version exists in target migrations
       migs_applied = curr ? migs_hist[0..curr] : []
-      migs_applied.all? {|mig| mig.applied? }  or
-        raise MigrationError.new("version '#{migs_hist[j].version}' is not applied yet.")
+      if curr
+        j = migs_applied.index {|mig| ! mig.applied? }
+        raise MigrationError.new("apply #{migs_applied[j].version} at first.") if j && j < curr
+      end
       ## unapply n migrations
       migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
                                                      : migs_applied
