@@ -1418,7 +1418,7 @@ END
           return
         end
         #
-        op = RepositoryOperation(repository())
+        op = RepositoryOperation.new(repository())
         puts op.history
       end
 
