@@ -80,6 +80,8 @@ Tips
   Very good.
 
 
+<!--
+
 Trouble Shooting
 ----------------
 
@@ -115,6 +117,8 @@ Trouble Shooting
         ## Status: all applied
         ## Recent history:
         ssgc3376  2013-11-20 10:04:46  # [kwatch] create 'groups' table
+
+-->
 
 
 Usage and Actions
