@@ -2159,6 +2159,11 @@ TODO
 Changes
 -------
 
+### Release 0.2.1 (2013-11-20) ###
+
+* [bugfix] Fix 'new --table=name' action to set table name correctly
+
+
 ### Release 0.2.0 (2013-11-14) ###
 
 * [enhance] Add new options to `new` action for some skeletons
