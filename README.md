@@ -58,14 +58,19 @@ Quick Start
 Tips
 ----
 
-* `migr8.rb up` applys only a migration,
-  and `migr8.rb up -a` applys all migrations.
+* `migr8.rb up -a` applys all migrations, while `migr8.rb up` applys a
+  migration.
 
 * `migr8.rb -D up` saves SQL executed into `migr8/history.txt` file.
 
 * `migr8.rb redo` is equivarent to `migr8.rb down; migr8.rb up`.
 
-* `migr8.rb new -p` generates migration file with plain skeleton.
+* `migr8.rb new -p` generates migration file with plain skeleton, and
+  `migr8.rb new --table=name` generates with table name.
+
+* `migr8.rb unapply -x` unapplies migration which is applied in DB but
+  corresponding migration file doesn't exist.
+  This mayl help you when switching Git/Hg branch.
 
 * **MySQL doesn't support transactional DDL**.
   It will cause troubles when you have errors in migration script
