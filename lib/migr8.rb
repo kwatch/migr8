@@ -171,7 +171,8 @@ module Migr8
       tuples = parse_history_file()
       fpath = history_filepath()
       migrations = tuples.collect {|version, author, desc|
-        mig = load_migration(version)
+        mig = load_migration(version)  or
+          raise HistoryFileError("#{version}: migration file not found (please edit history file by 'migr8.rb hist -o' and delete or comment out it).")
         mig.version == version  or
           $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
         mig.author == author  or
