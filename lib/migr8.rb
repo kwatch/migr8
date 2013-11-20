@@ -41,13 +41,10 @@ module Migr8
   class MigrationFileError < Migr8Error
   end
 
-  class UpgradeFailedError < Migr8Error
-  end
-
-  class DowngradeFailedError < Migr8Error
-  end
-
   class RepositoryError < Migr8Error
+  end
+
+  class MigrationError < Migr8Error
   end
 
 
@@ -71,7 +68,7 @@ module Migr8
       return ! @applied_at.nil?
     end
 
-    def up_statement
+    def up_script
       #; [!cfp34] returns nil when 'up' is not set.
       return @up unless @up
       #; [!200k7] returns @up_script if it is set.
@@ -80,7 +77,7 @@ module Migr8
       return Util::Expander.expand_str(@up, @vars)
     end
 
-    def down_statement
+    def down_script
       #; [!e45s1] returns nil when 'down' is not set.
       return @down unless @down
       #; [!27n2l] returns @down_script if it is set.
@@ -191,20 +188,6 @@ module Migr8
       return @dbms.get_migrations()
     end
 
-    def get_migrations()
-      ## applied migrations
-      mig_applied = {}   # {version=>migration}
-      migrations_in_history_table().each {|mig| mig_applied[mig.version] = mig }
-      ## migrations in history file
-      mig_hist = migrations_in_history_file()
-      mig_hist.each do |migration|
-        mig = mig_applied.delete(migration.version)
-        migration.applied_at = mig.applied_at if mig
-      end
-      ##
-      return mig_hist, mig_applied
-    end
-
     def load_migration(version)
       fpath = migration_filepath(version)
       return nil unless File.file?(fpath)
@@ -219,60 +202,6 @@ module Migr8
       @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
-    def upgrade(n)
-      ## applied migrations
-      migs_dict = {}  # {version=>migration}
-      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
-      ## migrations in history file
-      migs_hist = migrations_in_history_file()
-      ## index of current version
-      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
-      ## error when unapplied older version exists
-      if curr
-        j = migs_hist.index {|mig| ! migs_dict.key?(mig.version) }
-        raise UpgradeFailedError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
-      end
-      ## unapplied migrations
-      migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
-      ## apply n migrations
-      migs_to_apply = n.nil? ? migs_unapplied : migs_unapplied[0...n]
-      if migs_to_apply.empty?
-        puts "## (nothing to apply)"
-      else
-        #migs_to_apply.each do |mig|
-        #  puts "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        #  apply_migration(mig)
-        #end
-        apply_migrations(migs_to_apply)
-      end
-    end
-
-    def downgrade(n)
-      ## applied migrations
-      migs_dict = {}  # {version=>migration}
-      migrations_in_history_table().each {|mig| migs_dict[mig.version] = mig }
-      ## migrations in history file
-      migs_hist = migrations_in_history_file()
-      ## index of current version
-      curr = migs_hist.rindex {|mig| migs_dict.key?(mig.version) }
-      ## error when unapplied older version exists in target migrations
-      migs_applied = curr ? migs_hist[0..curr] : []
-      migs_applied.all? {|mig| migs_dict.key?(mig.version) }  or
-        raise DowngradeFailedError.new("version '#{migs_hist[j].version}' is not applied yet.")
-      ## unapply n migrations
-      migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
-                                                     : migs_applied
-      if migs_to_unapply.empty?
-        puts "## (nothing to unapply)"
-      else
-        #migs_to_unapply.reverse_each do |mig|
-        #  puts "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        #  unapply_migration(mig)
-        #end
-        unapply_migrations(migs_to_unapply.reverse())
-      end
-    end
-
     def new_version
       while true
         version = _new_version()
@@ -285,10 +214,10 @@ module Migr8
       version = ''
       s = VERSION_CHARS
       n = s.length - 1
-      version << s[rand(n)] << s[rand(n)] << s[rand(n)] << s[rand(n)]
+      4.times { version << s[rand(n)] }
       d = VERSION_DIGITS
       n = d.length - 1
-      version << d[rand(n)] << d[rand(n)] << d[rand(n)] << d[rand(n)]
+      4.times { version << d[rand(n)] }
       return version
     end
 
@@ -363,10 +292,30 @@ module Migr8
       return @dbms.new_skeleton().render(mig, opts)
     end
 
-    public
+  end
 
-    def inspection(n=5)
-      mig_hist, mig_dict = get_migrations()
+
+  class RepositoryOperation
+
+    def initialize(repo)
+      @repo = repo
+    end
+
+    def history
+      mig_hist, mig_dict = _get_migrations_hist_and_applied()
+      s = ""
+      mig_hist.each do |mig|
+        s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+      end
+      if ! mig_dict.empty?
+        puts "## Applied to DB but not exist in history file:"
+        mig_dict.each {|mig| s << _to_line(mig) }
+      end
+      return s
+    end
+
+    def inspect(n=5)
+      mig_hist, mig_dict = _get_migrations_hist_and_applied()
       pos = mig_hist.length - n - 1
       i = mig_hist.index {|mig| ! mig.applied? }  # index of oldest unapplied
       j = mig_hist.rindex {|mig| mig.applied? }   # index of newest applied
@@ -392,6 +341,148 @@ module Migr8
       end
       missing = mig_dict.empty? ? nil : mig_dict.values
       return {:status=>status, :recent=>recent, :missing=>missing}
+    end
+
+    def status
+      ret = inspect()
+      s = ""
+      s << "## Status: #{ret[:status]}\n"
+      if ret[:recent]
+        s << "## Recent history:\n"
+        ret[:recent].each {|mig| s << _to_line(mig) }
+      end
+      if ret[:missing]
+        s << "## === Applied to DB, but migration file not found ===\n"
+        ret[:missing].each {|mig| s << _to_line(mig) }
+      end
+      return s
+    end
+
+    def upgrade(n)
+      migs_hist, migs_dict = _get_migrations_hist_and_applied()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| mig.applied? }
+      ## error when unapplied older version exists
+      if curr
+        j = migs_hist.index {|mig| ! mig.applied? }
+        raise MigrationError.new("apply #{migs_hist[j].version} at first.") if j && j < curr
+      end
+      ## unapplied migrations
+      migs_unapplied = curr ? migs_hist[(curr+1)..-1] : migs_hist
+      ## apply n migrations
+      migs_to_apply = n.nil? ? migs_unapplied : migs_unapplied[0...n]
+      if migs_to_apply.empty?
+        puts "## (nothing to apply)"
+      else
+        #migs_to_apply.each do |mig|
+        #  puts "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  @repo.apply_migration(mig)
+        #end
+        @repo.apply_migrations(migs_to_apply)
+      end
+    end
+
+    def downgrade(n)
+      migs_hist, migs_dict = _get_migrations_hist_and_applied()
+      ## index of current version
+      curr = migs_hist.rindex {|mig| mig.applied? }
+      ## error when unapplied older version exists in target migrations
+      migs_applied = curr ? migs_hist[0..curr] : []
+      if curr
+        j = migs_applied.index {|mig| ! mig.applied? }
+        raise MigrationError.new("apply #{migs_applied[j].version} at first.") if j && j < curr
+      end
+      ## unapply n migrations
+      migs_to_unapply = n && n < migs_applied.length ? migs_applied[-n..-1] \
+                                                     : migs_applied
+      if migs_to_unapply.empty?
+        puts "## (nothing to unapply)"
+      else
+        #migs_to_unapply.reverse_each do |mig|
+        #  puts "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
+        #  @repo.unapply_migration(mig)
+        #end
+        @repo.unapply_migrations(migs_to_unapply.reverse())
+      end
+    end
+
+    def apply(versions)
+      migs = _get_migrations_in_history_file(versions, false)
+      @repo.apply_migrations(migs)
+    end
+
+    def unapply(versions)
+      migs = _get_migrations_in_history_file(versions, true)
+      @repo.unapply_migrations(migs)
+    end
+
+    def unapply_only_in_database(versions)
+      migs = _get_migrations_only_in_database(versions)
+      @repo.unapply_migrations(migs, true)
+    end
+
+    private
+
+    def _to_line(mig, str='(not applied)      ')
+      return "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+    end
+
+    def _get_migrations_hist_and_applied
+      ## applied migrations
+      mig_applied = {}   # {version=>migration}
+      @repo.migrations_in_history_table().each {|mig| mig_applied[mig.version] = mig }
+      ## migrations in history file
+      mig_hist = @repo.migrations_in_history_file()
+      mig_hist.each do |migration|
+        mig = mig_applied.delete(migration.version)
+        migration.applied_at = mig.applied_at if mig
+      end
+      ##
+      return mig_hist, mig_applied
+    end
+
+    def _get_migrations_in_history_file(versions, should_applied)
+      mig_hist, _ = _get_migrations_hist_and_applied()
+      mig_dict = {}
+      mig_hist.each {|mig| mig_dict[mig.version] = mig }
+      ver_cnt = {}
+      migrations = versions.collect {|ver|
+        ver_cnt[ver].nil?  or
+          raise MigrationError.new("#{ver}: specified two or more times.")
+        ver_cnt[ver] = 1
+        @repo.load_migration(ver)  or
+          raise MigrationError.new("#{ver}: migration file not found.")
+        mig = mig_dict[ver]  or
+          raise MigrationError.new("#{ver}: no such version in history file.")
+        if should_applied
+          mig.applied_at  or
+            raise MigrationError.new("#{ver}: not applied yet.")
+        else
+          ! mig.applied_at  or
+            raise MigrationError.new("#{ver}: already applied.")
+        end
+        mig
+      }
+      return migrations
+    end
+
+    def _get_migrations_only_in_database(versions)
+      mig_hist, mig_applied_dict = _get_migrations_hist_and_applied()
+      mig_hist_dict = {}
+      mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
+      ver_cnt = {}
+      migrations = versions.collect {|ver|
+        ver_cnt[ver].nil?  or
+          raise MigrationError.new("#{ver}: specified two or more times.")
+        ver_cnt[ver] = 1
+        mig_hist_dict[ver].nil?  or
+          raise MigrationError.new("#{ver}: version exists in history file (please specify versions only in database).")
+        mig = mig_applied_dict[ver]  or
+          raise MigrationError.new("#{ver}: no such version in database.")
+        mig
+      }
+      migrations.sort_by! {|mig| - mig.id }  # sort by reverse order
+      return migrations
     end
 
   end
@@ -577,28 +668,25 @@ END
 
       def _applying_sql(mig)
         msg = "## applying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        up_script   = mig.up_statement
-        down_script = mig.down_statement
         sql = <<END
 ---------------------------------------- applying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{up_script};
+#{mig.up_script};
 -----
 INSERT INTO #{@history_table} (version, author, description, up_script, down_script)
-VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(up_script)}', '#{q(down_script)}');
+VALUES ('#{q(mig.version)}', '#{q(mig.author)}', '#{q(mig.desc)}', '#{q(mig.up_script)}', '#{q(mig.down_script)}');
 END
         return sql
       end
 
       def _unapplying_sql(mig)
         msg = "## unapplying #{mig.version}  \# [#{mig.author}] #{mig.desc}"
-        down_script = mig.down_statement
         sql = <<END
 ---------------------------------------- unapplying #{mig.version} ----------
 #{_echo_message(msg)}
 -----
-#{down_script};
+#{mig.down_script};
 -----
 DELETE FROM #{@history_table} WHERE VERSION = '#{mig.version}';
 END
@@ -1209,6 +1297,15 @@ END
 
       protected
 
+      def _wrap   # :nodoc:
+        begin
+          yield
+        rescue MigrationError => ex
+          name = self.class.const_get(:NAME)
+          raise cmdopterr("#{name}: #{ex.message}")
+        end
+      end
+
       def _recommend_to_set_MIGR8_EDITOR(action)  # :nodoc:
         msg = <<END
 ##
@@ -1321,17 +1418,8 @@ END
           return
         end
         #
-        mig_hist, mig_dict = repository().get_migrations()
-        str = '(not applied)      '
-        mig_hist.each do |mig|
-          puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-        end
-        if ! mig_dict.empty?
-          puts "## Applied to DB but not exist in history file:"
-          mig_dict.each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
+        op = RepositoryOperation.new(repository())
+        puts op.history
       end
 
     end
@@ -1461,21 +1549,8 @@ END
           n = 5
         end
         #
-        ret = repository().inspection(n)
-        puts "## Status: #{ret[:status]}"
-        str = '(not applied)      '
-        if ret[:recent]
-          puts "## Recent history:"
-          ret[:recent].each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
-        if ret[:missing]
-          puts "## === Applied to DB, but migration file not found ==="
-          ret[:missing].each do |mig|
-            puts "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}"
-          end
-        end
+        op = RepositoryOperation.new(repository())
+        puts op.status
       end
 
     end
@@ -1499,7 +1574,10 @@ END
           n = 1
         end
         #
-        repository().upgrade(n)
+        op = RepositoryOperation.new(repository())
+        _wrap do
+          op.upgrade(n)
+        end
       end
 
     end
@@ -1522,39 +1600,10 @@ END
           n = nil
         end
         #
-        repository().downgrade(n)
-      end
-
-    end
-
-
-    module VersionsHelper   # :nodoc:
-
-      private
-
-      def _versions2migrations(versions, repo, name, should_applied)
-        mig_hist, _ = repo.get_migrations()
-        mig_dict = {}
-        mig_hist.each {|mig| mig_dict[mig.version] = mig }
-        ver_chk = {}
-        versions.each do |ver|
-          repo.load_migration(ver)  or
-            raise cmdopterr("#{name}: #{ver}: migration file not found.")
-          mig = mig_dict[ver]  or
-            raise cmdopterr("#{name}: #{ver}: no such version in history file.")
-          if should_applied
-            mig.applied_at  or
-              raise cmdopterr("#{name}: #{ver}: not applied yet.")
-          else
-            mig.applied_at.nil?  or
-              raise cmdopterr("#{name}: #{ver}: already applied.")
-          end
-          ver_chk[ver].nil?  or
-            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
-          ver_chk[ver] = true
+        op = RepositoryOperation.new(repository())
+        _wrap do
+          op.downgrade(n)
         end
-        migrations = versions.collect {|ver| mig_dict[ver] }
-        return migrations
       end
 
     end
@@ -1577,9 +1626,11 @@ END
           n = nil
         end
         #
-        repo = repository()
-        repo.downgrade(n)
-        repo.upgrade(n)
+        op = RepositoryOperation.new(repository())
+        _wrap do
+          op.upgrade(n)
+          op.downgrade(n)
+        end
       end
 
     end
@@ -1591,15 +1642,16 @@ END
       OPTS = []
       ARGS = "version ..."
 
-      include VersionsHelper
-
       def run(options, args)
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
+        versions = args
         repo = repository()
-        migrations = _versions2migrations(args, repo, NAME, false)
-        repo.apply_migrations(migrations)
+        op = RepositoryOperation.new(repo)
+        _wrap do
+          op.apply(versions)
+        end
       end
 
     end
@@ -1611,42 +1663,21 @@ END
       OPTS = ["-x:  unapply versions with down-script in DB, not in file"]
       ARGS = "version ..."
 
-      include VersionsHelper
-
       def run(options, args)
         only_in_db = options['x']
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
+        versions = args
         repo = repository()
-        if only_in_db
-          migrations = _versions2migrations_only_in_database(args, repo, NAME)
-          repo.unapply_migrations(migrations, true)
-        else
-          migrations = _versions2migrations(args, repo, NAME, true)
-          repo.unapply_migrations(migrations)
+        op = RepositoryOperation.new(repo)
+        _wrap do
+          if only_in_db
+            op.unapply_only_in_database(versions)
+          else
+            op.unapply(versions)
+          end
         end
-      end
-
-      private
-
-      def _versions2migrations_only_in_database(versions, repo, name)
-        mig_hist, mig_applied_dict = repo.get_migrations()
-        mig_hist_dict = {}
-        mig_hist.each {|mig| mig_hist_dict[mig.version] = mig }
-        ver_cnt = {}
-        migs = versions.collect {|ver|
-          ver_cnt[ver].nil?  or
-            raise cmdopterr("#{name}: #{ver}: specified two or more times.")
-          ver_cnt[ver] = 1
-          ! mig_hist_dict[ver]  or
-            raise cmdopterr("#{name}: #{ver}: version exists in history file (please specify versions only in database).")
-          mig = mig_applied_dict[ver]  or
-            raise cmdopterr("#{name}: #{ver}: no such version in database.")
-          mig
-        }
-        migs.sort_by! {|mig| - mig.id }  # sort by reverse order
-        return migs
       end
 
     end
