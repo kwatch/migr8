@@ -424,7 +424,7 @@ module Migr8
     def _section_vars(mig, opts)
       tblcol_rexp = /\A(\w+)(?:\.(\w+)|\((\w+)\))\z/
       if (val = opts[:table])
-        val = ~ /\A(\w+)\z/;  table = $1
+        val =~ /\A(\w+)\z/;  table = $1
         return "  - table:   #{table}\n"
       elsif (val = opts[:column])
         val =~ tblcol_rexp; table = $1; column = $2||$3
