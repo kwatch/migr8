@@ -80,6 +80,43 @@ Tips
   Very good.
 
 
+Trouble Shooting
+----------------
+
+* Command `migr8.rb unapply -x` unapplies migration which is applied in DB
+  but it's migration file doesn't exist in 'migr8/migrations' directory.
+  You may face this case when switching Git branch.
+
+  There can be migrations which are applied in DB but migration file does
+  not exit in 'migr8/migrations' directory. You my face this case when
+  switching Git/Hg branch.
+
+  For example, the following shows that migration 'uhtu4853' is applied
+  in DB, but file 'migr8/migrations/uhtu4853.yaml' does not exist.
+
+        $ ./migr8.rb
+        ## Status: all applied
+        ## Recent history:
+        ssgc3376  2013-11-18 10:04:40  # [kwatch] create 'groups' table
+        ## === Applied to DB, but migration file not found ===
+        uhtu4853  2013-11-18 10:04:46  # [kwatch] create 'users' table
+
+  You may try to unapply 'uhtu4853', but will be refused because migration
+  file does not exist.
+
+        $ ./migr8.rb unapply uhtu4853
+        ERROR[migr8.rb] unapply: uhtu4853: no such version in history file.
+
+  In this case, `migr8.rb new -x` is the answer.
+
+        $ ./migr8.rb unapply -x uhtu4853
+        ## unapplying uhtu4853  # [kwatch] create 'users' table
+        $ ./migr8.rb
+        ## Status: all applied
+        ## Recent history:
+        ssgc3376  2013-11-20 10:04:46  # [kwatch] create 'groups' table
+
+
 Usage and Actions
 -----------------
 
