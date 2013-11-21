@@ -2197,9 +2197,17 @@ TODO
 Changes
 -------
 
+### Release 0.3.0 (2013-11-22) ###
+
+* [enhance] Add `-x` option to `unapply` action which unapplies migrations
+  by down-script in DB, not in migration file.
+  You can unapply migrations which files are missing in some reason.
+* [change] Eliminate indentation from output of 'readme' action.
+
+
 ### Release 0.2.1 (2013-11-20) ###
 
-* [bugfix] Fix 'new --table=name' action to set table name correctly
+* [bugfix] Fix `new --table=name` action to set table name correctly
 
 
 ### Release 0.2.0 (2013-11-14) ###
