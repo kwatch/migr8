@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 project   = "migr8"
-release   = "0.2.1"
+release   = "0.3.0"
 copyright = "copyright(c) 2013 kuwata-lab.com all rights reserved"
 license   = "MIT-LICENSE"
 
