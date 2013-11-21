@@ -353,8 +353,8 @@ module Migr8
         ret[:recent].each {|mig| s << _to_line(mig) }
       end
       if ret[:missing]
-        s << "## === Applied to DB, but migration file not found.          ===\n"
-        s << "## === (Try `#{File.basename($0)} unapply -x abcd1234` to unapply them.) ===\n"
+        s << "## !!! The following migrations are applied to DB, but files are not found.\n"
+        s << "## !!! (Try `#{File.basename($0)} unapply -x abcd1234` to unapply them.)\n"
         ret[:missing].each {|mig| s << _to_line(mig) }
       end
       return s
