@@ -67,7 +67,7 @@ Actions:  (default: status)
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
 
-(ATTENTION!! Run '#{File.basename($0)} readme' at first if you don't know Application_test.rb well.)
+(ATTENTION!! Run '#{File.basename($0)} readme' at first if you don't know #{File.basename($0)} well.)
 
 END
           ok {sout} == expected
