@@ -2133,7 +2133,10 @@ Tips
 
 * `migr8.rb unapply -x` unapplies migration which is applied in DB but
   corresponding migration file doesn't exist.
-  This mayl help you when switching Git/Hg branch.
+  (Describing in detail, `migr8.rb unapply -x abcd1234` runs `down` script
+  in `_migr_history` table, while `migr8.rb unapply abcd1234` runs `down`
+  script in `migr8/migrations/abcd1234.yaml` file.)
+  This may help you when switching Git/Hg branch.
 
 * **MySQL doesn't support transactional DDL**.
   It will cause troubles when you have errors in migration script
