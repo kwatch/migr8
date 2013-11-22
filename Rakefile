@@ -3,7 +3,7 @@
 project   = "migr8"
 release   = "0.2.1"
 copyright = "copyright(c) 2013 kuwata-lab.com all rights reserved"
-license   = "MIT-LICENSE"
+license   = "MIT License"
 
 require 'fileutils'
 include FileUtils
