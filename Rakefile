@@ -67,12 +67,18 @@ def edit_files(*filenames, &block)
 end
 
 
-desc "update $Release$"
+desc "update '$Release$', '$License$', and '$Copyright$'"
 task :edit do
-  files = ['README.md', 'lib/migr8.rb']
+  files = ['README.md', 'MIT-LICENSE', 'lib/*.rb', 'bin/*.rb', 'test/*.rb', 'migr8.gemspec']
   edit_files(files) do |s, filename|
-    s.gsub!(/\$Release:.*\$/, "$Release: #{release} $")
-    s.gsub!(/\$Release\$/, release)
+    next s if filename == 'test/oktest.rb'
+    next s if filename == 'Rakefile'
+    s.gsub!(/\$Release:.*\$/,   "$Release: #{release} $")
+    s.gsub!(/\$License:.*\$/,   "$License: #{license} $")
+    s.gsub!(/\$Copyright:.*\$/, "$Copyright: #{copyright} $")
+    s.gsub!(/\$Release\$/,   release)
+    s.gsub!(/\$License\$/,   license)
+    s.gsub!(/\$Copyright\$/, copyright)
     s
   end
 end
