@@ -96,3 +96,37 @@ end
 #  methods = t.methods.sort - Object.new.methods
 #  $stderr.puts "\033[0;31m*** debug: methods=#{methods.inspect}\033[0m"
 #end
+
+
+desc "generates rubygems package"
+task :gem => :dist do
+  dir = "dist/#{project}-#{release}"
+  Dir.chdir dir do
+    sh "gem build migr8.gemspec"
+  end
+  mv Dir.glob("#{dir}/migr8-#{release}.gem"), "dist"
+  puts "**"
+  puts "** created: dist/migr8-#{release}.gem"
+  puts "**"
+end
+
+
+desc "create 'dist' directory and copy files to it"
+task :dist do
+  dir = "dist/#{project}-#{release}"
+  files = %w[README.md MIT-LICENSE migr8.gemspec Rakefile setup.rb]
+  rm_rf dir
+  mkdir_p dir
+  mkdir_p "#{dir}/bin"
+  mkdir_p "#{dir}/lib"
+  mkdir_p "#{dir}/test"
+  cp files, dir
+  cp Dir.glob("lib/*"), "#{dir}/lib"
+  cp Dir.glob("lib/*"), "#{dir}/bin"
+  cp Dir.glob("test/*"), "#{dir}/test"
+  chmod 0644, *Dir.glob("#{dir}/lib/*")
+  chmod 0755, *Dir.glob("#{dir}/bin/*")
+  Dir.chdir dir do
+    sh "rake edit"
+  end
+end
