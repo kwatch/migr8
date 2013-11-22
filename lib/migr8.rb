@@ -6,7 +6,7 @@
 ###
 ### $Release: 0.0.0 $
 ### $License: MIT License $
-### $Copyright: (c) kuwata-lab.com all rights reserverd $
+### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserverd $
 ###
 
 require 'yaml'
