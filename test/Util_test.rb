@@ -611,4 +611,146 @@ END
   end
 
 
+  topic Migr8::Util::Template do
+
+    tmpl_class = Migr8::Util::Template
+
+
+    topic '#initialize()' do
+
+      spec "[!6z4kp] converts input string into ruby code." do
+        input = <<'END'
+<p>
+  <% x = 10 %>
+  <%= x %>
+</p>
+END
+        expected = <<'END'
+_buf = ''; _buf << %q`<p>
+`;   x = 10 
+; _buf << %q`  `; _buf << ( x ).to_s; _buf << %q`
+`; _buf << %q`</p>
+`;
+_buf.to_s
+END
+        tmpl = tmpl_class.new(input)
+        ok {tmpl.src} == expected
+      end
+
+    end
+
+    topic '#convert()' do
+
+      spec "[!118pw] converts template string into ruby code." do
+        input = <<'END'
+<div>
+  <% for i in 1..3 do %>
+    <%= i %>
+  <% end %>
+</div>
+END
+        expected = <<'END'
+_buf = ''; _buf << %q`<div>
+`;   for i in 1..3 do 
+; _buf << %q`    `; _buf << ( i ).to_s; _buf << %q`
+`;   end 
+; _buf << %q`</div>
+`;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        actual = tmpl.convert(input)
+        ok {actual} == expected
+      end
+
+      spec "[!7ht59] escapes '`' and '\\' characters." do
+        input = <<'END'
+output = `ls`
+newline = "\n"
+END
+        expected = <<'END'
+_buf = ''; _buf << %q`output = \`ls\`
+newline = "\\n"
+`;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        actual = tmpl.convert(input)
+        ok {actual} == expected
+      end
+
+      spec "[!b10ns] generates ruby code correctly even when no embedded code." do
+        input = <<'END'
+create table (users) (
+  id     serial        primary key,
+  name   varchar(255)  not null
+);
+END
+        expected = <<'END'
+_buf = ''; _buf << %q`create table (users) (
+  id     serial        primary key,
+  name   varchar(255)  not null
+);
+`;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        actual = tmpl.convert(input)
+        ok {actual} == expected
+      end
+
+    end
+
+
+    topic '#render()' do
+
+      spec "[!48pfc] returns rendered string." do
+        input = <<'END'
+<p>
+  <% for item in ['Haruhi', 'Mikuru', 'Yuki'] %>
+  <%= item %>
+  <% end %>
+</p>
+END
+        expected = <<'END'
+<p>
+  Haruhi
+  Mikuru
+  Yuki
+</p>
+END
+        tmpl = tmpl_class.new(input)
+        actual = tmpl.render()
+        ok {actual} == expected
+      end
+
+      spec "[!umsfx] takes hash object as context variables." do
+        input = <<'END'
+<p>
+  <% for item in @members %>
+  <%= item %>
+  <% end %>
+</p>
+END
+        expected = <<'END'
+<p>
+  Haruhi
+  Mikuru
+  Yuki
+</p>
+END
+        context = {
+          :members=>['Haruhi', 'Mikuru', 'Yuki'],
+        }
+        tmpl = tmpl_class.new(input)
+        actual = tmpl.render(context)
+        ok {actual} == expected
+      end
+
+    end
+
+
+  end
+
+
 end

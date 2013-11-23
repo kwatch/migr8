@@ -2065,6 +2065,68 @@ END
     end
 
 
+    class Template
+
+      def initialize(input="")
+        #; [!6z4kp] converts input string into ruby code.
+        @src = convert(input)
+      end
+
+      attr_reader :src
+
+      def render(context={})
+        #; [!umsfx] takes hash object as context variables.
+        ctx = Object.new()
+        context.each {|k, v| ctx.instance_variable_set("@#{k}", v) }
+        #; [!48pfc] returns rendered string.
+        return ctx.instance_eval(@src)
+      end
+
+      EMBED_REXP = /(^[ \t]*)?<%([=\#])?(.*?)%>([ \t]*\r?\n)?/m
+
+      def convert(input)
+        #; [!118pw] converts template string into ruby code.
+        #; [!7ht59] escapes '`' and '\\' characters.
+        src = "_buf = '';"       # preamble
+        pos = 0
+        input.scan(EMBED_REXP) do |lspace, ch, code, rspace|
+          match = Regexp.last_match
+          text  = input[pos...match.begin(0)]
+          pos   = match.end(0)
+          src << _t(text)
+          if ch == '='           # expression
+            src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
+          elsif ch == '#'        # comment
+            src << _t(lspace) << ("\n" * code.count("\n")) << _t(rspace)
+          else                   # statement
+            if lspace && rspace
+              src << "#{lspace}#{code}#{rspace};"
+            else
+              src << _t(lspace) << code << ';' << _t(rspace)
+            end
+          end
+        end
+        #; [!b10ns] generates ruby code correctly even when no embedded code.
+        rest = $' || input
+        src << _t(rest)
+        src << "\n_buf.to_s\n"   # postamble
+        return src
+      end
+
+      private
+
+      def _build_text(text)
+        return text && !text.empty? ? " _buf << %q`#{_escape_text(text)}`;" : ''
+      end
+      alias _t _build_text
+
+      def _escape_text(text)
+        return text.gsub!(/[`\\]/, '\\\\\&') || text
+      end
+
+    end
+
+
   end
 
 
