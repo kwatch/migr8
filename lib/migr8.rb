@@ -12,7 +12,6 @@
 require 'yaml'
 require 'open3'
 require 'etc'
-require 'erb'
 
 
 module Migr8
@@ -89,8 +88,11 @@ module Migr8
       return _render(Util::Expander.expand_str(@down, @vars))
     end
 
-    def _render(_str)
-      return ERB.new(_str, nil, '<>').result(binding())
+    def _render(str)
+      #require 'erb'
+      #return ERB.new(str, nil, '<>').result(binding())
+      #; [!1w3ov] renders string with 'vars' as context variables.
+      return Util::Template.new(str).render(@vars)
     end
     private :_render
 
@@ -2065,6 +2067,74 @@ END
     end
 
 
+    class Template
+
+      def initialize(input="")
+        #; [!6z4kp] converts input string into ruby code.
+        self.src = convert(input)
+      end
+
+      attr_reader :src
+
+      def src=(src)
+        @src = src
+        @_proc = eval "proc { #{@src} }"
+      end
+
+      def render(context={})
+        #; [!umsfx] takes hash object as context variables.
+        #; [!p0po0] context argument can be null.
+        ctx = Object.new()
+        context.each {|k, v| ctx.instance_variable_set("@#{k}", v) } if context
+        #; [!48pfc] returns rendered string.
+        return ctx.instance_eval(&@_proc)
+      end
+
+      EMBED_REXP = /(^[ \t]*)?<%([=\#])?(.*?)%>([ \t]*\r?\n)?/m
+
+      def convert(input)
+        #; [!118pw] converts template string into ruby code.
+        #; [!7ht59] escapes '`' and '\\' characters.
+        src = "_buf = '';"       # preamble
+        pos = 0
+        input.scan(EMBED_REXP) do |lspace, ch, code, rspace|
+          match = Regexp.last_match
+          text  = input[pos...match.begin(0)]
+          pos   = match.end(0)
+          src << _t(text)
+          if ch == '='           # expression
+            src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
+          elsif ch == '#'        # comment
+            src << _t(lspace) << ("\n" * code.count("\n")) << _t(rspace)
+          else                   # statement
+            if lspace && rspace
+              src << "#{lspace}#{code}#{rspace};"
+            else
+              src << _t(lspace) << code << ';' << _t(rspace)
+            end
+          end
+        end
+        #; [!b10ns] generates ruby code correctly even when no embedded code.
+        rest = $' || input
+        src << _t(rest)
+        src << "\n_buf.to_s\n"   # postamble
+        return src
+      end
+
+      private
+
+      def _build_text(text)
+        return text && !text.empty? ? " _buf << %q`#{_escape_text(text)}`;" : ''
+      end
+      alias _t _build_text
+
+      def _escape_text(text)
+        return text.gsub!(/[`\\]/, '\\\\\&') || text
+      end
+
+    end
+
+
   end
 
 
@@ -2148,7 +2218,7 @@ up: |
   <% comma = "  " %>
   <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
     <%= comma %>('<%= name %>')
-  <%   comma = ", " %>
+    <% comma = ", " %>
   <% end %>
   ;
 
@@ -2170,6 +2240,26 @@ down: |
   delete from users where name = 'Haruhi';
   delete from users where name = 'Mikuru';
   delete from users where name = 'Yuki';
+
+In eRuby code, values in `vars` are available as instance variables.
+For example:
+
+version:     uhtu4853
+desc:        create 'users' table
+author:      kwatch
+vars:
+  - table:   users
+  - members: [Haruhi, Mikuru, Yuki]
+
+up: |
+  <% for member in @members %>
+  insert into ${table}(name) values ('<%= member %>');
+  <% end %>
+
+down: |
+  <% for member in @members %>
+  delete from ${table} where name = '<%= member %>';
+  <% end %>
 
 
 Notice that migration file using eRuby code is not compatible with other

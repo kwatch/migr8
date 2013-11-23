@@ -78,7 +78,7 @@ insert into ${table}(${column}) values
 <% comma = "  " %>
 <% for name in %w[Haruhi Mikuru Yuki] %>
   <%= comma %>('<%= name %>')
-<%   comma = ", " %>
+  <% comma = ", " %>
 <% end %>
 ;
 END
@@ -142,6 +142,19 @@ END
         mig.down = original
         mig.vars = {'table'=>'users', 'column'=>'name'}
         ok {mig.down_script} == expanded
+      end
+
+    end
+
+
+    topic '#_render()' do
+
+      spec "[!1w3ov] renders string with 'vars' as context variables." do
+        mig = klass.new
+        mig.vars = {'table'=>'users', 'columns'=>['id', 'name']}
+        src = "@table: <%=@table.inspect%>; @columns: <%=@columns.inspect%>;"
+        output = mig.__send__(:_render, src)
+        ok {output} == '@table: "users"; @columns: ["id", "name"];'
       end
 
     end
