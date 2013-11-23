@@ -5,8 +5,8 @@
 ### migr8.py -- DB schema version management tool
 ###
 ### $Release: 0.0.0 $
-### $License: MIT License $
 ### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserverd $
+### $License: MIT License $
 ###
 
 require 'yaml'
