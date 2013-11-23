@@ -213,6 +213,12 @@ module Migr8
       @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
+    def fetch_details_from_history_table(mig)
+      mig.applied_at  = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      mig.up_script   = @dbms.fetch_column_value_of(mig.version, 'up_script')
+      mig.down_script = @dbms.fetch_column_value_of(mig.version, 'down_script')
+    end
+
     def new_version
       while true
         version = _new_version()
@@ -368,6 +374,41 @@ module Migr8
         ret[:missing].each {|mig| s << _to_line(mig) }
       end
       return s
+    end
+
+    def show(version=nil, load_from_db=False)
+      migs = load_from_db ? @repo.migrations_in_history_table() \
+                          : @repo.migrations_in_history_file()
+      if version
+        mig = migs.find {|mig| mig.version == version }  or
+          raise MigrationError.new("#{version}: no such migration.")
+      else
+        mig = migs.last or
+          raise MigrationError.new("no migrations to show.")
+      end
+      if load_from_db
+        @repo.fetch_details_from_history_table(mig)
+        #assert mig.instance_variable_get('@up_script')   != nil
+        #assert mig.instance_variable_get('@down_script') != nil
+      end
+      #
+      buf = ""
+      buf   << "version:     #{mig.version}\n"
+      buf   << "desc:        #{mig.desc}\n"
+      buf   << "author:      #{mig.author}\n"
+      buf   << "vars:\n"                           unless load_from_db
+      mig.vars.each do |k, v|
+        buf << "  - %-10s " % ["#{k}:"] << v.inspect << "\n"
+      end                                          unless load_from_db
+      buf   << "applied_at:  #{mig.applied_at}\n"  if load_from_db
+      buf   << "\n"
+      buf   << "up: |\n"
+      buf   << mig.up_script.gsub(/^/, '  ')
+      buf   << "\n"
+      buf   << "down: |\n"
+      buf   << mig.down_script.gsub(/^/, '  ')
+      buf   << "\n"
+      return buf
     end
 
     def upgrade(n)
@@ -663,11 +704,12 @@ END
         return migs
       end
 
-      def _get_down_script_of(version)
-        sql = "SELECT down_script FROM #{history_table()} WHERE version = '#{version}';"
+      def fetch_column_value_of(version, column)
+        sql = "SELECT #{column} FROM #{history_table()} WHERE version = '#{version}';"
         down_script = _execute_sql_and_get_column_as_text(sql)
         return down_script
       end
+      public :fetch_column_value_of
 
       def _execute_sql_and_get_column_as_text(sql)
         cmdopt = ""
@@ -714,7 +756,7 @@ END
       def unapply_migrations(migs, down_script_in_db=false)
         if down_script_in_db
           migs.each do |mig|
-            mig.down_script = _get_down_script_of(mig.version)
+            mig.down_script = fetch_column_value_of(mig.version, 'down_script')
           end
         end
         _do_migrations(migs) {|mig| _unapplying_sql(mig) }
@@ -1501,6 +1543,28 @@ END
     end
 
 
+    class ShowAction < Action
+      NAME = "show"
+      DESC = "show migration file with expanding variables"
+      OPTS = ["-x:  load values of migration from history table in DB"]
+      ARGS = "[version]"
+
+      def run(options, args)
+        load_from_db = options['x']
+        args.length <= 1  or
+          raise cmdopterr("#{NAME}: too much arguments.")
+        version = args.first   # nil when args is empty
+        #
+        repo = repository()
+        op = RepositoryOperation.new(repo)
+        _wrap do
+          puts op.show(version, load_from_db)
+        end
+      end
+
+    end
+
+
     class EditAction < Action
       NAME = "edit"
       DESC = "open migration file by $MIGR8_EDITOR"
@@ -2247,7 +2311,7 @@ For example:
 
 version:     uhtu4853
 desc:        create 'users' table
-author:      kwatch
+author:      alice
 vars:
   - table:   users
   - members: [Haruhi, Mikuru, Yuki]
@@ -2261,6 +2325,27 @@ down: |
   <% for member in @members %>
   delete from ${table} where name = '<%= member %>';
   <% end %>
+
+If you want to see up and down scripts rendered, run `migr8.rb show` action.
+For example:
+
+$ ./migr8.rb show uhtu4853
+version:     uhtu4853
+desc:        create 'users' table
+author:      alice
+vars:
+  - table:     "users"
+  - members:   ["Haruhi", "Mikuru", "Yuki"]
+
+up: |
+  insert into users(name) values ('Haruhi');
+  insert into users(name) values ('Mikuru');
+  insert into users(name) values ('Yuki');
+
+down: |
+  delete from users where name = 'Haruhi';
+  delete from users where name = 'Mikuru';
+  delete from users where name = 'Yuki';
 
 
 Notice that migration file using eRuby code is not compatible with other
@@ -2319,6 +2404,8 @@ Actions:  (default: status)
     --column=tbl.col  :   skeleton to add column
     --index=tbl.col   :   skeleton to create index
     --unique=tbl.col  :   skeleton to add unique constraint
+  show [version]      : show migration file with expanding variables
+    -x                :   load values of migration from history table in DB
   edit [version]      : open migration file by $MIGR8_EDITOR
     -r N              :   edit N-th file from latest version
     -e editor         :   editr command (such as 'emacsclient', 'open', ...)
@@ -2356,6 +2443,8 @@ Changes
   You can install migr8.rb by `gem install migr8`.
 * [enhance] eRuby templating `up` and `down` script.
   See 'Templating' section of README file for details.
+* [enhance] Add new action 'show' which shows migration attributes
+  with expanding variables (ex: `${table}`) and renderting template.
 
 
 ### Release 0.3.0 (2013-11-22) ###
