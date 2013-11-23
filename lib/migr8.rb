@@ -2254,7 +2254,7 @@ README_DOCUMENT
 end
 
 
-if __FILE__ == $0 || (defined?(Gem) && File.basename(__FILE__) == File.basename($0))
+if __FILE__ == $0
   status = Migr8::Application.main()
   exit(status)
 end
