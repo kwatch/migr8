@@ -747,6 +747,16 @@ END
         ok {actual} == expected
       end
 
+      spec "[!p0po0] context argument can be null." do
+        input = "Hello"
+        context = nil
+        tmpl = tmpl_class.new(input)
+        actual = nil
+        pr = proc { actual = tmpl.render(nil) }
+        ok {pr}.NOT.raise?()
+        ok {actual} == "Hello"
+      end
+
     end
 
 
