@@ -59,6 +59,7 @@ Actions:  (default: status)
   init                : create necessary files and a table
   hist                : list history of versions
   new                 : create new migration file and open it by $MIGR8_EDITOR
+  show [version]      : show migration file with expanding variables
   edit [version]      : open migration file by $MIGR8_EDITOR
   status              : show status
   up                  : apply next migration

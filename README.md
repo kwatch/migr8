@@ -219,6 +219,8 @@ Usage and Actions
         --column=tbl.col  :   skeleton to add column
         --index=tbl.col   :   skeleton to create index
         --unique=tbl.col  :   skeleton to add unique constraint
+      show [version]      : show migration file with expanding variables
+        -x                :   load values of migration from history table in DB
       edit [version]      : open migration file by $MIGR8_EDITOR
         -r N              :   edit N-th file from latest version
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
