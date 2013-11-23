@@ -2353,6 +2353,8 @@ Changes
 
 * [enhance] RubyGems package available.
   You can install migr8.rb by `gem install migr8`.
+* [enhance] eRuby templating `up` and `down` script.
+  See 'Templating' section of README file for details.
 
 
 ### Release 0.3.0 (2013-11-22) ###
