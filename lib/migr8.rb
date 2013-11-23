@@ -213,6 +213,12 @@ module Migr8
       @dbms.unapply_migrations(migs, down_script_in_db)
     end
 
+    def fetch_details_from_history_table(mig)
+      mig.applied_at  = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      mig.up_script   = @dbms.fetch_column_value_of(mig.version, 'up_script')
+      mig.down_script = @dbms.fetch_column_value_of(mig.version, 'down_script')
+    end
+
     def new_version
       while true
         version = _new_version()
