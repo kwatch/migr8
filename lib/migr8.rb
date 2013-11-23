@@ -12,7 +12,6 @@
 require 'yaml'
 require 'open3'
 require 'etc'
-require 'erb'
 
 
 module Migr8
@@ -89,8 +88,9 @@ module Migr8
       return _render(Util::Expander.expand_str(@down, @vars))
     end
 
-    def _render(_str)
-      return ERB.new(_str, nil, '<>').result(binding())
+    def _render(str)
+      #return ERB.new(_str, nil, '<>').result(binding())
+      return Util::Template.new(str).render()
     end
     private :_render
 
