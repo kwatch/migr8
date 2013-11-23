@@ -2026,6 +2026,7 @@ END
           i = 0
           while i < arr.length
             arr[i] = expand_value(arr[i], dict)
+            i += 1
           end
           return arr
         when Hash
