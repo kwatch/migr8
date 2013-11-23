@@ -1529,6 +1529,27 @@ END
     end
 
 
+    class ShowAction < Action
+      NAME = "show"
+      DESC = "show migration file with expanding variables"
+      OPTS = []
+      ARGS = "[version]"
+
+      def run(options, args)
+        args.length <= 1  or
+          raise cmdopterr("#{NAME}: too much arguments.")
+        version = args.first   # nil when args is empty
+        #
+        repo = repository()
+        op = RepositoryOperation.new(repo)
+        _wrap do
+          puts op.show(version)
+        end
+      end
+
+    end
+
+
     class EditAction < Action
       NAME = "edit"
       DESC = "open migration file by $MIGR8_EDITOR"
