@@ -2069,10 +2069,15 @@ END
 
       def initialize(input="")
         #; [!6z4kp] converts input string into ruby code.
-        @src = convert(input)
+        self.src = convert(input)
       end
 
       attr_reader :src
+
+      def src=(src)
+        @src = src
+        @_proc = eval "proc { #{@src} }"
+      end
 
       def render(context={})
         #; [!umsfx] takes hash object as context variables.
