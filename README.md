@@ -77,7 +77,7 @@ For example:
       <% comma = "  " %>
       <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
         <%= comma %>('<%= name %>')
-      <%   comma = ", " %>
+        <% comma = ", " %>
       <% end %>
       ;
 
@@ -99,6 +99,26 @@ The above is the same as the following:
       delete from users where name = 'Haruhi';
       delete from users where name = 'Mikuru';
       delete from users where name = 'Yuki';
+
+In eRuby code, values in `vars` are available as instance variables.
+For example:
+
+    version:     uhtu4853
+    desc:        create 'users' table
+    author:      kwatch
+    vars:
+      - table:   users
+      - members: [Haruhi, Mikuru, Yuki]
+
+    up: |
+      <% for member in @members %>
+      insert into ${table}(name) values ('<%= member %>');
+      <% end %>
+
+    down: |
+      <% for member in @members %>
+      delete from ${table} where name = '<%= member %>';
+      <% end %>
 
 
 Notice that migration file using eRuby code is not compatible with other

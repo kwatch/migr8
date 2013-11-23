@@ -78,7 +78,7 @@ insert into ${table}(${column}) values
 <% comma = "  " %>
 <% for name in %w[Haruhi Mikuru Yuki] %>
   <%= comma %>('<%= name %>')
-<%   comma = ", " %>
+  <% comma = ", " %>
 <% end %>
 ;
 END
