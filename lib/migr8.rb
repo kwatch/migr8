@@ -691,11 +691,12 @@ END
         return migs
       end
 
-      def _fetch_column_value_of(version, column)
+      def fetch_column_value_of(version, column)
         sql = "SELECT #{column} FROM #{history_table()} WHERE version = '#{version}';"
         down_script = _execute_sql_and_get_column_as_text(sql)
         return down_script
       end
+      public :fetch_column_value_of
 
       def _execute_sql_and_get_column_as_text(sql)
         cmdopt = ""
@@ -742,7 +743,7 @@ END
       def unapply_migrations(migs, down_script_in_db=false)
         if down_script_in_db
           migs.each do |mig|
-            mig.down_script = _fetch_column_value_of(mig.version, 'down_script')
+            mig.down_script = fetch_column_value_of(mig.version, 'down_script')
           end
         end
         _do_migrations(migs) {|mig| _unapplying_sql(mig) }
