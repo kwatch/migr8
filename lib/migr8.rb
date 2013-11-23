@@ -12,6 +12,7 @@
 require 'yaml'
 require 'open3'
 require 'etc'
+require 'erb'
 
 
 module Migr8
@@ -74,7 +75,8 @@ module Migr8
       #; [!200k7] returns @up_script if it is set.
       return @up_script if @up_script
       #; [!6gaxb] returns 'up' string expanding vars in it.
-      return Util::Expander.expand_str(@up, @vars)
+      #; [!jeomg] renders 'up' script as eRuby template.
+      return _render(Util::Expander.expand_str(@up, @vars))
     end
 
     def down_script
@@ -83,8 +85,14 @@ module Migr8
       #; [!27n2l] returns @down_script if it is set.
       return @down_script if @down_script
       #; [!0q3nq] returns 'down' string expanding vars in it.
-      return Util::Expander.expand_str(@down, @vars)
+      #; [!kpwut] renders 'up' script as eRuby template.
+      return _render(Util::Expander.expand_str(@down, @vars))
     end
+
+    def _render(_str)
+      return ERB.new(_str, nil, '<>').result(binding())
+    end
+    private :_render
 
     def applied_at_or(default)
       #; [!zazux] returns default arugment when not applied.
@@ -2118,6 +2126,54 @@ Quick Start
     $ ./migr8.rb hist           # check whether history file is valid
     $ git add migr8/history.txt
     $ git rebase --continue
+
+
+Templating
+----------
+
+(!!Attention!! this is experimental feature and may be changed in the future.)
+
+It is possible to embed eRuby code into `up` and `down` scripts.
+
+* `<% ... %>`  : Ruby statement
+* `<%= ... %>` : Ruby expression
+
+For example:
+
+vars:
+  - table: users
+
+up: |
+  insert into ${table}(name) values
+  <% comma = "  " %>
+  <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
+    <%= comma %>('<%= name %>')
+  <%   comma = ", " %>
+  <% end %>
+  ;
+
+down: |
+  <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
+  delete from ${table} where name = '<%= name %>';
+  <% end %>
+
+The above is the same as the following:
+
+up: |
+  insert into users(name) values
+      ('Haruhi')
+    , ('Mikuru')
+    , ('Yuki')
+  ;
+
+down: |
+  delete from users where name = 'Haruhi';
+  delete from users where name = 'Mikuru';
+  delete from users where name = 'Yuki';
+
+
+Notice that migration file using eRuby code is not compatible with other
+Migr8 implemtation.
 
 
 Tips

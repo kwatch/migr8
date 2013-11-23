@@ -57,6 +57,54 @@ Quick Start
         $ git rebase --continue
 
 
+Templating
+----------
+
+(!!Attention!! this is experimental feature and may be changed in the future.)
+
+It is possible to embed eRuby code into `up` and `down` scripts.
+
+* `<% ... %>`  : Ruby statement
+* `<%= ... %>` : Ruby expression
+
+For example:
+
+    vars:
+      - table: users
+
+    up: |
+      insert into ${table}(name) values
+      <% comma = "  " %>
+      <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
+        <%= comma %>('<%= name %>')
+      <%   comma = ", " %>
+      <% end %>
+      ;
+
+    down: |
+      <% for name in ["Haruhi", "Mikuru", "Yuki"] %>
+      delete from ${table} where name = '<%= name %>';
+      <% end %>
+
+The above is the same as the following:
+
+    up: |
+      insert into users(name) values
+          ('Haruhi')
+        , ('Mikuru')
+        , ('Yuki')
+      ;
+
+    down: |
+      delete from users where name = 'Haruhi';
+      delete from users where name = 'Mikuru';
+      delete from users where name = 'Yuki';
+
+
+Notice that migration file using eRuby code is not compatible with other
+Migr8 implemtation.
+
+
 Tips
 ----
 
