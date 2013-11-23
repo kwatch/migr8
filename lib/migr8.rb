@@ -2080,6 +2080,8 @@ Quick Start
 
     $ curl -Lo migr8.rb http://bit.ly/migr8_rb
     $ chmod a+x migr8.rb
+    ### or
+    $ gem install migr8
 
 2. Set environment variables: $MIGR8_COMMAND and $MIGR8_EDITOR.
 
@@ -2193,7 +2195,6 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] create RubyGems package
 * [_] support eRuby templating
 * [_] implement in Python
 * [_] implement in JavaScript
@@ -2201,6 +2202,12 @@ TODO
 
 Changes
 -------
+
+### Release 0.4.0 ###
+
+* [enhance] RubyGems package available.
+  You can install migr8.rb by `gem install migr8`.
+
 
 ### Release 0.3.0 (2013-11-22) ###
 
