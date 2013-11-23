@@ -2084,7 +2084,7 @@ END
         ctx = Object.new()
         context.each {|k, v| ctx.instance_variable_set("@#{k}", v) }
         #; [!48pfc] returns rendered string.
-        return ctx.instance_eval(@src)
+        return ctx.instance_eval(&@_proc)
       end
 
       EMBED_REXP = /(^[ \t]*)?<%([=\#])?(.*?)%>([ \t]*\r?\n)?/m
