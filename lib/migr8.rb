@@ -2311,7 +2311,7 @@ For example:
 
 version:     uhtu4853
 desc:        create 'users' table
-author:      kwatch
+author:      alice
 vars:
   - table:   users
   - members: [Haruhi, Mikuru, Yuki]
@@ -2325,6 +2325,27 @@ down: |
   <% for member in @members %>
   delete from ${table} where name = '<%= member %>';
   <% end %>
+
+If you want to see up and down scripts rendered, run `migr8.rb show` action.
+For example:
+
+$ ./migr8.rb show uhtu4853
+version:     uhtu4853
+desc:        create 'users' table
+author:      alice
+vars:
+  - table:     "users"
+  - members:   ["Haruhi", "Mikuru", "Yuki"]
+
+up: |
+  insert into users(name) values ('Haruhi');
+  insert into users(name) values ('Mikuru');
+  insert into users(name) values ('Yuki');
+
+down: |
+  delete from users where name = 'Haruhi';
+  delete from users where name = 'Mikuru';
+  delete from users where name = 'Yuki';
 
 
 Notice that migration file using eRuby code is not compatible with other
@@ -2422,6 +2443,8 @@ Changes
   You can install migr8.rb by `gem install migr8`.
 * [enhance] eRuby templating `up` and `down` script.
   See 'Templating' section of README file for details.
+* [enhance] Add new action 'show' which shows migration attributes
+  with expanding variables (ex: `${table}`) and renderting template.
 
 
 ### Release 0.3.0 (2013-11-22) ###
