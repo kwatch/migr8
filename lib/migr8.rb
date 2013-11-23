@@ -370,6 +370,34 @@ module Migr8
       return s
     end
 
+    def show(version=nil)
+      migs = @repo.migrations_in_history_file()
+      if version
+        mig = migs.find {|mig| mig.version == version }  or
+          raise MigrationError.new("#{version}: no such migration.")
+      else
+        mig = migs.last or
+          raise MigrationError.new("no migrations to show.")
+      end
+      #
+      buf = ""
+      buf   << "version:     #{mig.version}\n"
+      buf   << "desc:        #{mig.desc}\n"
+      buf   << "author:      #{mig.author}\n"
+      buf   << "vars:\n"
+      mig.vars.each do |k, v|
+        buf << "  - %-10s " % ["#{k}:"] << v.inspect << "\n"
+      end
+      buf   << "\n"
+      buf   << "up: |\n"
+      buf   << mig.up_script.gsub(/^/, '  ')
+      buf   << "\n"
+      buf   << "down: |\n"
+      buf   << mig.down_script.gsub(/^/, '  ')
+      buf   << "\n"
+      return buf
+    end
+
     def upgrade(n)
       migs_hist, migs_dict = _get_migrations_hist_and_applied()
       ## index of current version
