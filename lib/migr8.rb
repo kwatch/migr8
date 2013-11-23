@@ -822,7 +822,9 @@ END
 
       def _execute_sql_and_get_column_as_text(sql)
         cmdopt = "-list"
-        return execute_sql(sql, cmdopt)
+        s = execute_sql(sql, cmdopt)
+        s.sub!(/\r?\n\z/, '')      # remove "\n" at end
+        return s
       end
 
       def _echo_message(msg)
@@ -945,7 +947,9 @@ END
 
       def _execute_sql_and_get_column_as_text(sql)
         cmdopt = "-t -A"
-        return execute_sql(sql, cmdopt)
+        s = execute_sql(sql, cmdopt)
+        s.sub!(/\r?\n\z/, '')      # remove "\n" at end
+        return s
       end
 
       def _echo_message(msg)
@@ -1098,6 +1102,7 @@ END
         s = execute_sql(sql, cmdopt)
         s.sub!(/\A\*+.*\n/, '')    # remove '**** 1. row ****' from output
         s.sub!(/\A\w+: /, '')      # remove 'column-name: ' from output
+        s.sub!(/\r?\n\z/, '')      # remove "\n" at end
         return s
       end
 
