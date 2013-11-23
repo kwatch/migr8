@@ -122,7 +122,7 @@ task :dist do
   mkdir_p "#{dir}/test"
   cp files, dir
   cp Dir.glob("lib/*"), "#{dir}/lib"
-  cp Dir.glob("lib/*"), "#{dir}/bin"
+  cp Dir.glob("bin/*"), "#{dir}/bin"
   cp Dir.glob("test/*"), "#{dir}/test"
   chmod 0644, *Dir.glob("#{dir}/lib/*")
   chmod 0755, *Dir.glob("#{dir}/bin/*")
