@@ -147,6 +147,19 @@ END
     end
 
 
+    topic '#_render()' do
+
+      spec "[!1w3ov] renders string with 'vars' as context variables." do
+        mig = klass.new
+        mig.vars = {'table'=>'users', 'columns'=>['id', 'name']}
+        src = "@table: <%=@table.inspect%>; @columns: <%=@columns.inspect%>;"
+        output = mig.__send__(:_render, src)
+        ok {output} == '@table: "users"; @columns: ["id", "name"];'
+      end
+
+    end
+
+
     topic '#applied_at_or()' do
 
       spec "[!zazux] returns default arugment when not applied." do

@@ -89,8 +89,10 @@ module Migr8
     end
 
     def _render(str)
-      #return ERB.new(_str, nil, '<>').result(binding())
-      return Util::Template.new(str).render()
+      #require 'erb'
+      #return ERB.new(str, nil, '<>').result(binding())
+      #; [!1w3ov] renders string with 'vars' as context variables.
+      return Util::Template.new(str).render(@vars)
     end
     private :_render
 
