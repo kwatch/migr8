@@ -39,16 +39,16 @@ Oktest.scope do
 
     topic '#up_script' do
 
-      spec "[!cfp34] returns nil when 'up' is not set." do
-        mig = klass.new()
-        mig.up = nil
-        ok {mig.up_script} == nil
-      end
-
       spec "[!200k7] returns @up_script if it is set." do
         mig = klass.new()
         mig.up_script = "xxx"
         ok {mig.up_script} == "xxx"
+      end
+
+      spec "[!cfp34] returns nil when 'up' is not set." do
+        mig = klass.new()
+        mig.up = nil
+        ok {mig.up_script} == nil
       end
 
       spec "[!6gaxb] returns 'up' string expanding vars in it." do
@@ -100,16 +100,16 @@ END
 
     topic '#down_script' do
 
-      spec "[!e45s1] returns nil when 'down' is not set." do
-        mig = klass.new
-        mig.down = nil
-        ok {mig.down_script} == nil
-      end
-
       spec "[!27n2l] returns @down_script if it is set." do
         mig = klass.new
         mig.down_script = "xxx"
         ok {mig.down_script} == "xxx"
+      end
+
+      spec "[!e45s1] returns nil when 'down' is not set." do
+        mig = klass.new
+        mig.down = nil
+        ok {mig.down_script} == nil
       end
 
       spec "[!0q3nq] returns 'down' string expanding vars in it." do

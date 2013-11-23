@@ -69,20 +69,20 @@ module Migr8
     end
 
     def up_script
-      #; [!cfp34] returns nil when 'up' is not set.
-      return @up unless @up
       #; [!200k7] returns @up_script if it is set.
       return @up_script if @up_script
+      #; [!cfp34] returns nil when 'up' is not set.
+      return @up unless @up
       #; [!6gaxb] returns 'up' string expanding vars in it.
       #; [!jeomg] renders 'up' script as eRuby template.
       return _render(Util::Expander.expand_str(@up, @vars))
     end
 
     def down_script
-      #; [!e45s1] returns nil when 'down' is not set.
-      return @down unless @down
       #; [!27n2l] returns @down_script if it is set.
       return @down_script if @down_script
+      #; [!e45s1] returns nil when 'down' is not set.
+      return @down unless @down
       #; [!0q3nq] returns 'down' string expanding vars in it.
       #; [!kpwut] renders 'up' script as eRuby template.
       return _render(Util::Expander.expand_str(@down, @vars))
