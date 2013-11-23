@@ -75,11 +75,11 @@ END
       spec "[!jeomg] renders 'up' script as eRuby template." do
         original = <<END
 insert into ${table}(${column}) values
-<%- comma = "  " -%>
-<%- for name in %w[Haruhi Mikuru Yuki] -%>
+<% comma = "  " %>
+<% for name in %w[Haruhi Mikuru Yuki] %>
   <%= comma %>('<%= name %>')
-<%-   comma = ", " -%>
-<%- end -%>
+<%   comma = ", " %>
+<% end %>
 ;
 END
         expanded = <<END
@@ -129,9 +129,9 @@ END
 
       spec "[!kpwut] renders 'up' script as eRuby template." do
         original = <<END
-<%- for name in %w[Haruhi Mikuru Yuki] -%>
+<% for name in %w[Haruhi Mikuru Yuki] %>
 delete from ${table} where ${column} = '<%= name %>';
-<%- end -%>
+<% end %>
 END
         expanded = <<END
 delete from users where name = 'Haruhi';

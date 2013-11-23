@@ -90,7 +90,7 @@ module Migr8
     end
 
     def _render(_str)
-      return ERB.new(_str, nil, '-').result(binding())
+      return ERB.new(_str, nil, '<>').result(binding())
     end
     private :_render
 
