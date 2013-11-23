@@ -12,6 +12,7 @@
 require 'yaml'
 require 'open3'
 require 'etc'
+require 'erb'
 
 
 module Migr8
@@ -74,7 +75,8 @@ module Migr8
       #; [!200k7] returns @up_script if it is set.
       return @up_script if @up_script
       #; [!6gaxb] returns 'up' string expanding vars in it.
-      return Util::Expander.expand_str(@up, @vars)
+      #; [!jeomg] renders 'up' script as eRuby template.
+      return _render(Util::Expander.expand_str(@up, @vars))
     end
 
     def down_script
@@ -83,8 +85,14 @@ module Migr8
       #; [!27n2l] returns @down_script if it is set.
       return @down_script if @down_script
       #; [!0q3nq] returns 'down' string expanding vars in it.
-      return Util::Expander.expand_str(@down, @vars)
+      #; [!kpwut] renders 'up' script as eRuby template.
+      return _render(Util::Expander.expand_str(@down, @vars))
     end
+
+    def _render(_str)
+      return ERB.new(_str, nil, '-').result(binding())
+    end
+    private :_render
 
     def applied_at_or(default)
       #; [!zazux] returns default arugment when not applied.

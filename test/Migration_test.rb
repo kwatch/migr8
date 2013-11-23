@@ -72,6 +72,29 @@ END
         ok {mig.up_script} == expanded
       end
 
+      spec "[!jeomg] renders 'up' script as eRuby template." do
+        original = <<END
+insert into ${table}(${column}) values
+<%- comma = "  " -%>
+<%- for name in %w[Haruhi Mikuru Yuki] -%>
+  <%= comma %>('<%= name %>')
+<%-   comma = ", " -%>
+<%- end -%>
+;
+END
+        expanded = <<END
+insert into users(name) values
+    ('Haruhi')
+  , ('Mikuru')
+  , ('Yuki')
+;
+END
+        mig = klass.new
+        mig.up = original
+        mig.vars = {'table'=>'users', 'column'=>'name'}
+        ok {mig.up_script} == expanded
+      end
+
     end
 
 
@@ -101,6 +124,23 @@ END
         mig = klass.new
         mig.down = original
         mig.vars = {'table'=>'sample1', 'column'=>'name'};
+        ok {mig.down_script} == expanded
+      end
+
+      spec "[!kpwut] renders 'up' script as eRuby template." do
+        original = <<END
+<%- for name in %w[Haruhi Mikuru Yuki] -%>
+delete from ${table} where ${column} = '<%= name %>';
+<%- end -%>
+END
+        expanded = <<END
+delete from users where name = 'Haruhi';
+delete from users where name = 'Mikuru';
+delete from users where name = 'Yuki';
+END
+        mig = klass.new
+        mig.down = original
+        mig.vars = {'table'=>'users', 'column'=>'name'}
         ok {mig.down_script} == expanded
       end
 
