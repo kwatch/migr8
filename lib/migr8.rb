@@ -376,8 +376,9 @@ module Migr8
       return s
     end
 
-    def show(version=nil)
-      migs = @repo.migrations_in_history_file()
+    def show(version=nil, load_from_db=False)
+      migs = load_from_db ? @repo.migrations_in_history_table() \
+                          : @repo.migrations_in_history_file()
       if version
         mig = migs.find {|mig| mig.version == version }  or
           raise MigrationError.new("#{version}: no such migration.")
@@ -385,15 +386,21 @@ module Migr8
         mig = migs.last or
           raise MigrationError.new("no migrations to show.")
       end
+      if load_from_db
+        @repo.fetch_details_from_history_table(mig)
+        #assert mig.instance_variable_get('@up_script')   != nil
+        #assert mig.instance_variable_get('@down_script') != nil
+      end
       #
       buf = ""
       buf   << "version:     #{mig.version}\n"
       buf   << "desc:        #{mig.desc}\n"
       buf   << "author:      #{mig.author}\n"
-      buf   << "vars:\n"
+      buf   << "vars:\n"                           unless load_from_db
       mig.vars.each do |k, v|
         buf << "  - %-10s " % ["#{k}:"] << v.inspect << "\n"
-      end
+      end                                          unless load_from_db
+      buf   << "applied_at:  #{mig.applied_at}\n"  if load_from_db
       buf   << "\n"
       buf   << "up: |\n"
       buf   << mig.up_script.gsub(/^/, '  ')
@@ -1539,10 +1546,11 @@ END
     class ShowAction < Action
       NAME = "show"
       DESC = "show migration file with expanding variables"
-      OPTS = []
+      OPTS = ["-x:  load values of migration from history table in DB"]
       ARGS = "[version]"
 
       def run(options, args)
+        load_from_db = options['x']
         args.length <= 1  or
           raise cmdopterr("#{NAME}: too much arguments.")
         version = args.first   # nil when args is empty
@@ -1550,7 +1558,7 @@ END
         repo = repository()
         op = RepositoryOperation.new(repo)
         _wrap do
-          puts op.show(version)
+          puts op.show(version, load_from_db)
         end
       end
 
