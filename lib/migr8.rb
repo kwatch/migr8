@@ -311,6 +311,25 @@ Please run '#{File.basename($0)} edit #{version}' and fix version in that file."
       return mig
     end
 
+    def delete_migration(version)
+      mig = load_migration(version)  or
+        raise MigrationError.new("#{version}: migration not found.")
+      fetch_details_from_history_table(mig)
+      ! mig.applied?  or
+        raise MigrationError.new("#{version}: already applied.
+Please run `#{File.basename($0)} unapply #{version}` at first if you want to delete it.")
+      #
+      File.open(history_filepath(), 'r+') do |f|
+        content = f.read()
+        content.gsub!(/^#{version}\b.*\n/, '')
+        f.rewind()
+        f.truncate(0)
+        f.write(content)
+      end
+      File.unlink(migration_filepath(version))
+      return mig
+    end
+
     protected
 
     def to_line(mig)  # :nodoc:
