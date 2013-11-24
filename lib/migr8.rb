@@ -340,6 +340,11 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
       return s
     end
 
+    def new(version, author, desc, opts={})
+      mig = @repo.create_migration(version, author, desc, opts)
+      return mig
+    end
+
     def inspect(n=5)
       mig_hist, mig_dict = _get_migrations_hist_and_applied()
       pos = mig_hist.length - n - 1
@@ -1550,7 +1555,8 @@ END
         desc  or
           raise cmdopterr("#{NAME}: '-m text' option required.")
         #
-        mig = repository().create_migration(version, author, desc, opts)
+        op = RepositoryOperation.new(repository())
+        mig = _wrap { op.new(version, author, desc, opts) }
         puts "## New migration file:"
         puts mig.filepath
         puts "$ #{editor} #{mig.filepath}"
