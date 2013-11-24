@@ -2159,7 +2159,7 @@ END
         return ctx.instance_eval(&@_proc)
       end
 
-      EMBED_REXP = /(^[ \t]*)?<%([=\#])?(.*?)%>([ \t]*\r?\n)?/m
+      EMBED_REXP = /(^[ \t]*)?<%(==?|\#)?(.*?)%>([ \t]*\r?\n)?/m
 
       def convert(input)
         #; [!118pw] converts template string into ruby code.
@@ -2171,7 +2171,9 @@ END
           text  = input[pos...match.begin(0)]
           pos   = match.end(0)
           src << _t(text)
-          if ch == '='           # expression
+          if ch == '='           # expression (escaping)
+            src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
+          elsif ch == '=='       # expression (without escaping)
             src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
           elsif ch == '#'        # comment
             src << _t(lspace) << ("\n" * code.count("\n")) << _t(rspace)

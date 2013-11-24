@@ -622,7 +622,7 @@ END
         input = <<'END'
 <p>
   <% x = 10 %>
-  <%= x %>
+  <%== x %>
 </p>
 END
         expected = <<'END'
@@ -645,7 +645,7 @@ END
         input = <<'END'
 <div>
   <% for i in 1..3 do %>
-    <%= i %>
+    <%== i %>
   <% end %>
 </div>
 END
