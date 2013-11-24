@@ -292,8 +292,8 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
       return ! exist_p
     end
 
-    def create_migration(desc, author=nil, opts={})
-      mig = Migration.new(new_version(), author || Etc.getlogin(), desc)
+    def create_migration(version=nil, author=nil, desc="", opts={})
+      mig = Migration.new(version || new_version(), author || Etc.getlogin(), desc)
       content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
       File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)) }
@@ -1544,7 +1544,7 @@ END
         desc  or
           raise cmdopterr("#{NAME}: '-m text' option required.")
         #
-        mig = repository().create_migration(desc, author, opts)
+        mig = repository().create_migration(version, author, desc, opts)
         puts "## New migration file:"
         puts mig.filepath
         puts "$ #{editor} #{mig.filepath}"
