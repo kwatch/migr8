@@ -46,8 +46,9 @@ task :embed_readme do
   content.gsub!(/\n\n<!--.*\n-->\n/m, '')
   File.open('lib/migr8.rb', 'r+') do |f|
     text = f.read()
-    text.sub!(/('README_DOCUMENT'\n)(.*)(^README_DOCUMENT\n)/m,
-              "'README_DOCUMENT'\n#{content}README_DOCUMENT\n")
+    text.sub!(/('README_DOCUMENT'\n)(.*)(^README_DOCUMENT\n)/m) {
+              "'README_DOCUMENT'\n#{content}README_DOCUMENT\n"
+    }
     f.rewind()
     f.truncate(0)
     f.write(text)
