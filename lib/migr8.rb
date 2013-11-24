@@ -221,7 +221,9 @@ Please run '#{File.basename($0)} edit #{version}' and fix version in that file."
     end
 
     def fetch_details_from_history_table(mig)
-      mig.applied_at  = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      s = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      s = s.strip if s
+      mig.applied_at  = (s.nil? || s.empty? ? nil : s)
       mig.up_script   = @dbms.fetch_column_value_of(mig.version, 'up_script')
       mig.down_script = @dbms.fetch_column_value_of(mig.version, 'down_script')
     end
