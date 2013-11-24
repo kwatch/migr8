@@ -1833,8 +1833,13 @@ END
         _wrap do
           versions.each do |version|
             print "## deleting '#{repo.migration_filepath(version)}' ... "
-            op.delete(version)
-            puts "done."
+            begin
+              op.delete(version)
+              puts "done."
+            rescue Exception => ex
+              puts ""
+              raise ex
+            end
           end
         end
       end
