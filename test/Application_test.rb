@@ -67,6 +67,7 @@ Actions:  (default: status)
   redo                : do migration down, and up it again
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
+  delete version ...  : delete unapplied migration file
 
 (ATTENTION!! Run '#{File.basename($0)} readme' at first if you don't know #{File.basename($0)} well.)
 
