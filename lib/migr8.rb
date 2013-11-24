@@ -336,7 +336,7 @@ Please run '#{File.basename($0)} edit #{version}' and fix version in that file."
       mig_hist, mig_dict = _get_migrations_hist_and_applied()
       s = ""
       mig_hist.each do |mig|
-        s << "#{mig.version}  #{mig.applied_at_or(str)}  \# [#{mig.author}] #{mig.desc}\n"
+        s << _to_line(mig)
       end
       if ! mig_dict.empty?
         puts "## Applied to DB but not exist in history file:"
