@@ -237,6 +237,7 @@ Usage and Actions
       new                 : create new migration file and open it by $MIGR8_EDITOR
         -m text           :   description message (mandatory)
         -u user           :   author name (default: current user)
+        -v version        :   specify version number instead of random string
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
         --table=table     :   skeleton to create table

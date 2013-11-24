@@ -1500,6 +1500,7 @@ END
       OPTS = [
         "-m text  : description message (mandatory)",
         "-u user  : author name (default: current user)",
+        "-v version : specify version number instead of random string",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
         "--table=table       : skeleton to create table",
@@ -1516,6 +1517,7 @@ END
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         author = options['u']
+        version = options['v']
         opts = {}
         opts[:plain] = true if options['p']
         desc = nil
