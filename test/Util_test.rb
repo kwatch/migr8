@@ -623,12 +623,14 @@ END
 <p>
   <% x = 10 %>
   <%= x %>
+  <%== x %>
 </p>
 END
         expected = <<'END'
 _buf = ''; _buf << %q`<p>
 `;   x = 10 
-; _buf << %q`  `; _buf << ( x ).to_s; _buf << %q`
+; _buf << %q`  `; _buf << (escape( x )).to_s; _buf << %q`
+`; _buf << %q`  `; _buf << ( x ).to_s; _buf << %q`
 `; _buf << %q`</p>
 `;
 _buf.to_s
@@ -645,7 +647,7 @@ END
         input = <<'END'
 <div>
   <% for i in 1..3 do %>
-    <%= i %>
+    <%== i %>
   <% end %>
 </div>
 END
@@ -677,6 +679,26 @@ END
         tmpl = tmpl_class.new()
         actual = tmpl.convert(input)
         ok {actual} == expected
+      end
+
+      spec "[!u93y5] wraps expression by 'escape()' when <%= %>." do
+        input = "val=<%= val %>"
+        expected = <<'END'
+_buf = ''; _buf << %q`val=`; _buf << (escape( val )).to_s;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        ok {tmpl.convert(input)} == expected
+      end
+
+      spec "[!auj95] leave expression as it is when <%== %>." do
+        input = "val=<%== val %>"
+        expected = <<'END'
+_buf = ''; _buf << %q`val=`; _buf << ( val ).to_s;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        ok {tmpl.convert(input)} == expected
       end
 
       spec "[!b10ns] generates ruby code correctly even when no embedded code." do
@@ -756,6 +778,91 @@ END
         ok {pr}.NOT.raise?()
         ok {actual} == "Hello"
       end
+
+      spec "[!1i0v8] escapes \"'\" into \"''\" when '<%= %>', and not when '<%== %>'." do
+        input = <<'END'
+  <% for item in @items %>
+  <%= item %>
+  <%== item %>
+  <% end %>
+END
+        expected = <<'END'
+  Rock''n Roll
+  Rock'n Roll
+  xx''yy''''zz''''''
+  xx'yy''zz'''
+END
+        items = ["Rock'n Roll", "xx'yy''zz'''"]
+        tmpl = tmpl_class.new(input)
+        ok {tmpl.render({:items=>items})} == expected
+      end
+
+    end
+
+
+  end
+
+
+  topic Migr8::Util::TemplateContext do
+    klass = Migr8::Util::TemplateContext
+
+
+    topic '#initialize()' do
+
+      spec "[!p69q1] takes vars and sets them into instance variables." do
+        ctx = klass.new({'title'=>'hello', 'members'=>%w[Haruhi Mikuru Yuki]})
+        ok {ctx.instance_variable_get('@title')} == 'hello'
+        ok {ctx.instance_variable_get('@members')} == ['Haruhi', 'Mikuru', 'Yuki']
+      end
+
+      spec "[!p853f] do nothing when vars is nil." do
+        pr = proc { klass.new(nil) }
+        ok {pr}.NOT.raise?(Exception)
+      end
+
+    end
+
+
+    topic '#escape()' do
+
+      spec "[!f3yy9] escapes \"'\" into \"''\" for default." do
+        $MIGR8_DBMS = nil
+        ctx = klass.new()
+        ok {ctx.escape("lock'n roll!")} == "lock''n roll!"
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+      end
+
+      spec "[!to5kz] converts any value into string." do
+        $MIGR8_DBMS = nil
+        ctx = klass.new()
+        ok {ctx.escape(1)} == "1"
+        ok {ctx.escape(nil)} == ""
+        ok {ctx.escape(true)} == "true"
+        ok {ctx.escape(false)} == "false"
+      end
+
+      spec "[!6v5yq] escapes "'" into "\\'" when on MySQL dbms." do
+        at_exit { $MIGR8_DBMS = nil }
+        #
+        $MIGR8_DBMS = Migr8::DBMS::MySQL.new('mysql -q -u user1 example1')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa\\'bb\\'\\'cc\\'\\'\\'"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+        #
+        $MIGR8_DBMS = Migr8::DBMS::SQLite3.new('sqlite3 example1.db')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+        #
+        $MIGR8_DBMS = Migr8::DBMS::PostgreSQL.new('psql -q -U user1 example1')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+      end
+
 
     end
 

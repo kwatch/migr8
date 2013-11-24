@@ -772,11 +772,11 @@ END
         run_sql(sql)
       end
 
+      public
+
       def q(str)
         return str.gsub(/\'/, "''")
       end
-
-      public
 
       def new_skeleton()
         return self.class.const_get(:Skeleton).new
@@ -1110,11 +1110,11 @@ END
         return %Q`select "#{msg.to_s.gsub(/"/, '\\"')}" as '';`
       end
 
-      def q(str)
-        return str.gsub(/([\\'])/, '\\\\\1')
-      end
-
       public
+
+      def q(str)
+        return str.gsub(/[\\']/, '\\\\\&')
+      end
 
       def history_table_exist?
         table = history_table()
@@ -1304,6 +1304,7 @@ END
         return @repository || begin
                                 cmd = get_command()
                                 dbms = DBMS.detect_by_command(cmd)
+                                $MIGR8_DBMS = dbms     # TODO: remove if possible
                                 repo = Repository.new(dbms)
                                 _check(repo, dbms) if _should_check?
                                 repo
@@ -2154,13 +2155,13 @@ END
       def render(context={})
         #; [!umsfx] takes hash object as context variables.
         #; [!p0po0] context argument can be null.
-        ctx = Object.new()
-        context.each {|k, v| ctx.instance_variable_set("@#{k}", v) } if context
+        ctx = TemplateContext.new(context)
         #; [!48pfc] returns rendered string.
+        #; [!1i0v8] escapes "'" into "''" when '<%= %>', and not when '<%== %>'.
         return ctx.instance_eval(&@_proc)
       end
 
-      EMBED_REXP = /(^[ \t]*)?<%([=\#])?(.*?)%>([ \t]*\r?\n)?/m
+      EMBED_REXP = /(^[ \t]*)?<%(==?|\#)?(.*?)%>([ \t]*\r?\n)?/m
 
       def convert(input)
         #; [!118pw] converts template string into ruby code.
@@ -2172,7 +2173,11 @@ END
           text  = input[pos...match.begin(0)]
           pos   = match.end(0)
           src << _t(text)
-          if ch == '='           # expression
+          #; [!u93y5] wraps expression by 'escape()' when <%= %>.
+          #; [!auj95] leave expression as it is when <%== %>.
+          if ch == '='           # expression (escaping)
+            src << _t(lspace) << " _buf << (escape(#{code})).to_s;" << _t(rspace)
+          elsif ch == '=='       # expression (without escaping)
             src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
           elsif ch == '#'        # comment
             src << _t(lspace) << ("\n" * code.count("\n")) << _t(rspace)
@@ -2200,6 +2205,27 @@ END
 
       def _escape_text(text)
         return text.gsub!(/[`\\]/, '\\\\\&') || text
+      end
+
+    end
+
+
+    class TemplateContext
+
+      def initialize(vars={})
+        #; [!p69q1] takes vars and sets them into instance variables.
+        #; [!p853f] do nothing when vars is nil.
+        vars.each do |k, v|
+          instance_variable_set("@#{k}", v)
+        end if vars
+      end
+
+      def escape(value)
+        #; [!6v5yq] escapes "'" into "\\'" when on MySQL dbms.
+        return $MIGR8_DBMS.q(value.to_s) if $MIGR8_DBMS
+        #; [!f3yy9] escapes "'" into "''" for default.
+        #; [!to5kz] converts any value into string.
+        return value.to_s.gsub(/'/, "''")
       end
 
     end
@@ -2275,8 +2301,11 @@ Templating
 
 It is possible to embed eRuby code into `up` and `down` scripts.
 
+Syntax:
+
 * `<% ... %>`  : Ruby statement
-* `<%= ... %>` : Ruby expression
+* `<%= ... %>` : Ruby expression, escaping `'` into `''` (or `\'` on MySQL)
+* `<%== ... %>` : Ruby expression, no escaping
 
 For example:
 
