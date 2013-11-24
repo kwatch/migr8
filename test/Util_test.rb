@@ -763,4 +763,25 @@ END
   end
 
 
+  topic Migr8::Util::TemplateContext do
+    klass = Migr8::Util::TemplateContext
+
+    topic '#initialize()' do
+
+      spec "[!p69q1] takes vars and sets them into instance variables." do
+        ctx = klass.new({'title'=>'hello', 'members'=>%w[Haruhi Mikuru Yuki]})
+        ok {ctx.instance_variable_get('@title')} == 'hello'
+        ok {ctx.instance_variable_get('@members')} == ['Haruhi', 'Mikuru', 'Yuki']
+      end
+
+      spec "[!p853f] do nothing when vars is nil." do
+        pr = proc { klass.new(nil) }
+        ok {pr}.NOT.raise?(Exception)
+      end
+
+    end
+
+  end
+
+
 end

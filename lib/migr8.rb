@@ -2205,6 +2205,19 @@ END
     end
 
 
+    class TemplateContext
+
+      def initialize(vars={})
+        #; [!p69q1] takes vars and sets them into instance variables.
+        #; [!p853f] do nothing when vars is nil.
+        vars.each do |k, v|
+          instance_variable_set("@#{k}", v)
+        end if vars
+      end
+
+    end
+
+
   end
 
 
