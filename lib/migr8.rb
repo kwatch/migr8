@@ -2154,8 +2154,7 @@ END
       def render(context={})
         #; [!umsfx] takes hash object as context variables.
         #; [!p0po0] context argument can be null.
-        ctx = Object.new()
-        context.each {|k, v| ctx.instance_variable_set("@#{k}", v) } if context
+        ctx = TemplateContext.new(context)
         #; [!48pfc] returns rendered string.
         return ctx.instance_eval(&@_proc)
       end
