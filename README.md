@@ -107,8 +107,8 @@ In eRuby code, values in `vars` are available as instance variables.
 For example:
 
     version:     uhtu4853
-    desc:        create 'users' table
-    author:      alice
+    desc:        register members
+    author:      kyon
     vars:
       - table:   users
       - members: [Haruhi, Mikuru, Yuki]
@@ -128,8 +128,8 @@ For example:
 
     $ ./migr8.rb show uhtu4853
     version:     uhtu4853
-    desc:        create 'users' table
-    author:      alice
+    desc:        register members
+    author:      kyon
     vars:
       - table:     "users"
       - members:   ["Haruhi", "Mikuru", "Yuki"]
