@@ -1633,12 +1633,13 @@ END
           migs = repo.migrations_in_history_file()
           mig = migs[-num]  or
             raise cmdopterr("#{NAME} -n #{num}: migration file not found.")
+          version = mig.version
         else
           mig = repo.load_migration(version)  or
             raise cmdopterr("#{NAME}: #{version}: version not found.")
         end
-        puts "# #{editor} #{repo.migration_filepath(mig.version)}"
-        system("#{editor} #{repo.migration_filepath(mig.version)}")
+        puts "# #{editor} #{repo.migration_filepath(version)}"
+        system("#{editor} #{repo.migration_filepath(version)}")
       end
 
     end
