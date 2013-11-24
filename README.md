@@ -291,6 +291,11 @@ Changes
   version number in migration file is wrong.
 
 
+### Release 0.3.1 (2013-11-24) ###
+
+* [bugfix] Fix 'hist' action not to raise error.
+
+
 ### Release 0.3.0 (2013-11-22) ###
 
 * [enhance] Add `-x` option to `unapply` action which unapplies migrations
