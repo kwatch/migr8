@@ -772,11 +772,11 @@ END
         run_sql(sql)
       end
 
+      public
+
       def q(str)
         return str.gsub(/\'/, "''")
       end
-
-      public
 
       def new_skeleton()
         return self.class.const_get(:Skeleton).new
