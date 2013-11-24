@@ -237,6 +237,7 @@ Usage and Actions
       new                 : create new migration file and open it by $MIGR8_EDITOR
         -m text           :   description message (mandatory)
         -u user           :   author name (default: current user)
+        -v version        :   specify version number instead of random string
         -p                :   plain skeleton
         -e editor         :   editr command (such as 'emacsclient', 'open', ...)
         --table=table     :   skeleton to create table
@@ -284,6 +285,8 @@ Changes
   See 'Templating' section of README file for details.
 * [enhance] Add new action 'show' which shows migration attributes
   with expanding variables (ex: `${table}`) and renderting template.
+* [enhance] Add new option 'new -v version' in order to specify version
+  number by yourself instead of auto-generated random string.
 
 
 ### Release 0.3.0 (2013-11-22) ###

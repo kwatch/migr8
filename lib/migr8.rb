@@ -292,8 +292,15 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
       return ! exist_p
     end
 
-    def create_migration(desc, author=nil, opts={})
-      mig = Migration.new(new_version(), author || Etc.getlogin(), desc)
+    def migration_file_exist?(version)
+      return File.exist?(migration_filepath(version))
+    end
+
+    def create_migration(version=nil, author=nil, desc="", opts={})
+      if version && migration_file_exist?(version)
+        raise MigrationError.new("#{version}: migration file already exists.")
+      end
+      mig = Migration.new(version || new_version(), author || Etc.getlogin(), desc)
       content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
       File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)) }
@@ -334,6 +341,15 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
         mig_dict.each {|mig| s << _to_line(mig) }
       end
       return s
+    end
+
+    def new(version, author, desc, opts={})
+      if version && @repo.migration_file_exist?(version)
+        raise MigrationError.new("#{version}: failed to create migration file because file already exists.
+Please run 'File.basename($0) edit #{version}' to see existing file.")
+      end
+      mig = @repo.create_migration(version, author, desc, opts)
+      return mig
     end
 
     def inspect(n=5)
@@ -1496,6 +1512,7 @@ END
       OPTS = [
         "-m text  : description message (mandatory)",
         "-u user  : author name (default: current user)",
+        "-v version : specify version number instead of random string",
         "-p       : plain skeleton",
         "-e editor: editr command (such as 'emacsclient', 'open', ...)",
         "--table=table       : skeleton to create table",
@@ -1512,6 +1529,7 @@ END
           raise cmdopterr("#{NAME}: failed to create migration file.")
         end
         author = options['u']
+        version = options['v']
         opts = {}
         opts[:plain] = true if options['p']
         desc = nil
@@ -1544,7 +1562,8 @@ END
         desc  or
           raise cmdopterr("#{NAME}: '-m text' option required.")
         #
-        mig = repository().create_migration(desc, author, opts)
+        op = RepositoryOperation.new(repository())
+        mig = _wrap { op.new(version, author, desc, opts) }
         puts "## New migration file:"
         puts mig.filepath
         puts "$ #{editor} #{mig.filepath}"
@@ -2437,6 +2456,7 @@ Actions:  (default: status)
   new                 : create new migration file and open it by $MIGR8_EDITOR
     -m text           :   description message (mandatory)
     -u user           :   author name (default: current user)
+    -v version        :   specify version number instead of random string
     -p                :   plain skeleton
     -e editor         :   editr command (such as 'emacsclient', 'open', ...)
     --table=table     :   skeleton to create table
@@ -2484,6 +2504,8 @@ Changes
   See 'Templating' section of README file for details.
 * [enhance] Add new action 'show' which shows migration attributes
   with expanding variables (ex: `${table}`) and renderting template.
+* [enhance] Add new option 'new -v version' in order to specify version
+  number by yourself instead of auto-generated random string.
 
 
 ### Release 0.3.0 (2013-11-22) ###
