@@ -148,10 +148,12 @@ module Migr8
     def parse_history_file()
       fpath = history_filepath()
       tuples = []
+      eol = nil
       File.open(fpath) do |f|
         i = 0
         f.each do |line|
           i += 1
+          eol = line[-1]
           line.strip!
           next if line =~ /\A\#/
           next if line.empty?
@@ -161,6 +163,9 @@ module Migr8
           tuples << [version, author, desc]
         end
       end
+      eol == ?\n  or
+        raise HistoryFileError.new("missing newline character (\"\\n\") at end of history file.
+Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
       return tuples
     end
 
