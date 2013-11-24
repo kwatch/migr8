@@ -2509,6 +2509,8 @@ Changes
   with expanding variables (ex: `${table}`) and renderting template.
 * [enhance] Add new option 'new -v version' in order to specify version
   number by yourself instead of auto-generated random string.
+* [bufix] Action 'edit version' now can open migration file even when
+  version number in migration file is wrong.
 
 
 ### Release 0.3.0 (2013-11-22) ###
