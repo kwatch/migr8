@@ -297,6 +297,9 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
     end
 
     def create_migration(version=nil, author=nil, desc="", opts={})
+      if version && migration_file_exist?(version)
+        raise MigrationError.new("#{version}: migration file already exists.")
+      end
       mig = Migration.new(version || new_version(), author || Etc.getlogin(), desc)
       content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
