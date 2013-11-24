@@ -64,8 +64,11 @@ Templating
 
 It is possible to embed eRuby code into `up` and `down` scripts.
 
+Syntax:
+
 * `<% ... %>`  : Ruby statement
-* `<%= ... %>` : Ruby expression
+* `<%= ... %>` : Ruby expression, escaping `'` into `''` (or `\'` on MySQL)
+* `<%== ... %>` : Ruby expression, no escaping
 
 For example:
 
