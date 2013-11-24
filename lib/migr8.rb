@@ -221,7 +221,9 @@ Please run '#{File.basename($0)} edit #{version}' and fix version in that file."
     end
 
     def fetch_details_from_history_table(mig)
-      mig.applied_at  = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      s = @dbms.fetch_column_value_of(mig.version, 'applied_at')
+      s = s.strip if s
+      mig.applied_at  = (s.nil? || s.empty? ? nil : s)
       mig.up_script   = @dbms.fetch_column_value_of(mig.version, 'up_script')
       mig.down_script = @dbms.fetch_column_value_of(mig.version, 'down_script')
     end
@@ -306,6 +308,25 @@ Please run '#{File.basename($0)} edit #{version}' and fix version in that file."
       content = render_migration_file(mig, opts)
       File.open(mig.filepath, 'wb') {|f| f.write(content) }
       File.open(history_filepath(), 'ab') {|f| f.write(to_line(mig)) }
+      return mig
+    end
+
+    def delete_migration(version)
+      mig = load_migration(version)  or
+        raise MigrationError.new("#{version}: migration not found.")
+      fetch_details_from_history_table(mig)
+      ! mig.applied?  or
+        raise MigrationError.new("#{version}: already applied.
+Please run `#{File.basename($0)} unapply #{version}` at first if you want to delete it.")
+      #
+      File.open(history_filepath(), 'r+') do |f|
+        content = f.read()
+        content.gsub!(/^#{version}\b.*\n/, '')
+        f.rewind()
+        f.truncate(0)
+        f.write(content)
+      end
+      File.unlink(migration_filepath(version))
       return mig
     end
 
@@ -432,6 +453,10 @@ Please run 'File.basename($0) edit #{version}' to see existing file.")
       buf   << mig.down_script.gsub(/^/, '  ')
       buf   << "\n"
       return buf
+    end
+
+    def delete(version)
+      @repo.delete_migration(version)
     end
 
     def upgrade(n)
@@ -1792,6 +1817,38 @@ END
     end
 
 
+    class DeleteAction < Action
+      NAME = "delete"
+      DESC = "delete unapplied migration file"
+      OPTS = ["--Imsure: you must specify this option to delete migration"]
+      ARGS = "version ..."
+
+      def run(options, args)
+        versions = args
+        ! args.empty?  or
+          raise cmdopterr("#{NAME}: version required.")
+        options['Imsure']  or
+          raise cmdopterr("#{NAME}: you must specify '--Imsure' option.")
+        #
+        repo = repository()
+        op = RepositoryOperation.new(repo)
+        _wrap do
+          versions.each do |version|
+            print "## deleting '#{repo.migration_filepath(version)}' ... "
+            begin
+              op.delete(version)
+              puts "done."
+            rescue Exception => ex
+              puts ""
+              raise ex
+            end
+          end
+        end
+      end
+
+    end
+
+
   end
 
 
@@ -2484,6 +2541,8 @@ Actions:  (default: status)
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
     -x                :   unapply versions with down-script in DB, not in file
+  delete version ...  : delete unapplied migration file
+    --Imsure          :   you must specify this option to delete migration
 
 
 TODO
