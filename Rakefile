@@ -40,7 +40,7 @@ end
 
 
 desc "embed 'README.md' into 'lib/migr8.rb'"
-task :embed_readme do
+task :readme do
   content = File.read('README.md')
   content.gsub!(/^    /, '')
   content.gsub!(/\n\n<!--.*\n-->\n/m, '')
