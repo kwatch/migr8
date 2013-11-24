@@ -455,6 +455,12 @@ Please run 'File.basename($0) edit #{version}' to see existing file.")
       return buf
     end
 
+    def delete(versions)
+      versions.each do |version|
+        @repo.delete_migration(version)
+      end
+    end
+
     def upgrade(n)
       migs_hist, migs_dict = _get_migrations_hist_and_applied()
       ## index of current version
@@ -1807,6 +1813,26 @@ END
           else
             op.unapply(versions)
           end
+        end
+      end
+
+    end
+
+
+    class DeleteAction < Action
+      NAME = "delete"
+      DESC = "delete unapplied migration file"
+      OPTS = []
+      ARGS = "version ..."
+
+      def run(options, args)
+        versions = args
+        ! args.empty?  or
+          raise cmdopterr("#{NAME}: version required.")
+        #
+        op = RepositoryOperation.new(repository())
+        _wrap do
+          op.delete(versions)
         end
       end
 
