@@ -1820,13 +1820,15 @@ END
     class DeleteAction < Action
       NAME = "delete"
       DESC = "delete unapplied migration file"
-      OPTS = []
+      OPTS = ["--Imsure: you must specify this option to delete migration"]
       ARGS = "version ..."
 
       def run(options, args)
         versions = args
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
+        options['Imsure']  or
+          raise cmdopterr("#{NAME}: you must specify '--Imsure' option.")
         #
         repo = repository()
         op = RepositoryOperation.new(repo)
