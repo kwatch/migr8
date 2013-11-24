@@ -189,7 +189,9 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
         mig = load_migration(version)  or
           raise HistoryFileError.new("#{version}: migration file not found (please edit history file by 'migr8.rb hist -o' and delete or comment out it).")
         mig.version == version  or
-          $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
+          raise MigrationError.new("#{version}: version in migration file (='mig.filepath') should be '#{version}' but got #{mig.version}.
+Please run '#{File.basename($0)} edit #{version}' and fix version in that file.")
+          #$stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
         mig.author == author  or
           $stderr << "# WARNING: #{version}: author in history file is not match to #{fpath}\n"
         mig.desc == desc  or
@@ -1631,12 +1633,13 @@ END
           migs = repo.migrations_in_history_file()
           mig = migs[-num]  or
             raise cmdopterr("#{NAME} -n #{num}: migration file not found.")
+          version = mig.version
         else
           mig = repo.load_migration(version)  or
             raise cmdopterr("#{NAME}: #{version}: version not found.")
         end
-        puts "# #{editor} #{repo.migration_filepath(mig.version)}"
-        system("#{editor} #{repo.migration_filepath(mig.version)}")
+        puts "# #{editor} #{repo.migration_filepath(version)}"
+        system("#{editor} #{repo.migration_filepath(version)}")
       end
 
     end
@@ -2506,6 +2509,8 @@ Changes
   with expanding variables (ex: `${table}`) and renderting template.
 * [enhance] Add new option 'new -v version' in order to specify version
   number by yourself instead of auto-generated random string.
+* [bufix] Action 'edit version' now can open migration file even when
+  version number in migration file is wrong.
 
 
 ### Release 0.3.0 (2013-11-22) ###
