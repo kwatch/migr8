@@ -2541,6 +2541,8 @@ Actions:  (default: status)
   apply version ...   : apply specified migrations
   unapply version ... : unapply specified migrations
     -x                :   unapply versions with down-script in DB, not in file
+  delete version ...  : delete unapplied migration file
+    --Imsure          :   you must specify this option to delete migration
 
 
 TODO
