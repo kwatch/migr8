@@ -455,10 +455,8 @@ Please run 'File.basename($0) edit #{version}' to see existing file.")
       return buf
     end
 
-    def delete(versions)
-      versions.each do |version|
-        @repo.delete_migration(version)
-      end
+    def delete(version)
+      @repo.delete_migration(version)
     end
 
     def upgrade(n)
@@ -1830,9 +1828,13 @@ END
         ! args.empty?  or
           raise cmdopterr("#{NAME}: version required.")
         #
-        op = RepositoryOperation.new(repository())
+        repo = repository()
+        op = RepositoryOperation.new(repo)
         _wrap do
-          op.delete(versions)
+          versions.each do |version|
+            puts "## deleting '#{repo.migration_filepath(version)}'"
+            op.delete(version)
+          end
         end
       end
 
