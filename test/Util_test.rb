@@ -622,13 +622,15 @@ END
         input = <<'END'
 <p>
   <% x = 10 %>
+  <%= x %>
   <%== x %>
 </p>
 END
         expected = <<'END'
 _buf = ''; _buf << %q`<p>
 `;   x = 10 
-; _buf << %q`  `; _buf << ( x ).to_s; _buf << %q`
+; _buf << %q`  `; _buf << (escape( x )).to_s; _buf << %q`
+`; _buf << %q`  `; _buf << ( x ).to_s; _buf << %q`
 `; _buf << %q`</p>
 `;
 _buf.to_s
@@ -677,6 +679,26 @@ END
         tmpl = tmpl_class.new()
         actual = tmpl.convert(input)
         ok {actual} == expected
+      end
+
+      spec "[!u93y5] wraps expression by 'escape()' when <%= %>." do
+        input = "val=<%= val %>"
+        expected = <<'END'
+_buf = ''; _buf << %q`val=`; _buf << (escape( val )).to_s;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        ok {tmpl.convert(input)} == expected
+      end
+
+      spec "[!auj95] leave expression as it is when <%== %>." do
+        input = "val=<%== val %>"
+        expected = <<'END'
+_buf = ''; _buf << %q`val=`; _buf << ( val ).to_s;
+_buf.to_s
+END
+        tmpl = tmpl_class.new()
+        ok {tmpl.convert(input)} == expected
       end
 
       spec "[!b10ns] generates ruby code correctly even when no embedded code." do
@@ -755,6 +777,24 @@ END
         pr = proc { actual = tmpl.render(nil) }
         ok {pr}.NOT.raise?()
         ok {actual} == "Hello"
+      end
+
+      spec "[!1i0v8] escapes \"'\" into \"''\" when '<%= %>', and not when '<%== %>'." do
+        input = <<'END'
+  <% for item in @items %>
+  <%= item %>
+  <%== item %>
+  <% end %>
+END
+        expected = <<'END'
+  Rock''n Roll
+  Rock'n Roll
+  xx''yy''''zz''''''
+  xx'yy''zz'''
+END
+        items = ["Rock'n Roll", "xx'yy''zz'''"]
+        tmpl = tmpl_class.new(input)
+        ok {tmpl.render({:items=>items})} == expected
       end
 
     end

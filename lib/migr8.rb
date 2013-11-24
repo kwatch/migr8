@@ -2156,6 +2156,7 @@ END
         #; [!p0po0] context argument can be null.
         ctx = TemplateContext.new(context)
         #; [!48pfc] returns rendered string.
+        #; [!1i0v8] escapes "'" into "''" when '<%= %>', and not when '<%== %>'.
         return ctx.instance_eval(&@_proc)
       end
 
@@ -2171,8 +2172,10 @@ END
           text  = input[pos...match.begin(0)]
           pos   = match.end(0)
           src << _t(text)
+          #; [!u93y5] wraps expression by 'escape()' when <%= %>.
+          #; [!auj95] leave expression as it is when <%== %>.
           if ch == '='           # expression (escaping)
-            src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
+            src << _t(lspace) << " _buf << (escape(#{code})).to_s;" << _t(rspace)
           elsif ch == '=='       # expression (without escaping)
             src << _t(lspace) << " _buf << (#{code}).to_s;" << _t(rspace)
           elsif ch == '#'        # comment
