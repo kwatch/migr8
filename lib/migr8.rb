@@ -341,6 +341,10 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
     end
 
     def new(version, author, desc, opts={})
+      if version && @repo.migration_file_exist?(version)
+        raise MigrationError.new("#{version}: failed to create migration file because file already exists.
+Please run 'File.basename($0) edit #{version}' to see existing file.")
+      end
       mig = @repo.create_migration(version, author, desc, opts)
       return mig
     end
