@@ -2214,6 +2214,12 @@ END
         end if vars
       end
 
+      def escape(value)
+        #; [!f3yy9] escapes "'" into "''".
+        #; [!to5kz] converts any value into string.
+        return value.to_s.gsub(/'/, "''")
+      end
+
     end
 
 

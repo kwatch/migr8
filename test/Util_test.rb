@@ -766,6 +766,7 @@ END
   topic Migr8::Util::TemplateContext do
     klass = Migr8::Util::TemplateContext
 
+
     topic '#initialize()' do
 
       spec "[!p69q1] takes vars and sets them into instance variables." do
@@ -780,6 +781,26 @@ END
       end
 
     end
+
+
+    topic '#escape()' do
+
+      spec "[!f3yy9] escapes \"'\" into \"''\"." do
+        ctx = klass.new()
+        ok {ctx.escape("lock'n roll!")} == "lock''n roll!"
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+      end
+
+      spec "[!to5kz] converts any value into string." do
+        ctx = klass.new()
+        ok {ctx.escape(1)} == "1"
+        ok {ctx.escape(nil)} == ""
+        ok {ctx.escape(true)} == "true"
+        ok {ctx.escape(false)} == "false"
+      end
+
+    end
+
 
   end
 
