@@ -2550,7 +2550,6 @@ TODO
 
 * [_] write more tests
 * [_] test on windows
-* [_] support eRuby templating
 * [_] implement in Python
 * [_] implement in JavaScript
 
