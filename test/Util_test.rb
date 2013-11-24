@@ -825,19 +825,44 @@ END
 
     topic '#escape()' do
 
-      spec "[!f3yy9] escapes \"'\" into \"''\"." do
+      spec "[!f3yy9] escapes \"'\" into \"''\" for default." do
+        $MIGR8_DBMS = nil
         ctx = klass.new()
         ok {ctx.escape("lock'n roll!")} == "lock''n roll!"
         ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
       end
 
       spec "[!to5kz] converts any value into string." do
+        $MIGR8_DBMS = nil
         ctx = klass.new()
         ok {ctx.escape(1)} == "1"
         ok {ctx.escape(nil)} == ""
         ok {ctx.escape(true)} == "true"
         ok {ctx.escape(false)} == "false"
       end
+
+      spec "[!6v5yq] escapes "'" into "\\'" when on MySQL dbms." do
+        at_exit { $MIGR8_DBMS = nil }
+        #
+        $MIGR8_DBMS = Migr8::DBMS::MySQL.new('mysql -q -u user1 example1')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa\\'bb\\'\\'cc\\'\\'\\'"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+        #
+        $MIGR8_DBMS = Migr8::DBMS::SQLite3.new('sqlite3 example1.db')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+        #
+        $MIGR8_DBMS = Migr8::DBMS::PostgreSQL.new('psql -q -U user1 example1')
+        ctx = klass.new()
+        ok {ctx.escape("aa'bb''cc'''")} == "aa''bb''''cc''''''"
+        ok {ctx.escape(123)} == "123"
+        ok {ctx.escape(nil)} == ""
+      end
+
 
     end
 

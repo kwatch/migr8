@@ -1304,6 +1304,7 @@ END
         return @repository || begin
                                 cmd = get_command()
                                 dbms = DBMS.detect_by_command(cmd)
+                                $MIGR8_DBMS = dbms     # TODO: remove if possible
                                 repo = Repository.new(dbms)
                                 _check(repo, dbms) if _should_check?
                                 repo
@@ -2220,7 +2221,9 @@ END
       end
 
       def escape(value)
-        #; [!f3yy9] escapes "'" into "''".
+        #; [!6v5yq] escapes "'" into "\\'" when on MySQL dbms.
+        return $MIGR8_DBMS.q(value.to_s) if $MIGR8_DBMS
+        #; [!f3yy9] escapes "'" into "''" for default.
         #; [!to5kz] converts any value into string.
         return value.to_s.gsub(/'/, "''")
       end
