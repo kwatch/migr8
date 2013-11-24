@@ -189,7 +189,9 @@ Plese open it by `migr8.rb hist -o` and add newline character at end of file.")
         mig = load_migration(version)  or
           raise HistoryFileError.new("#{version}: migration file not found (please edit history file by 'migr8.rb hist -o' and delete or comment out it).")
         mig.version == version  or
-          $stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
+          raise MigrationError.new("#{version}: version in migration file (='mig.filepath') should be '#{version}' but got #{mig.version}.
+Please run '#{File.basename($0)} edit #{version}' and fix version in that file.")
+          #$stderr << "# WARNING: #{version}: version in history file is not match to #{fpath}\n"
         mig.author == author  or
           $stderr << "# WARNING: #{version}: author in history file is not match to #{fpath}\n"
         mig.desc == desc  or
