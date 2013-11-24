@@ -1832,8 +1832,9 @@ END
         op = RepositoryOperation.new(repo)
         _wrap do
           versions.each do |version|
-            puts "## deleting '#{repo.migration_filepath(version)}'"
+            print "## deleting '#{repo.migration_filepath(version)}' ... "
             op.delete(version)
+            puts "done."
           end
         end
       end
