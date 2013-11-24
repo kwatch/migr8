@@ -1110,11 +1110,11 @@ END
         return %Q`select "#{msg.to_s.gsub(/"/, '\\"')}" as '';`
       end
 
-      def q(str)
-        return str.gsub(/([\\'])/, '\\\\\1')
-      end
-
       public
+
+      def q(str)
+        return str.gsub(/[\\']/, '\\\\\&')
+      end
 
       def history_table_exist?
         table = history_table()
