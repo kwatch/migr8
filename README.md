@@ -347,10 +347,10 @@ Changes
 License
 -------
 
-$License: MIT-License $
+$License: MIT License $
 
 
 Copyright
 ---------
 
-$Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved. $
+$Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
