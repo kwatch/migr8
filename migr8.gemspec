@@ -14,18 +14,18 @@ spec = Gem::Specification.new do |s|
   s.author      = "makoto kuwata"
   s.email       = "kwa(at)kuwata-lab.com"
   s.rubyforge_project = 'migr8'
-  s.version     = "$Release: 0.0.0 $".split(' ')[1]
+  s.version     = "$Release: 0.0.0 $".split()[1]
   s.platform    = Gem::Platform::RUBY
   s.homepage    = "https://github.com/kwatch/migr8/tree/ruby-release"
   s.summary     = "database schema version management tool"
-  s.description = <<-'END'
-  Migr8.rb is a database schema version management tool.
-  * Easy to install, easy to setup, and easy to start
-  * No configuration file; instead, only two environment variables
-  * Designed carefully to suit Git or Mercurial
-  * Supports SQLite3, PostgreSQL, and MySQL
-  * Written in Ruby (>= 1.8)
-  END
+  s.description = <<'END'
+Migr8.rb is a database schema version management tool.
+* Easy to install, easy to setup, and easy to start
+* No configuration file; instead, only two environment variables
+* Designed carefully to suit Git or Mercurial
+* Supports SQLite3, PostgreSQL, and MySQL
+* Written in Ruby (>= 1.8)
+END
 
   ## files
   files = []
