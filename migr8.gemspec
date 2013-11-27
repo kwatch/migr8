@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 ###
-### $Release: 0.0.0 $
+### $Release: 0.4.0 $
 ### $License: MIT License $
 ### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
 ###
@@ -14,7 +14,7 @@ spec = Gem::Specification.new do |s|
   s.author      = "makoto kuwata"
   s.email       = "kwa(at)kuwata-lab.com"
   s.rubyforge_project = 'migr8'
-  s.version     = "$Release: 0.0.0 $".split()[1]
+  s.version     = "$Release: 0.4.0 $".split()[1]
   s.platform    = Gem::Platform::RUBY
   s.homepage    = "https://github.com/kwatch/migr8/tree/ruby-release"
   s.summary     = "database schema version management tool"
