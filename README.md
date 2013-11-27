@@ -287,7 +287,7 @@ TODO
 Changes
 -------
 
-### Release 0.4.0 ###
+### Release 0.4.0 (2013-11-28) ###
 
 * [enhance] RubyGems package available.
   You can install migr8.rb by `gem install migr8`.
