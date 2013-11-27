@@ -2574,6 +2574,8 @@ Changes
   See 'Templating' section of README file for details.
 * [enhance] Add new action 'show' which shows migration attributes
   with expanding variables (ex: `${table}`) and renderting template.
+* [enhance] Add new action 'delete' which deletes unapplied migration file.
+  Note: this action can't delete migration which is already applied.
 * [enhance] Add new option 'new -v version' in order to specify version
   number by yourself instead of auto-generated random string.
 * [bufix] Action 'edit version' now can open migration file even when
