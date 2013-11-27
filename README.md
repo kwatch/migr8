@@ -169,6 +169,15 @@ Tips
   script in `migr8/migrations/abcd1234.yaml` file.)
   This may help you when switching Git/Hg branch.
 
+* `migr8.rb` generates sql file and run it with sql command such as `psql`
+  (PostgreSQL), `sqlite3` (SQLite3) or `mysql` (MySQL). Therefore you can
+  use non-sql command in migration file.
+  For example:
+
+        up: |
+          -- read data from CSV file and insert into DB (PostgreSQL)
+          \copy table1 from 'file1.csv' with csv;
+
 * **MySQL doesn't support transactional DDL**.
   It will cause troubles when you have errors in migration script
   (See https://www.google.com/search?q=transactional+DDL for details).
