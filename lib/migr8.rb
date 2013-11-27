@@ -16,7 +16,7 @@ require 'etc'
 
 module Migr8
 
-  RELEASE = "$Release: 0.0.0 $".split(' ')[1]
+  RELEASE = "$Release: 0.0.0 $".split()[1]
 
   DEBUG = false
 
