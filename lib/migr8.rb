@@ -2167,7 +2167,7 @@ END
           d.each do |k, v|
             dict[k] = expand_value(v, dict)
           end
-        end
+        end if vars
         return dict
       end
 

@@ -7,6 +7,49 @@ require 'migr8'
 Oktest.scope do
 
 
+  topic Migr8::Util::Expander do
+
+
+    topic '.expand_vars()' do
+
+      spec "returns Hash object, even when arg is nil." do
+        ok {Migr8::Util::Expander.expand_vars([{}])} == {}
+        ok {Migr8::Util::Expander.expand_vars([{'x'=>123}])} == {'x'=>123}
+        ok {Migr8::Util::Expander.expand_vars([])} == {}
+        ok {Migr8::Util::Expander.expand_vars(nil)} == {}
+      end
+
+      spec "expands variables in Hash object." do
+        vars = [
+          {'table'  => 'users'},
+          {'column' => 'name'},
+          {'index'  => '${table}_${column}_idx'},
+        ]
+        expanded = {
+          'table'  => 'users',
+          'column' => 'name',
+          'index'  => 'users_name_idx',
+        }
+        ok {Migr8::Util::Expander.expand_vars(vars)} == expanded
+      end
+
+      spec "raises error when unknown variable name exists." do
+        vars = [
+          {'table'  => 'users'},
+          #{'column' => 'name'},
+          {'index'  => '${table}_${column}_idx'},
+        ]
+        expected = Migr8::Util::Expander::UnknownVariableError
+        pr = proc { Migr8::Util::Expander.expand_vars(vars) }
+        ok {pr}.raise?(expected, '${column}: no such variable.')
+      end
+
+    end
+
+
+  end
+
+
   topic Migr8::Util::CommandOptionDefinition do
 
     klass = Migr8::Util::CommandOptionDefinition
