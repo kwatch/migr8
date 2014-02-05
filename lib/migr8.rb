@@ -2566,6 +2566,11 @@ TODO
 Changes
 -------
 
+### Release 0.4.1 (2014-02-05) ###
+
+* [bugfix] Fix to allow migration file which contains no vars.
+
+
 ### Release 0.4.0 (2013-11-28) ###
 
 * [enhance] RubyGems package available.
