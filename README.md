@@ -287,6 +287,11 @@ TODO
 Changes
 -------
 
+### Release 0.4.2 (2014-02-05) ###
+
+* [bugfix] re-packaging gem file
+
+
 ### Release 0.4.1 (2014-02-05) ###
 
 * [bugfix] Fix to allow migration file which contains no vars.

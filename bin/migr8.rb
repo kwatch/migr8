@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 ###
-### $Release: 0.4.1 $
+### $Release: 0.4.2 $
 ### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###

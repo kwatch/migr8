@@ -4,7 +4,7 @@
 ###
 ### migr8.py -- DB schema version management tool
 ###
-### $Release: 0.4.1 $
+### $Release: 0.4.2 $
 ### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
@@ -16,7 +16,7 @@ require 'etc'
 
 module Migr8
 
-  RELEASE = "$Release: 0.4.1 $".split()[1]
+  RELEASE = "$Release: 0.4.2 $".split()[1]
 
   DEBUG = false
 
@@ -2565,6 +2565,11 @@ TODO
 
 Changes
 -------
+
+### Release 0.4.2 (2014-02-05) ###
+
+* [bugfix] re-packaging gem file
+
 
 ### Release 0.4.1 (2014-02-05) ###
 
