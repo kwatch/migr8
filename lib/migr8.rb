@@ -360,8 +360,10 @@ Please run `#{File.basename($0)} unapply #{version}` at first if you want to del
         s << _to_line(mig)
       end
       if ! mig_dict.empty?
-        puts "## Applied to DB but not exist in history file:"
-        mig_dict.each {|mig| s << _to_line(mig) }
+        s << "##\n"
+        s << "## Applied to DB but not exist in history file:\n"
+        s << "##\n"
+        mig_dict.each {|ver, mig| s << _to_line(mig) }
       end
       return s
     end
