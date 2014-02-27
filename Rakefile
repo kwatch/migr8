@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 project   = "migr8"
-release   = ENV['RELEASE'] || "0.4.2"
-copyright = "copyright(c) 2013 kuwata-lab.com all rights reserved"
+release   = ENV['RELEASE'] || "0.4.3"
+copyright = "copyright(c) 2013-2014 kuwata-lab.com all rights reserved"
 license   = "MIT License"
 
 require 'fileutils'
