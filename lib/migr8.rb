@@ -4,8 +4,8 @@
 ###
 ### migr8.py -- DB schema version management tool
 ###
-### $Release: 0.4.2 $
-### $Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
+### $Release: 0.4.3 $
+### $Copyright: copyright(c) 2013-2014 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
 
@@ -16,7 +16,7 @@ require 'etc'
 
 module Migr8
 
-  RELEASE = "$Release: 0.4.2 $".split()[1]
+  RELEASE = "$Release: 0.4.3 $".split()[1]
 
   DEBUG = false
 
@@ -2650,7 +2650,7 @@ $License: MIT License $
 Copyright
 ---------
 
-$Copyright: copyright(c) 2013 kuwata-lab.com all rights reserved $
+$Copyright: copyright(c) 2013-2014 kuwata-lab.com all rights reserved $
 README_DOCUMENT
 
 
