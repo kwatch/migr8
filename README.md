@@ -287,6 +287,12 @@ TODO
 Changes
 -------
 
+### Release 0.4.3 (2014-02-28) ###
+
+* [bugfix] fix reporting error when there is a migration which is
+  applied but migration file doesn't exist.
+
+
 ### Release 0.4.2 (2014-02-05) ###
 
 * [bugfix] re-packaging gem file
