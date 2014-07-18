@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 project   = "migr8"
-release   = ENV['RELEASE'] || "0.4.3"
+release   = ENV['RELEASE'] || "0.4.4"
 copyright = "copyright(c) 2013-2014 kuwata-lab.com all rights reserved"
 license   = "MIT License"
 
