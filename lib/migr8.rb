@@ -1764,8 +1764,8 @@ END
         #
         op = RepositoryOperation.new(repository())
         _wrap do
-          op.upgrade(n)
           op.downgrade(n)
+          op.upgrade(n)
         end
       end
 
