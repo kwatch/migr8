@@ -287,6 +287,11 @@ TODO
 Changes
 -------
 
+### Release 0.4.4 (2014-07-19) ###
+
+* [bugfix] fix `redo` action to run `down` first internally.
+
+
 ### Release 0.4.3 (2014-02-28) ###
 
 * [bugfix] fix reporting error when there is a migration which is
