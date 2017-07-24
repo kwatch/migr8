@@ -853,13 +853,15 @@ END
       PATTERN = /\bsqlite3\b/
 
       def execute_sql(sql, cmdopt=nil)
-        preamble = ".bail ON\n"
         return super(preamble+sql, cmdopt)
       end
 
       def run_sql(sql, opts={})
-        preamble = ".bail ON\n"
         super(preamble+sql, opts)
+      end
+
+      def preamble
+        ".bail ON\n" + ".timer OFF\n"
       end
 
       protected
